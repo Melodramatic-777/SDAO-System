@@ -7,7 +7,6 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\RedirectIfAuthenticated;
 
-
 class Kernel extends HttpKernel
 {
     /**
@@ -63,6 +62,7 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // ✅ Add your custom admin session check here:
+        'admin.auth' => \App\Http\Middleware\CheckAdminAuth::class,
+
     ];
 }
