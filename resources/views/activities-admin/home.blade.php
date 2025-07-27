@@ -18,7 +18,6 @@
         }
 
         body {
-            background: url('/images/your-login-background.jpg') no-repeat center center/cover;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
