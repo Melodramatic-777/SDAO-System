@@ -56,7 +56,7 @@ th, td { padding: 0.75rem; text-align: left; }
             </div>
         </div>
         <div class="header-right-group">
-            <p>Welcome, {{ session('admin.first_name') }}!</p>
+            <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
             <form method="POST" action="{{ route('admin.logout') }}">
                 @csrf
                 <button type="submit" class="side-button">

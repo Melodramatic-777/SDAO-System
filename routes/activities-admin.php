@@ -2,14 +2,21 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountsActivitiesController;
+use App\Http\Controllers\ProposalsController;
 
 Route::prefix('activities-admin')->group(function () {
 
-    Route::get('/home', fn() => view('activities-admin.home'))->name('activities-admin.home');
+    Route::get('/home', [ProposalsController::class, 'activitiesAdminHome'])->name('activities-admin.home');
     Route::get('/activities-calendar', fn() => view('activities-admin.activities-calendar'))->name('activities-admin.activities-calendar');
     Route::get('/documents', fn() => view('activities-admin.documents'))->name('activities-admin.documents');
     Route::get('/profile', fn() => view('activities-admin.profile'))->name('activities-admin.profile');
     Route::get('/inquiries', fn() => view('activities-admin.inquiries'))->name('activities-admin.inquiries');
+
+
+        Route::get('/proposals/{id}/review', [ProposalsController::class, 'review'])->name('activities-admin.proposals.review');
+        Route::post('/proposals/{id}/approve', [ProposalsController::class, 'approve'])->name('activities-admin.proposals.approve');
+
+
 
                     // Account creation & management
                     Route::get('/accounts', [AccountsActivitiesController::class, 'showAccountsPage'])->name('activities-admin.accounts');

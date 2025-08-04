@@ -14,6 +14,10 @@ use Illuminate\Notifications\Notifiable;
  * @property string $role
  */
 
+/**
+ * @property string|null $organization_id
+ */
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -53,3 +57,4 @@ class User extends Authenticatable
         ];
     }
 }
+

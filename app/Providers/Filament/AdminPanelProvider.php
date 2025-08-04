@@ -26,8 +26,6 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            // ❌ REMOVE Filament’s built-in login
-            // ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])

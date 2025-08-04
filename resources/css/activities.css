@@ -1,0 +1,293 @@
+/* resources/css/activities.css */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: #003DA5;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header .logo {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+header nav a {
+    color: white;
+    margin: 0 0.75rem;  
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;  
+}
+
+.login-container {
+    background-color: white;
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    border: 2px solid #003DA5;
+    border-radius: 25px;
+    text-align: center;
+}
+
+.login-container h2 {
+    color: #003DA5;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    font-style: italic;
+}
+
+.login-container label {
+    display: block;
+    text-align: left;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.login-container input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #003DA5;
+    border-radius: 5px;
+}
+
+.login-container p {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+.login-container button {
+    background-color: #003DA5;
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.custom-header {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 2rem;
+    border-bottom: 2px solid #003DA5;
+}
+
+.custom-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: bold;
+    color: #003DA5;
+}
+
+.custom-header .logo img {
+    height: 40px;
+    width: auto;
+}
+
+.custom-header .header-right p {
+    color: #003DA5;
+    font-weight: 100;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.side-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.side-button img {
+    height: 30px;
+    width: auto;
+}
+
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+}
+
+.header-right-group p {
+    color: #003DA5;
+    font-weight: 100;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #003DA5;
+    margin: 1rem 2rem;
+    flex-wrap: wrap;
+}
+
+.tabs button {
+    background: none;
+    border: none;
+    padding: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    color: #003DA5;
+}
+
+.tabs button.active {
+    border-bottom: 3px solid #003DA5;
+}
+
+.tab-content {
+    display: none;
+    padding: 2rem;
+    background: #fff;
+    margin: 0 2rem;
+    border: 1px solid #ccc;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+
+        .status-section {
+            margin-top: 2rem;
+        }
+
+        .status-card {
+            border: 2px solid #0050A0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fff;
+        }
+
+        .status-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .proposal-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .view-details-link {
+            color: #0050A0;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .proposal-id {
+            font-size: 0.9rem;
+            color: #333;
+            margin: 0.3rem 0;
+        }
+
+        .date-submitted {
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .status-badge.Approved {
+            background: #E6FAF0;
+            color: #00A86B;
+        }
+
+        .status-badge.Pending {
+            background: #FFF8E1;
+            color: #B58B00;
+        }
+
+        .status-badge.Returned {
+            background: #FDECEA;
+            color: #D93025;
+        }
+
+
+                .timeline { border-left: 3px solid #ccc; padding-left: 20px; }
+        .timeline-item { margin-bottom: 20px; position: relative; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+
+        .proposal-comments {
+    background: #fff;
+    margin-top: 2rem;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #ddd;
+}
+
+.comment-box {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.comment-text {
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.reply-box {
+    margin-top: 2rem;
+}
+
+.reply-box textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.reply-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.reply-actions button {
+    padding: 0.5rem 1rem;
+}

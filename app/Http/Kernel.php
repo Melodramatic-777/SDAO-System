@@ -62,7 +62,14 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        'admin.auth' => \App\Http\Middleware\CheckAdminAuth::class,
+        'activitiesAdminAuth' => \App\Http\Middleware\ActivitiesAdminAuth::class,
+        'volunteersAdminAuth' => \App\Http\Middleware\ActivitiesAdminAuth::class,
 
     ];
+
+
+    protected $commands = [
+    \App\Console\Commands\FixOrganizationIds::class,
+];
+
 }
