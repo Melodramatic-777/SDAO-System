@@ -1,0 +1,734 @@
+/* === Global Reset === */
+
+
+/* === Page Container for Responsive Side Margins === */
+.page-container {
+  padding: 0 20px;      /* small margin by default */
+  max-width: 1400px;    /* prevent stretching too wide on large screens */
+  margin: 0 auto;       /* center the content */
+  width: 100%;
+}
+
+/* Adjust spacing for larger screens */
+@media (min-width: 768px) {
+  .page-container {
+    padding: 0 40px;   /* medium margin */
+  }
+}
+
+@media (min-width: 1200px) {
+  .page-container {
+    padding: 0 60px;   /* slightly bigger margin */
+  }
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background: #f9fafc;
+}
+
+/* === Header Styles === */
+header {
+    background-color: #003DA5;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header .logo {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+header nav a {
+    color: white;
+    margin: 0 0.75rem;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* === Login Container === */
+.login-container {
+    background-color: white;
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    border: 2px solid #003DA5;
+    border-radius: 25px;
+    text-align: center;
+}
+
+.login-container h2 {
+    color: #003DA5;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    font-style: italic;
+}
+
+.login-container label {
+    display: block;
+    text-align: left;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.login-container input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #003DA5;
+    border-radius: 5px;
+}
+
+.login-container p {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+.login-container button {
+    background-color: #003DA5;
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* === Custom Header === */
+.custom-header {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 2rem;
+    border-bottom: 2px solid #003DA5;
+}
+
+.custom-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: bold;
+    color: #003DA5;
+}
+
+.custom-header .logo img {
+    height: 40px;
+    width: auto;
+}
+
+.side-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.side-button img {
+    height: 30px;
+    width: auto;
+}
+
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+}
+
+.header-right-group p {
+    color: #003DA5;
+    font-weight: 100;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* === Tabs === */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #003DA5;
+    margin: 1rem 2rem;
+    flex-wrap: wrap;
+}
+
+.tabs button {
+    background: none;
+    border: none;
+    padding: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    color: #003DA5;
+}
+
+.tabs button.active {
+    border-bottom: 3px solid #003DA5;
+}
+
+/* === Tab Content === */
+.tab-content {
+    display: none;
+    padding: 2rem;
+    background: #fff;
+    margin: 0 2rem;
+    border: 1px solid #ccc;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* === Subtab Content === */
+.subtab-content {
+    display: none;
+}
+
+.subtab-content.active {
+    display: block;
+}
+
+/* === Table Filters & Search Bar === */
+.table-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.filter-buttons .btn {
+    background-color: #e9ecef;
+    border: 1px solid #ccc;
+    font-weight: 500;
+    color: #000;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-bar input {
+    border-radius: 50px;
+    padding-left: 1rem;
+    padding-right: 2.5rem;
+}
+
+.search-bar button {
+    background: none;
+    border: none;
+    position: relative;
+    right: 2rem;
+    cursor: pointer;
+}
+
+.create-account-btn {
+    background-color: #003DA5;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.4rem;
+    font-weight: bold;
+    border: none;
+}
+
+.create-account-btn:hover {
+    background-color: #002a73;
+}
+
+/* === Tables === */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+table, th, td {
+    border: 1px solid #003DA5;
+}
+
+th {
+    background-color: #FFD100; /* NU Yellow */
+    color: black;
+    padding: 0.9rem 0.75rem;
+    text-align: left;
+    vertical-align: middle;
+}
+
+td {
+    padding: 0.9rem 0.75rem;
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* Status Badges */
+.badge-active {
+    background-color: #28a745;
+    color: #fff;
+    padding: 0.4em 0.8em;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.badge-probationary {
+    background-color: #ffb366;
+    color: #000;
+    padding: 0.4em 0.8em;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* === Buttons === */
+.btn {
+    background: #003DA5;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+
+/* === Modal === */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background: #fff;
+    margin: 5% auto;
+    padding: 2rem;
+    width: 50%;
+    border-radius: 8px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close {
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+
+/* === Custom Table Header Styling === */
+.table-title-row th {
+    background-color: #004aad !important;
+    color: white !important;
+    text-align: center;
+    font-size: 1.25rem;
+}
+
+.table-header-row th {
+    background-color: #FFD700 !important;
+    color: black !important;
+    font-weight: bold !important;
+    text-align: center;
+}
+
+
+
+/* === Organization Filter Buttons === */
+.org-filter-btn {
+    background: none;
+    border: 2px solid #003DA5;
+    color: #003DA5;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s, color 0.3s;
+}
+
+.org-filter-btn.active,
+.org-filter-btn:hover {
+    background: #003DA5;
+    color: #fff;
+}
+
+/* Pagination styling */
+.pagination {
+    display: flex;
+    justify-content: right;
+    margin: 1.5rem 0;
+    gap: 0.25rem;
+}
+
+.pagination li {
+    list-style: none;
+}
+
+.pagination a,
+.pagination span {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #003DA5;
+    color: #003DA5;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+.pagination .active span {
+    background-color: #003DA5;
+    color: white;
+    border-color: #003DA5;
+}
+
+.filter-buttons {
+  margin-bottom: 10px;
+}
+.filter-buttons button {
+  margin-right: 5px;
+  padding: 6px 12px;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.filter-buttons button:hover {
+  background: #0056b3;
+}
+
+/* === Dashboard & Cards (Merged) === */
+.logo span {
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.main-nav {
+  background: #eaeaea;
+  padding: 10px 20px;
+}
+
+.main-nav a {
+  margin-right: 20px;
+  text-decoration: none;
+  color: #003366;
+  font-weight: bold;
+}
+
+/* === Dashboard Layout === */
+.dashboard-row {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+  align-items: stretch;
+}
+
+/* Left column: stacked buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Right column: stats grid */
+.status-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Action Cards */
+.action-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  text-align: left;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.action-card:hover {
+  border-color: #003DA5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.action-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #003DA5;
+}
+
+.action-card p {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Status Cards */
+.status-card {
+  text-align: center;
+  padding: 25px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.status-card span {
+  display: block;
+  margin-top: 10px;
+  font-size: 24px;
+}
+
+/* Colors */
+.status-card.approved {
+  background: #e9f7ef;
+  color: #1e8449;
+}
+
+.status-card.volunteers {
+  background-color: #f0f0f0; /* grey */
+  color: #666565;
+}
+
+.status-card.waiting {
+  background: #fff9e6;
+  color: #d4ac0d;
+}
+
+.status-card.returned {
+  background: #f5e3f4;
+  color: #8d3fac;
+}
+
+
+.status-card.urgent {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+
+/* Specific color styles */
+.status-card.completed {
+  background: #eaf2ff;
+  color: #004aad;
+}
+
+.status-card.participated {
+  background: #eafaf1;
+  color: #16a34a;
+}
+
+.status-card.month {
+  background: #f7f2ff;
+  color: #8b5cf6;
+}
+
+.status-card.remaining {
+  background: #fff8e8;
+  color: #e77918;
+}
+
+
+.status-card.total {
+  background: #ebf5fb;
+  color: #21618c;
+}
+
+/* === Form Container === */
+.form-container {
+    background: #fff;
+    padding: 2rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    max-width: 1100px;
+    margin: 2rem auto;
+}
+
+.form-title {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #003DA5;
+    margin-bottom: 1.5rem;
+}
+
+/* === Grid Layout === */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* Left column inputs */
+.form-left label,
+.form-right label {
+    font-weight: 500;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.form-left input,
+.form-left textarea,
+.form-right input,
+.form-right textarea {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #003DA5;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+/* Date and Time Rows */
+.form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.time-row span {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+/* Radio Group */
+.radio-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Right column textareas */
+.form-right textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+/* Submit Button */
+.form-submit {
+    text-align: right;
+    margin-top: 2rem;
+}
+
+.btn-submit {
+    background-color: #003DA5;
+    color: white;
+    padding: 0.7rem 2rem;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #002a73;
+}
+
+/* === Opportunity Cards (always visible) === */
+.opportunity-list {
+  flex-shrink: 0;
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.opportunity-card {
+  background: #fff;
+  border: 2px solid #0056b3;
+  border-radius: 6px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.opportunity-card:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.opportunity-card.selected {
+  border-width: 3px;
+  box-shadow: 0 0 0 2px #003DA5 inset;
+}
+
+.opportunity-card h5 {
+  margin-bottom: 0.5rem;
+  color: #003DA5;
+}
+
+.opportunity-card small {
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.opportunity-card ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+}
+
+/* Right column: detailed view */
+.opportunity-detail {
+  background: #fff;
+  border: 2px solid #0056b3;
+  border-radius: 6px;
+  padding: 1.25rem;
+  min-height: 500px;
+}
+
+
+
+.filter-bar {
+  background: #fff;
+  border: 1px solid #dce3f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.filter-bar .form-select,
+.filter-bar .form-control {
+  border-color: #ccd8eb;
+  font-size: 0.9rem;
+}
+
+.filter-bar .form-select:focus,
+.filter-bar .form-control:focus {
+  box-shadow: 0 0 0 2px rgba(0, 61, 165, 0.25);
+  border-color: #003DA5;
+}
+
+.filter-bar label {
+  font-weight: 500;
+  color: #555;
+}

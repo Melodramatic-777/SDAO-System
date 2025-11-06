@@ -23,7 +23,7 @@ class TemporaryCredentialsMailable extends Mailable
 
     public function build()
     {
-        return $this->subject('Your Temporary Admin Credentials')
+        return $this->subject('NU Fairview SDAO IsKonnect Temporary Credentials')
             ->view('emails.temporary-credentials')
             ->with([
                 'name' => $this->name,

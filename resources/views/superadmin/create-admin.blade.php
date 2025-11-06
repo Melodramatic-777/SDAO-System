@@ -8,9 +8,9 @@
     <label>Email</label><input name="email" type="email" required><br>
     <label>Role</label>
     <select name="role" required>
-        <option value="SDAO Coordinator">SDAO Coordinator</option>
-        <option value="Volunteers Admin">Volunteers Admin</option>
-        <option value="Activities Admin">Activities Admin</option>
+        <option value="SDA Coordinator">SDA Coordinator</option>
+        <option value="SDA Associate">SDA Associate</option>
+        <option value="SDA Assistant">SDA Assistant</option>
     </select><br>
     <button type="submit">Create Admin</button>
 </form>

@@ -37,7 +37,7 @@ class AdminAuthenticatedSessionController extends Controller
         $authenticatedUser = null;
         $userType = null;
 
-        // === 1) Check Admins ===
+        // === Check Admins ===
         $admins = $database->getReference('admins')->getValue();
         if ($admins) {
             foreach ($admins as $admin) {
@@ -53,37 +53,41 @@ class AdminAuthenticatedSessionController extends Controller
             }
         }
 
-        // === 2) Check other accounts ===
-        if (!$authenticatedUser) {
-            $tables = [
-                'organization_accounts',
-                'department_accounts',
-                'comex_accounts',
-                'deans',
-                'director_users',
-                'marketing_accounts',
-                'program_chairs',
-                'scholar_accounts',
-                'office_accounts',
-            ];
-
-            foreach ($tables as $table) {
-                $accounts = $database->getReference($table)->getValue();
-                if ($accounts) {
-                    foreach ($accounts as $account) {
-                        if (
-                            isset($account['email'], $account['password']) &&
-                            $account['email'] === $request->input('email') &&
-                            Hash::check($request->input('password'), $account['password'])
-                        ) {
-                            $authenticatedUser = $account;
-                            $userType = $table;
-                            break 2;
-                        }
+        // === Check only Scholar + Volunteer Office Accounts ===
+if (!$authenticatedUser) {
+    $scholarsRoot = $database->getReference('scholars')->getValue();
+    if ($scholarsRoot) {
+        foreach ($scholarsRoot as $year => $types) {
+            foreach ($types as $type => $records) {
+                foreach ($records as $record) {
+                    if (isset($record['email'], $record['password']) &&
+                        $record['email'] === $request->input('email') &&
+                        Hash::check($request->input('password'), $record['password'])) {
+                        $authenticatedUser = $record;
+                        $userType = 'scholars';
+                        break 3;
                     }
                 }
             }
         }
+    }
+
+    // === Check Volunteer Office Accounts ===
+    if (!$authenticatedUser) {
+        $officeAccounts = $database->getReference('office_accounts')->getValue();
+        if ($officeAccounts) {
+            foreach ($officeAccounts as $account) {
+                if (isset($account['email'], $account['password']) &&
+                    $account['email'] === $request->input('email') &&
+                    Hash::check($request->input('password'), $account['password'])) {
+                    $authenticatedUser = $account;
+                    $userType = 'office_accounts';
+                    break;
+                }
+            }
+        }
+    }
+}
 
         if (!$authenticatedUser) {
             return back()->withErrors([
@@ -94,32 +98,25 @@ class AdminAuthenticatedSessionController extends Controller
         // === Clear all session keys ===
         Session::forget([
             'admin',
-            'activities_admin',
+            'scholars_admin',
             'volunteers_admin',
-            'activities_user',
-            'activities_approver',
             'volunteers_user',
             'volunteers_office',
         ]);
 
-        // === Admin routes ===
+        // === Admin roles ===
         if ($userType === 'admin') {
             $role = $authenticatedUser['role'] ?? '';
 
-            if ($role === 'Activities Admin') {
-                Session::put('activities_admin', $authenticatedUser);
-
-                // 👇 Also grant them the approver session as SDAO!
-                $authenticatedUser['role'] = 'SDAO'; // Role must match your approval_chain exactly!
-                Session::put('activities_approver', $authenticatedUser);
-
-                return redirect()->route('activities-admin.home');
+            if ($role === 'SDA Associate') {
+                Session::put('scholars_admin', $authenticatedUser);
+                
+                return redirect()->route('scholars-admin.dashboard');
             }
 
-
-            if ($role === 'Volunteers Admin') {
+            if ($role === 'SDA Assistant') {
                 Session::put('volunteers_admin', $authenticatedUser);
-                return redirect()->route('volunteers-admin.leader-board');
+                return redirect()->route('volunteers-admin.dashboard');
             }
 
             if ($role === 'Super Admin') {
@@ -127,88 +124,21 @@ class AdminAuthenticatedSessionController extends Controller
                 return redirect()->route('superadmin.admins.list');
             }
 
-            if ($role === 'SDAO Coordinator') {
-                Session::put('admin', $authenticatedUser);
-                return redirect()->route('sdao-coordinator.home');
-            }
-
             return redirect('/');
         }
 
-        // === Organization Accounts ===
-        if ($userType === 'organization_accounts') {
+// === Volunteers: Scholars ===
+if ($userType === 'scholars') {
+    $authenticatedUser['id'] = $authenticatedUser['student_no']; // normalize key
+    Session::put('scholar_accounts', $authenticatedUser);
+    return redirect()->route('scholars.dashboard');
+}
 
-            $role = strtolower($authenticatedUser['role'] ?? '');
-
-            if ($role === 'adviser') {
-                Session::put('activities_approver', $authenticatedUser);
-                return redirect()->route('activities-approver.home');
-            }
-
-            // Not an adviser, so it's a regular org user
-            if (!empty($authenticatedUser['organization_id'])) {
-                $org = $database->getReference('organizations/' . $authenticatedUser['organization_id'])->getValue();
-                if ($org && !empty($org['organization_name'])) {
-                    $authenticatedUser['organization_name'] = $org['organization_name'];
-                } else {
-                    $authenticatedUser['organization_name'] = 'Organization ' . $authenticatedUser['organization_id'];
-                }
-            }
-
-            Session::put('activities_user', $authenticatedUser);
-            return redirect()->route('activities-user.home');
-        }
-
-        // === Department Accounts ===
-        if ($userType === 'department_accounts') {
-            Session::put('activities_user', $authenticatedUser);
-            return redirect()->route('activities-user.home');
-        }
-
-        // === Approvers: all other roles ===
-    if (in_array($userType, [
-        'comex_accounts',
-        'deans',
-        'director_users',
-        'marketing_accounts',
-        'program_chairs',
-    ])) {
-        // 👇 Force the expected role for each type
-        switch ($userType) {
-            case 'program_chairs':
-                $authenticatedUser['role'] = 'Program Chair';
-                break;
-            case 'deans':
-                $authenticatedUser['role'] = 'Dean';
-                break;
-            case 'comex_accounts':
-                $authenticatedUser['role'] = 'ComEx';
-                break;
-            case 'marketing_accounts':
-                $authenticatedUser['role'] = 'Marketing';
-                break;
-            case 'director_users':
-                $authenticatedUser['role'] = 'Director';
-                break;
-        }
-
-        // ✅ Always put them in the approver session
-        Session::put('activities_approver', $authenticatedUser);
-        return redirect()->route('activities-approver.home');
-    }
-
-
-
-        // === Volunteers: Scholars ===
-        if ($userType === 'scholar_accounts') {
-            Session::put('volunteers_user', $authenticatedUser);
-            return redirect()->route('volunteers-user.dashboard');
-        }
 
         // === Volunteers: Office ===
         if ($userType === 'office_accounts') {
             Session::put('volunteers_office', $authenticatedUser);
-            return redirect()->route('volunteers-offices.request-volunteer');
+            return redirect()->route('volunteers-offices.home');
         }
 
         return redirect('/');
@@ -221,9 +151,8 @@ class AdminAuthenticatedSessionController extends Controller
     {
         Session::forget([
             'admin',
-            'activities_admin',
+            'scholars_admin',
             'volunteers_admin',
-            'activities_user',
             'activities_approver',
             'volunteers_user',
             'volunteers_office',
