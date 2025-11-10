@@ -55,22 +55,32 @@ class AdminAuthenticatedSessionController extends Controller
 
         // === Check only Scholar + Volunteer Office Accounts ===
 if (!$authenticatedUser) {
-    $scholarsRoot = $database->getReference('scholars')->getValue();
-    if ($scholarsRoot) {
-        foreach ($scholarsRoot as $year => $types) {
+$scholarsRoot = $database->getReference('scholars')->getValue();
+if ($scholarsRoot) {
+    foreach ($scholarsRoot as $year => $terms) {
+        foreach ($terms as $term => $types) { // ✅ NEW LEVEL
             foreach ($types as $type => $records) {
                 foreach ($records as $record) {
-                    if (isset($record['email'], $record['password']) &&
+
+                    if (
+                        isset($record['email'], $record['password']) &&
                         $record['email'] === $request->input('email') &&
-                        Hash::check($request->input('password'), $record['password'])) {
+                        Hash::check($request->input('password'), $record['password'])
+                    ) {
                         $authenticatedUser = $record;
+                        $authenticatedUser['academic_year'] = $year;
+                        $authenticatedUser['term'] = $term;
+                        $authenticatedUser['scholarship_type'] = $type;
                         $userType = 'scholars';
-                        break 3;
+                        break 4; // ✅ exit all loops
                     }
+
                 }
             }
         }
     }
+}
+
 
     // === Check Volunteer Office Accounts ===
     if (!$authenticatedUser) {

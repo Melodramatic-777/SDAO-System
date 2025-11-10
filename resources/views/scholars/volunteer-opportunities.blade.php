@@ -41,10 +41,10 @@
 <!-- Filter controls -->
 <div class="flex-wrap p-3 mb-3 bg-white border rounded shadow-sm filter-bar d-flex align-items-center justify-content-between">
   <div class="flex-wrap gap-2 d-flex align-items-center">
-    <input type="text" class="form-control search-input" placeholder="Search opportunities..." style="width: 220px;">
+<input type="text" id="filter-search" class="form-control search-input" placeholder="Search opportunities..." style="width: 220px;">
     <select class="form-select" id="filter-office" style="width: 220px;">
       <option value="">All Offices</option>
-      <option value="SDA Assistant">Student Development and Activities Office</option>
+<option value="SDA Office">SDA Office</option>
       @foreach($offices as $office)
         <option value="{{ $office['name'] }}">{{ $office['name'] }}</option>
       @endforeach
@@ -53,71 +53,79 @@
     <select class="form-select" id="filter-status" style="width: 180px;">
       <option value="">All Status</option>
       <option value="Urgent">Urgent</option>
-      <option value="Open">Open</option>
       <option value="Full">Full</option>
     </select>
   </div>
 
-  <div class="gap-2 mt-2 d-flex align-items-center mt-md-0">
-    <label class="text-muted small me-1">Sort by:</label>
-    <select class="form-select" id="sort-by" style="width: 160px;">
-      <option value="recent">Most Recent</option>
-      <option value="upcoming">Upcoming</option>
-      <option value="urgent">Urgent First</option>
-    </select>
+<div class="gap-2 mt-2 d-flex align-items-center mt-md-0">
+  <label class="text-muted small me-1">Sort by:</label>
+  <select class="form-select" id="sort-by" style="width: 160px;">
+    <option value="recent">Most Recent</option>
+    <option value="upcoming">Upcoming</option>
+    <option value="urgent">Urgent First</option>
+  </select>
+
+  <!-- On the Spot Volunteer Button -->
+  <button type="button" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#onTheSpotModal">
+    On the Spot Volunteer
+  </button>
+</div>
+
   </div>
 </div>
 
-<div class="container gap-3 mt-3 d-flex">
+
+<div class="container gap-3 px-3 d-flex">
+  <div class="mb-2 opp-count-label">
+    <h5 class="mb-0 fw-bold"><span id="oppCount">{{ count($opportunities) }}</span> Volunteer Opportunities</h5>
+  </div>
+</div>
+
+<div class="container gap-3 mt-2 d-flex">
+
 
   <!-- Left column -->
-  <div class="opportunity-list">
+<div class="opportunity-list" id="opportunityList">
     @forelse($opportunities as $op)
       <div class="card opportunity-card" data-id="{{ $op['opportunity_id'] }}" onclick="showDetail('{{ $op['opportunity_id'] }}')">
         <div class="card-body">
-          @if(isset($op['intermittent']) && $op['intermittent'])
-            <span class="mb-2 badge bg-danger">Volunteers urgently needed</span>
-          @endif
+@if(isset($op['is_urgent']) && $op['is_urgent'] === 'yes')
+  <span class="badge-urgent">Urgent</span>
+@endif
           <h5 class="card-title">{{ $op['title'] }}</h5>
-          <p class="mb-1">Submitted by: {{ $op['submitted_by_role'] ?? 'Unknown' }}</p>
+<p class="mb-1">Office: {{ ($op['submitted_by_role'] ?? '') === 'SDA Assistant' ? 'SDA Office' : ($op['submitted_by_role'] ?? 'Unknown') }}</p>
           <p class="mb-1">Location: {{ $op['location'] }}</p>
-          <small>
-            Date: 
-            @if(isset($op['schedule'][0]['date']))
-              {{ \Carbon\Carbon::parse($op['schedule'][0]['date'])->format('F j, Y') }}
-            @else
-              N/A
-            @endif
-            <br>
-            Time: 
-            @php
-              $isIntermittent = !empty($op['is_intermittent']) && (int)$op['is_intermittent'] === 1;
-            @endphp
+<small>
+  @php
+    $isIntermittent = !empty($op['is_intermittent']) && (int)$op['is_intermittent'] === 1;
+  @endphp
 
-            @if($isIntermittent)
-              {{-- Multiple Dates for Intermittent Schedule --}}
-              @foreach($op['schedule'] ?? [] as $schedule)
-                <div>
-                  <strong>{{ \Carbon\Carbon::parse($schedule['date'])->format('F j, Y') }}:</strong> 
-                  @if(isset($schedule['start_time']) && isset($schedule['end_time']))
-                    {{ \Carbon\Carbon::parse($schedule['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($schedule['end_time'])->format('g:i A') }}
-                  @else
-                    N/A
-                  @endif
-                </div>
-              @endforeach
-            @else
-              {{-- Regular Schedule (single date) --}}
-              @php
-                $schedule = $op['schedule'][0] ?? null;
-              @endphp
-              @if ($schedule && isset($schedule['start_time']) && isset($schedule['end_time']))
-                {{ \Carbon\Carbon::parse($schedule['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($schedule['end_time'])->format('g:i A') }}
-              @else
-                N/A
-              @endif
-            @endif
-          </small>
+  @if($isIntermittent)
+    <strong>Schedule:</strong><br>
+    @foreach($op['schedule'] ?? [] as $s)
+      <div>
+        {{ \Carbon\Carbon::parse($s['date'])->format('F j, Y') }}:
+        @if(isset($s['start_time']) && isset($s['end_time']))
+          {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
+        @else
+          N/A
+        @endif
+      </div>
+    @endforeach
+  @else
+    {{-- Regular schedule --}}
+    @php $s = $op['schedule'][0] ?? null; @endphp
+    <strong>Date:</strong>
+    {{ $s['date'] ?? 'N/A' ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }} <br>
+
+    <strong>Time:</strong>
+    @if($s && isset($s['start_time']) && isset($s['end_time']))
+      {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
+    @else
+      N/A
+    @endif
+  @endif
+</small>
 
           <ul class="mt-2 mb-0">
             @foreach(explode("\n", $op['task_details']) as $task)
@@ -135,20 +143,94 @@
   </div>
 
   <!-- Right column -->
-  <div class="opportunity-detail flex-grow-1" id="opportunityDetail">
-    <h4>Select an opportunity</h4>
-    <p>Click a card on the left to view full details.</p>
+<div class="opportunity-detail flex-grow-1" id="opportunityDetail">
+  <h4>
+    <span style="font-weight: normal; margin-right: 6px;">←</span>
+    <strong>Select an opportunity</strong>
+  </h4>
+  <p class="detail-placeholder">Display details here</p>
+</div>
+</div>
+
+
+
+
+
+<!-- ON THE SPOT VOLUNTEER MODAL -->
+<div class="modal fade" id="onTheSpotModal" tabindex="-1" aria-labelledby="onTheSpotVolunteerLabel" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="p-3 modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">ON THE SPOT VOLUNTEER</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="onTheSpotForm" method="POST" action="{{ route('scholars.ontheSpotVolunteer') }}">
+        @csrf
+
+        <div class="modal-body">
+
+          <label class="form-label">Office</label>
+          <select name="office" class="form-select" required>
+            <option value="">Choose office</option>
+            @foreach($offices as $office)
+              <option value="{{ $office['name'] }}">{{ $office['name'] }}</option>
+            @endforeach
+          </select>
+
+          <label class="mt-3 form-label">Reason</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reasons[]" value="Vacant Schedule">
+            <label class="form-check-label">Vacant Schedule</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reasons[]" value="Lack of Volunteer Hours">
+            <label class="form-check-label">Lack of Volunteer Hours</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reasons[]" value="Desire to be Productive">
+            <label class="form-check-label">Desire to be Productive</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="otherReasonCheck">
+            <label class="form-check-label">Others..</label>
+          </div>
+
+          <input type="text" class="mt-2 form-control" placeholder="Please Specify" name="other_reason" id="otherReasonInput" disabled>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary w-100">Submit</button>
+        </div>
+      </form>
+
+    </div>
   </div>
 </div>
 
 <script>
+
+
+
+
+
+
 const opportunities = @json($opportunities);
 const scholarId = "{{ session('scholar_accounts.student_no') }}";
 const scholarName = "{{ session('scholar_accounts.first_name') }} {{ session('scholar_accounts.last_name') }}";
 const csrfToken = "{{ csrf_token() }}";
 
+
+
+let currentSelectedId = null;
 // ---------- SHOW DETAILS ----------
 function showDetail(id) {
+  currentSelectedId = id; // ✅ store selected opportunity
   const op = opportunities.find(o => o.opportunity_id === id);
   if (!op) return;
 
@@ -161,93 +243,97 @@ function showDetail(id) {
 
   // Handle schedule for regular and intermittent opportunities
   let scheduleContent = '';
-  const isIntermittent = op.is_intermittent === true;
+const isIntermittent = op.is_intermittent == 1 || op.intermittent == 1;
 
-  if (isIntermittent) {
-    // Multiple Dates for Intermittent Schedule
-    scheduleContent = op.schedule.map(schedule => {
-      const date = schedule.date ? new Date(schedule.date) : 'TBD';
+if (isIntermittent) {
+  scheduleContent = `
+    <strong>Schedule:</strong><br>
+    ${op.schedule.map(schedule => {
+      const date = schedule.date ? formatDatePretty(schedule.date) : 'TBD';
       const startTime = schedule.start_time ? formatTime(schedule.start_time) : 'TBD';
       const endTime = schedule.end_time ? formatTime(schedule.end_time) : 'TBD';
-      
+
       return `
-        <div>
-          <strong>${date.toLocaleDateString()}</strong>: ${startTime} – ${endTime}
+        <div style="margin-left: 4px;">
+          ${date}: ${startTime} – ${endTime}
         </div>
       `;
-    }).join('');
-  } else {
-    // Regular Schedule (single date)
-    const schedule = op.schedule[0] ?? null;
-    const date = schedule?.date ?? schedule?.start_date ?? op.start_date ?? 'TBD';
-    const startTime = schedule?.start_time ? formatTime(schedule.start_time) : 'TBD';
-    const endTime = schedule?.end_time ? formatTime(schedule.end_time) : 'TBD';
+    }).join('')}
+  `;
+} else {
+  const s = op.schedule?.[0] ?? null;
 
-    scheduleContent = `
-      <div>
-        <strong>${new Date(date).toLocaleDateString()}</strong>: ${startTime} – ${endTime}
-      </div>
-    `;
+  scheduleContent = `
+    <strong>Date:</strong> ${s?.date ? formatDatePretty(s.date) : "N/A"}<br>
+    <strong>Time:</strong> ${
+      s && s.start_time && s.end_time
+        ? `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`
+        : "N/A"
+    } <br>
+  `;
+}
+
+document.getElementById('opportunityDetail').innerHTML = `
+  <h4><strong>${op.title}</strong></h4>
+  <p><strong>Location:</strong> ${op.location}</p>
+  <p><strong>Submitted by:</strong> ${(op.submitted_by_role === "SDA Assistant") ? "SDA Office" : (op.submitted_by_role ?? "Unknown")}</p>
+
+<small>${scheduleContent}</small>
+
+  ${
+    alreadyJoined
+      ? `<br><button class="px-4 btn btn-secondary" disabled>Joined</button>`
+      : isFull
+        ? `<button class="px-4 btn btn-dark" disabled>Full</button>`
+        : `<button class="px-4 btn btn-primary" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
   }
 
-  document.getElementById('opportunityDetail').innerHTML = `
-    <h4>${op.title}</h4>
-    <p><strong>Location:</strong> ${op.location}</p>
-    <p><strong>Submitted by:</strong> ${op.submitted_by_role ?? 'Unknown'}</p>
-    <p><strong>Date:</strong> ${op.start_date}</p>
-    <p><strong>Time:</strong> ${scheduleContent}</p>
-
-    ${
-      alreadyJoined
-        ? `<button class="btn btn-secondary" disabled id="joinBtn">Joined</button>`
-        : isFull
-          ? `<button class="btn btn-secondary" disabled id="joinBtn">Full</button>`
-          : `<button class="btn btn-primary" id="joinBtn" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
-    }
-
-    <div class="gap-4 mt-3 d-flex">
-      <div style="flex:2">
-        <h5>Task details</h5>
-        <ul>${op.task_details.split("\n").map(t => `<li>${t}</li>`).join('')}</ul>
-      </div>
-      <div style="flex:1">
-        <h5>Current Volunteers (<span id="volCountNumber">${acceptedVolunteers.length}</span>/<span id="volCountTarget">${target ?? '?'}</span>)</h5>
-        <ol id="volList">
-          ${
-            acceptedVolunteers.length > 0
-              ? acceptedVolunteers.map(p => `<li>${p.name}</li>`).join('')
-              : '<li><em>No accepted volunteers yet.</em></li>'
-          }
-        </ol>
-        <h5>Skills needed</h5>
-        <ul>${skills.map(s => `<li>${s.trim()}</li>`).join('')}</ul>
-      </div>
+  <div class="gap-4 mt-3 d-flex">
+    <div style="flex:2">
+      <h5>Task details</h5>
+      <ul>${op.task_details.split("\n").map(t => `<li>${t}</li>`).join('')}</ul>
     </div>
-  `;
+    <div style="flex:1">
+      <h5>Current Volunteers (${acceptedVolunteers.length}/${target ?? '?'})</h5>
+      <ol>
+        ${acceptedVolunteers.length ? acceptedVolunteers.map(p => `<li>${p.name}</li>`).join('') : '<li><em>No volunteers yet.</em></li>'}
+      </ol>
+      <h5>Skills needed</h5>
+      <ul>${skills.map(s => `<li>${s.trim()}</li>`).join('')}</ul>
+    </div>
+  </div>
+`;
+
 
   document.querySelectorAll('.opportunity-card').forEach(c => c.classList.remove('selected'));
   const card = document.querySelector(`.opportunity-card[data-id="${id}"]`);
   if (card) card.classList.add('selected');
 }
 
-// Helper function to format time without timezone
 function formatTime(time) {
-  const [hours, minutes] = time.split(':');
-  let period = 'AM';
-  let hour = parseInt(hours);
-
-  if (hour >= 12) {
-    period = 'PM';
-    if (hour > 12) hour -= 12; // convert to 12-hour format
-  }
-
-  return `${hour}:${minutes} ${period}`;
+  if (!time) return "N/A";
+  const [hour, minute] = time.split(":").map(Number);
+  const period = hour >= 12 ? "PM" : "AM";
+  const adjusted = hour % 12 || 12;
+  return `${adjusted}:${minute.toString().padStart(2, "0")} ${period}`;
 }
+
+function formatDatePretty(dateString) {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
 
 // ---------- JOIN OPPORTUNITY ----------
 async function joinOpportunity(id) {
   const btn = document.getElementById("joinBtn");
   btn.disabled = true;
+  
   btn.innerText = "Joining...";
 
   try {
@@ -273,7 +359,197 @@ async function joinOpportunity(id) {
     alert('Error joining opportunity.');
   }
 }
+
+document.getElementById("otherReasonCheck").addEventListener("change", function () {
+  document.getElementById("otherReasonInput").disabled = !this.checked;
+});
+
+
+const oppList = document.getElementById("opportunityList");
+const filterSearch = document.getElementById("filter-search");
+const filterOffice = document.getElementById("filter-office");
+const filterStatus = document.getElementById("filter-status");
+const sortBy = document.getElementById("sort-by");
+
+// === Apply Filters & Re-render List ===
+function applyFilters() {
+  let filtered = [...opportunities];
+
+  // ✅ ALWAYS place urgent opportunities first (default behavior)
+  filtered.sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
+
+  // Search Filter
+  const searchVal = filterSearch.value.toLowerCase();
+  if (searchVal) {
+    filtered = filtered.filter(op =>
+      op.title.toLowerCase().includes(searchVal) ||
+      (op.location ?? "").toLowerCase().includes(searchVal)
+    );
+
+
+    renderOpportunities(filtered);
+clearDetailPanel();
+
+
+  }
+
+  // Office Filter
+const officeVal = filterOffice.value;
+if (officeVal) {
+  filtered = filtered.filter(op => {
+    let submittedOffice = op.submitted_by_role ?? "Unknown";
+
+    // Convert "SDA Assistant" to UI office label "SDA Office"
+    if (submittedOffice === "SDA Assistant") {
+      submittedOffice = "SDA Office";
+    }
+
+    return submittedOffice === officeVal;
+  });
+}
+
+  // Status Filter
+  const statusVal = filterStatus.value;
+  if (statusVal) {
+    filtered = filtered.filter(op => (op.is_urgent === "yes" ? "Urgent" : "Open") === statusVal);
+  }
+
+  // Sorting Behavior
+  switch (sortBy.value) {
+    case "recent":
+      filtered.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+      break;
+
+    case "upcoming":
+      filtered.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+      break;
+
+    case "urgent":
+      // ✅ Force urgent to top again if user selects it specifically
+      filtered.sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
+      break;
+  }
+
+  // Re-render
+  renderOpportunities(filtered);
+
+  if (currentSelectedId && !filtered.some(op => op.opportunity_id === currentSelectedId)) {
+  clearDetailPanel();
+}
+
+}
+
+function clearDetailPanel() {
+  currentSelectedId = null;
+
+  document.getElementById('opportunityDetail').innerHTML = `
+    <h4>
+      <span style="font-weight: normal; margin-right: 6px;">←</span>
+      <strong>Select an opportunity</strong>
+    </h4>
+    <p class="detail-placeholder">Display details here</p>
+  `;
+
+  document.querySelectorAll('.opportunity-card').forEach(c => c.classList.remove('selected'));
+}
+
+function getStatusBadge(status) {
+  switch ((status || "").toLowerCase()) {
+    case "approved":
+      return `<span class="status-card approved">Approved</span>`;
+    case "waiting":
+      return `<span class="status-card waiting">Waiting</span>`;
+    case "returned":
+      return `<span class="status-card returned">Returned</span>`;
+    case "completed":
+      return `<span class="status-card volunteers">Completed</span>`;
+    default:
+      return `<span class="status-card waiting">Pending</span>`;
+  }
+}
+
+function renderOpportunities(list) {
+  list.sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
+
+  document.getElementById("oppCount").textContent = list.length;
+
+  if (!list.length) {
+    oppList.innerHTML = `<p class="mt-3">No opportunities found.</p>`;
+    return;
+  }
+
+  oppList.innerHTML = list.map(op => {
+
+let scheduleContent = "";
+const isIntermittent = op.is_intermittent == 1 || op.intermittent == 1;
+
+if (isIntermittent) {
+  scheduleContent = `
+    <strong>Schedule:</strong><br>
+    ${op.schedule.map(s => `
+      <div class="schedule-block">
+        ${formatDatePretty(s.date)}:
+        ${s.start_time && s.end_time ? `${formatTime(s.start_time)} – ${formatTime(s.end_time)}` : `N/A`}
+      </div>
+    `).join('')}
+  `;
+} else {
+  const s = op.schedule?.[0] ?? null;
+  scheduleContent = `
+    <strong>Date:</strong> ${s?.date ? formatDatePretty(s.date) : "N/A"}<br>
+    <strong>Time:</strong> ${
+      s && s.start_time && s.end_time
+        ? `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`
+        : "N/A"
+    } <br>
+  `;
+}
+
+    const taskList = (op.task_details || "").split("\n").map(t => `<li>${t}</li>`).join('');
+    const count = (op.participants ?? []).length;
+    const target = op.schedule?.[0]?.target_number ?? "?";
+    const submittedOffice = (op.submitted_by_role === "SDA Assistant") ? "SDA Office" : (op.submitted_by_role ?? "Unknown");
+
+    return `
+      <div class="card opportunity-card" data-id="${op.opportunity_id}" onclick="showDetail('${op.opportunity_id}')">
+        <div class="card-body">
+
+          ${op.is_urgent === "yes" ? `<span class="badge-urgent">Urgent</span>` : ``}
+
+          <h5 class="card-title">${op.title}</h5>
+          <p class="mb-1">Office: ${submittedOffice}</p>
+          <p class="mb-1">Location: ${op.location}</p>
+
+<small>${scheduleContent}</small>
+
+          <ul class="mt-2 mb-0">${taskList}</ul>
+
+          <div class="mt-2 text-end">
+            <small class="participant-count">${count}/${target}</small>
+          </div>
+
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+
+// === Event Listeners ===
+filterSearch.addEventListener("input", applyFilters);
+filterOffice.addEventListener("change", applyFilters);
+filterStatus.addEventListener("change", applyFilters);
+sortBy.addEventListener("change", applyFilters);
+
+
+
+
+
+
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 </body>
 </html>

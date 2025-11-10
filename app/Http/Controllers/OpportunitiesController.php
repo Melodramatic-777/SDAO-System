@@ -41,19 +41,22 @@ public function inviteScholar(Request $request)
     $selectedScholar = null;
     $selectedKeys = [];
 
-    if ($scholars) {
-        foreach ($scholars as $yearKey => $yearGroup) {
-            foreach ($yearGroup as $typeKey => $typeGroup) {
-                foreach ($typeGroup as $scholarKey => $scholar) {
+if ($scholars) {
+    foreach ($scholars as $yearKey => $terms) {
+        foreach ($terms as $termKey => $scholarshipTypes) {
+            foreach ($scholarshipTypes as $typeKey => $students) {
+                foreach ($students as $scholarKey => $scholar) {
                     if (($scholar['student_no'] ?? '') === $scholarId) {
                         $selectedScholar = $scholar;
-                        $selectedKeys = [$yearKey, $typeKey, $scholarKey];
-                        break 3;
+                        $selectedKeys = [$yearKey, $termKey, $typeKey, $scholarKey];
+                        break 4;
                     }
                 }
             }
         }
     }
+}
+
 
     if (!$selectedScholar) {
         return back()->with('error', 'Scholar not found.');
@@ -106,10 +109,11 @@ public function inviteScholar(Request $request)
         $ref->update(['participants' => $participants]);
 
         // ✅ Save invited info under scholar record
-        [$yearKey, $typeKey, $scholarKey] = $selectedKeys;
-        $this->database
-            ->getReference("scholars/{$yearKey}/{$typeKey}/{$scholarKey}/invited")
-            ->set($opportunityId);
+[$yearKey, $termKey, $typeKey, $scholarKey] = $selectedKeys;
+
+$this->database
+    ->getReference("scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}/invited")
+    ->set($opportunityId);
 
         return back()->with('success', 'Scholar invited successfully!');
     } catch (\Exception $e) {
@@ -762,21 +766,21 @@ public function cancelOpportunity($id)
             if (!$scholarId) continue;
 
             // Loop through scholars to find match
-            foreach ($scholars as $yearKey => $yearGroup) {
-                foreach ($yearGroup as $typeKey => $typeGroup) {
-                    foreach ($typeGroup as $scholarKey => $scholar) {
-                        if (($scholar['student_no'] ?? '') === $scholarId) {
-                            // Remove invited field if matches this opportunity
-                            $invited = $scholar['invited'] ?? null;
-                            if ($invited === $id) {
-                                $this->database->getReference("scholars/{$yearKey}/{$typeKey}/{$scholarKey}/invited")->remove();
-                            }
-                        }
+foreach ($scholars as $yearKey => $terms) {
+    foreach ($terms as $termKey => $types) {
+        foreach ($types as $typeKey => $students) {
+            foreach ($students as $scholarKey => $scholar) {
+                if (($scholar['student_no'] ?? '') === $scholarId) {
+                    if (($scholar['invited'] ?? null) === $id) {
+                        $this->database->getReference("scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}/invited")->remove();
                     }
                 }
             }
         }
     }
+}
+
+
 
     // ✅ Delete from opportunities table
     $ref->remove();
@@ -784,7 +788,8 @@ public function cancelOpportunity($id)
     return back()->with('success', 'Opportunity successfully canceled and moved to canceled records.');
 }
 
-
+}
+}
 
 public function history()
 {
@@ -855,6 +860,45 @@ public function historyOffice()
     return view('volunteers-offices.history-office', [
         'opportunities' => $opportunities
     ]);
+}
+
+
+public function onTheSpotVolunteer(Request $request)
+{
+    // Validate form input
+    $request->validate([
+        'office' => 'required|string',
+        'reasons' => 'array',
+        'other_reason' => 'nullable|string'
+    ]);
+
+    // Collect checkbox reasons
+    $reasonList = $request->reasons ?? [];
+
+    // If "Others" was specified, append it
+    if ($request->other_reason) {
+        $reasonList[] = $request->other_reason;
+    }
+
+    // Build record data
+    $data = [
+        'student_no'   => session('scholar_accounts.student_no'),
+        'student_name' => session('scholar_accounts.first_name') . ' ' . session('scholar_accounts.last_name'),
+        'office'       => $request->office,
+        'reasons'      => $reasonList,
+        'status'       => 'Pending', // default status for offices to review
+        'timestamp'    => now()->toDateTimeString()
+    ];
+
+    // Save to Firebase
+    $ref = $this->database->getReference('on_the_spot_volunteers')->push($data);
+
+    // If push failed
+    if (!$ref) {
+        return back()->with('error', 'Failed to submit request. Please try again.');
+    }
+
+    return back()->with('success', 'Your On-The-Spot volunteer request has been submitted.');
 }
 
 

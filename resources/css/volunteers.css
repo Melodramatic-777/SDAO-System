@@ -1,6 +1,41 @@
-/* === Global Reset === */
+.badge-urgent {
+  background: #fdecea;
+  color: #c0392b;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block; /* keep inline-block */
+  margin-bottom: 14px; /* more spacing before the title */
+}
 
+.detail-placeholder {
+  margin-left: 40px; /* aligns text with the title, not the arrow */
+  color: #6c757d;
+}
 
+.opp-count-label h5 {
+  font-size: 0.90rem; /* smaller text */
+  font-weight: 600;
+  margin: 0;
+  color: #4a4a4a;
+}
+
+.badge-full {
+  background-color: #7f8c8d !important;
+  color: white !important;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.modal {
+    z-index: 2000 !important;
+}
+
+.modal-backdrop {
+    z-index: 1990 !important;
+}
 /* === Page Container for Responsive Side Margins === */
 .page-container {
   padding: 0 20px;      /* small margin by default */

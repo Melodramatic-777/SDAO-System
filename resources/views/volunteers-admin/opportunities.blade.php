@@ -148,7 +148,7 @@
       <div class="action-buttons">
         <a href="{{ route('volunteers-admin.create-opportunity') }}" class="action-card">
           <div class="card-icon">📝</div>
-          <h3>Request Volunteer Form</h3>
+          <h3>Submit a Volunteer Opportunity</h3>
           <p>Propose a new volunteer activity for approval.</p>
         </a>
 

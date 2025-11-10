@@ -19,6 +19,8 @@ Route::prefix('scholars')->name('scholars.')->group(function () {
     Route::post('/invites/respond/{id}', [OpportunitiesController::class, 'respondToInvite'])->name('invites.respond');
 
 
+Route::post('/on-the-spot-volunteer', [OpportunitiesController::class, 'onTheSpotVolunteer'])
+    ->name('ontheSpotVolunteer');
 
 
     Route::get('/profile', fn() => view('scholars.profile'))->name('profile');
