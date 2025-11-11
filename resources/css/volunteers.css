@@ -296,10 +296,6 @@ table {
     margin-top: 1rem;
 }
 
-table, th, td {
-    border: 1px solid #003DA5;
-}
-
 th {
     background-color: #FFD100; /* NU Yellow */
     color: black;
@@ -417,8 +413,8 @@ td {
 .pagination {
     display: flex;
     justify-content: right;
-    margin: 1.5rem 0;
     gap: 0.25rem;
+    margin-left: 1.5rem;
 }
 
 .pagination li {

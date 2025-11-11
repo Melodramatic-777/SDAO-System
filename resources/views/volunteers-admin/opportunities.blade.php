@@ -107,7 +107,49 @@
     gap: 14px;
   }
 
+
+
+
+
+.status-filter {
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  gap: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 12px; /* <-- Added spacing */
+
+}
+
+.status-tab {
+  padding-bottom: 4px;
+  transition: 0.25s ease;
+}
+
+/* Light Mode (Default) */
+@media (prefers-color-scheme: light) {
+  .status-tab {
+    color: #6c6c6c;
+  }
+  .status-tab.active {
+    color: #000;
+    border-bottom: 2px solid #0056b3; /* NU Yellow Accent */
+  }
+  .status-tab:hover {
+    color: #000;
+  }
+}
   
+
+.status-tab .badge {
+  font-size: 0.75rem;
+  vertical-align: text-top;
+  padding: 3px 7px;
+  border-radius: 8px;
+}
+
+
   </style>
 </head>
 
@@ -160,9 +202,10 @@
       </div>
 
       @php
-        $approved = collect($opportunities ?? [])->where('status', 'Approved')->count();
-        $returned = collect($opportunities ?? [])->where('status', 'Returned')->count();
-        $waiting = collect($opportunities ?? [])->whereNotIn('status', ['Approved', 'Returned'])->count();
+$approved = collect($opportunities ?? [])->where('status', 'Approved')->count();
+$returned = collect($opportunities ?? [])->whereIn('status', ['Returned', 'Returned to SDAO'])->count();
+$waiting = collect($opportunities ?? [])->whereNotIn('status', ['Approved', 'Returned', 'Returned to SDAO'])->count();
+
         $total = collect($opportunities ?? [])->count();
 $urgent = collect($opportunities ?? [])->filter(function($op) {
     $isUrgent = !empty($op['is_urgent']) && ($op['is_urgent'] === true || $op['is_urgent'] === 'yes');
@@ -189,10 +232,49 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
         <div class="status-card returned">Returned <span>{{ $returned }}</span></div>
         <div class="status-card urgent">Urgent <span>{{ $urgent }}</span></div>
       </div>
-    </div>
+        </div>
 
-    <section class="status-section">
-      <h2 class="mb-3">Status</h2>
+<section class="status-section">
+  
+
+
+@php
+    $allCount = collect($allOpportunities)->count();
+
+    $waitingApprovalCount = collect($allOpportunities)->filter(function ($op) {
+        $status = strtolower($op['status'] ?? '');
+        return in_array($status, ['pending', 'waiting', 'waiting for approval', 'returned to sdao']);
+    })->count();
+
+    $waitingVolunteersCount = collect($allOpportunities)->filter(function ($op) {
+        $status = strtolower($op['status'] ?? '');
+        $participants = count($op['participants'] ?? []);
+        $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
+        return $status === 'approved' && $participants < $target;
+    })->count();
+
+    $returnedCount = collect($allOpportunities)->filter(function ($op) {
+        return in_array(strtolower($op['status'] ?? ''), ['returned', 'returned to sdao']);
+    })->count();
+@endphp
+
+<div class="gap-4 mb-4 status-filter d-flex">
+    <span class="status-tab active" id="filterAll">
+        All <span class="badge bg-secondary ms-1" id="countAll">{{ $allCount }}</span>
+    </span>
+
+    <span class="status-tab" id="filterWaitingApproval">
+        Waiting for Approval <span class="badge bg-warning text-dark ms-1" id="countWaitingApproval">{{ $waitingApprovalCount }}</span>
+    </span>
+
+    <span class="status-tab" id="filterWaitingVolunteers">
+        Waiting for Volunteers <span class="badge bg-primary ms-1" id="countWaitingVolunteers">{{ $waitingVolunteersCount }}</span>
+    </span>
+
+    <span class="status-tab" id="filterReturned">
+        Returned <span class="badge bg-danger ms-1" id="countReturned">{{ $returnedCount }}</span>
+    </span>
+</div>
 
       @if(empty($opportunities))
         <p>No submitted activities yet</p>
@@ -203,55 +285,104 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
       $participantsCount = count($opportunity['participants'] ?? []);
       $targetNumber = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
 
-      if (!in_array($status, ['approved', 'returned'])) return true;
+      // ✅ Always include Returned
+if (in_array($status, ['returned', 'returned to sdao'])) return true;
+
+      // ✅ Include Waiting / Pending opportunities
+      if(in_array($status, ['pending', 'waiting', 'waiting for approval'])) return true;
+
+      // ✅ Include Approved but not full
       if ($status === 'approved' && $participantsCount < $targetNumber) return true;
+
+      // ❌ Otherwise exclude (approved and full)
       return false;
   });
 
-  // ✅ Sort: Urgent and Waiting for Approval on top
-  $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunity) {
-      $isUrgent = !empty($opportunity['is_urgent']) &&
-                  ($opportunity['is_urgent'] === true || $opportunity['is_urgent'] === 'yes');
-      $status = strtolower($opportunity['status'] ?? '');
+  // Sort urgent + waiting first
+$filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunity) {
 
-      $isWaiting = in_array($status, ['waiting for approval', 'waiting', 'pending']);
+    $status = strtolower($opportunity['status'] ?? '');
+    $participants = count($opportunity['participants'] ?? []);
+    $target = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
+    $isUrgent = !empty($opportunity['is_urgent']) &&
+                ($opportunity['is_urgent'] === true || $opportunity['is_urgent'] === 'yes');
 
-      // Prioritize: Urgent (2) → Waiting (1) → Others (0)
-      return ($isUrgent ? 2 : ($isWaiting ? 1 : 0));
-  });
+    // 1️⃣ Waiting for Approval first
+    if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) {
+        return 4;
+    }
+
+    // 2️⃣ Urgent next (regardless of status)
+    if ($isUrgent) {
+        return 3;
+    }
+
+    // 3️⃣ Approved but NOT full = Waiting for Volunteers
+    if ($status === 'approved' && $participants < $target) {
+        return 2;
+    }
+
+    // 4️⃣ Returned / Returned to SDAO
+    if (in_array($status, ['returned', 'returned to sdao'])) {
+        return 1;
+    }
+
+    // 5️⃣ Everything else
+    return 0;
+});
+
+
 @endphp
 
         @if($filteredOpportunities->isEmpty())
           <p>No opportunities waiting for approval or volunteers.</p>
         @else
-          @foreach($filteredOpportunities as $opportunity)
+        <div id="opportunitiesContainer">
+
+@foreach($opportunities as $opportunity)
             @php
               $status = strtolower($opportunity['status'] ?? 'waiting');
-              switch($status) {
-                  case 'approved':
-                      $badgeClass = 'badge bg-success';
-                      break;
-                  case 'returned':
-                      $badgeClass = 'badge bg-danger';
-                      break;
-                  default:
-                      $badgeClass = 'badge bg-warning text-dark';
-                      $status = 'Waiting for Approval';
-              }
+   switch($status) {
+    case 'approved':
+        $badgeClass = 'badge bg-success';
+        break;
+
+    case 'returned':
+    case 'returned to sdao':
+        $badgeClass = 'badge bg-danger';
+        $status = 'Returned';
+        break;
+
+    default:
+        $badgeClass = 'badge bg-warning text-dark';
+        $status = 'Waiting for Approval';
+}
 
               $participantsCount = count($opportunity['participants'] ?? []);
               $targetNumber = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
             @endphp
 
-            <div class="p-3 mb-3 border rounded status-card-container">
-              <div class="d-flex justify-content-between align-items-center">
+<div class="p-3 mb-3 border rounded status-card-container"
+     data-status="{{ strtolower($opportunity['status'] ?? '') }}"
+     data-participants="{{ count($opportunity['participants'] ?? []) }}"
+     data-target="{{ (int) ($opportunity['schedule'][0]['target_number'] ?? 0) }}">
+                  <div class="d-flex justify-content-between align-items-center">
                 <strong>{{ $opportunity['title'] ?? 'No Title' }}</strong>
                 <div>
-                  @if(strtolower($opportunity['status']) === 'approved' && $participantsCount < $targetNumber)
-                    <span class="badge bg-primary">Waiting for Volunteers</span>
-                  @else
-                    <span class="{{ $badgeClass }}">{{ ucfirst($status) }}</span>
-                  @endif
+@if(strtolower($opportunity['status']) === 'approved' && $participantsCount < $targetNumber)
+
+    <span class="badge bg-primary">Waiting for Volunteers</span>
+
+@elseif(strtolower($opportunity['status']) === 'returned to sdao')
+
+    <span class="badge bg-danger">Returned</span>
+    <span class="badge bg-warning text-dark">Waiting for Approval</span>
+
+@else
+
+    <span class="{{ $badgeClass }}">{{ ucfirst($status) }}</span>
+
+@endif
 
                   @if(!empty($opportunity['is_urgent']) && ($opportunity['is_urgent'] === true || $opportunity['is_urgent'] === 'yes'))
                     <span class="badge bg-danger ms-2">Urgent</span>
@@ -262,16 +393,15 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
               <div>
                 <p class="mb-1">{{ $opportunity['location'] ?? 'No Location' }}</p>
                 <small>Submitted by: {{ $opportunity['submitted_by_name'] }} ({{ $opportunity['submitted_by_role'] }})</small><br>
-                <small>Date Submitted: {{ isset($opportunity['submitted_at']) ? date('d/m/Y', strtotime($opportunity['submitted_at'])) : 'N/A' }}</small>
-
-@if(
-  in_array(strtolower($opportunity['status']), ['pending', 'waiting', 'waiting for approval']) ||
-  (strtolower($opportunity['status']) === 'approved' && $participantsCount < $targetNumber)
-)
-  <button class="view-details-btn float-end" data-bs-toggle="modal" data-bs-target="#opportunityModal{{ $opportunity['opportunity_id'] }}">
-    View Details
-  </button>
-@endif
+<small>Date Submitted:
+    {{ isset($opportunity['submitted_at'])
+        ? \Carbon\Carbon::parse($opportunity['submitted_at'])->format('F j, Y')
+        : 'N/A'
+    }}
+</small>
+<button class="view-details-btn float-end" data-bs-toggle="modal" data-bs-target="#opportunityModal{{ $opportunity['opportunity_id'] }}">
+  View Details
+</button>
 
               </div>
             </div>
@@ -294,8 +424,6 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
           <p><strong>Office:</strong> {{ $opportunity['submitted_by_role'] ?? 'N/A' }}</p>
           <p><strong>Submitted By:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
           <p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
-
-<h6>Schedule</h6>
 
 @php
   $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
@@ -357,35 +485,69 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
     @endif
   </p>
 
-  <p><strong>Volunteers Needed:</strong> {{ $target }}</p>
+  @endif
+
+
+
+
+          @if(!empty($opportunity['return_comment']) && strtolower($opportunity['status']) === 'returned')
+            <div class="mt-2 alert alert-danger">
+              <strong>Return Comment:</strong><br>{{ $opportunity['return_comment'] }}
+            </div>
+          @endif
+
+  
+        </div>
+
+        {{-- 🔹 RIGHT PANEL --}}
+        <div class="col-md-6 right-panel">
+
+@if(!empty($opportunity['participants']) || !empty($opportunity['schedule']))
+
+    @php
+        // ✅ Count only NON-declined participants
+        $participantsCount = collect($opportunity['participants'] ?? [])
+            ->filter(fn($p) => strtolower($p['status'] ?? '') !== 'declined')
+            ->count();
+
+        // ✅ Determine volunteers needed correctly for BOTH intermittent and regular schedules
+        $schedule = collect($opportunity['schedule'] ?? []);
+
+        if ($schedule->isNotEmpty() && isset($schedule[0]['target_number'])) {
+            // Intermittent or structured schedule → Sum all
+            $targetNumber = $schedule->sum('target_number');
+        } else {
+            // Regular schedule → Use main target number
+            $targetNumber = $opportunity['target_number'] ?? 0;
+        }
+    @endphp
+
+    <p class="mt-2">
+        <strong>Total Volunteers:</strong>
+        <span class="volunteer-count">{{ $participantsCount }} / {{ $targetNumber }}</span>
+    </p>
+
+    <ul class="volunteers-list">
+        @foreach($opportunity['participants'] ?? [] as $participant)
+            @php
+                $displayStatus = strtolower($participant['status'] ?? '') === 'declined'
+                    ? 'Invite Declined'
+                    : ($participant['status'] ?? 'Pending');
+            @endphp
+
+            <li>
+                {{ $participant['name'] ?? 'Unnamed' }} -
+                <span class="text-muted">{{ $displayStatus }}</span>
+            </li>
+        @endforeach
+    </ul>
+
 @endif
 
 
 
 
-          @if(!empty($opportunity['decline_comment']) && strtolower($opportunity['status']) === 'returned')
-            <div class="mt-2 alert alert-danger">
-              <strong>Return Comment:</strong><br>{{ $opportunity['decline_comment'] }}
-            </div>
-          @endif
-
-          @if(!empty($opportunity['participants']))
-            <h6>Volunteers</h6>
-            <ul class="volunteers-list">
-              @foreach($opportunity['participants'] as $participant)
-                <li>{{ $participant['name'] ?? 'Unnamed' }} - <span class="text-muted">{{ $participant['status'] ?? 'Pending' }}</span></li>
-              @endforeach
-            </ul>
-            @php
-              $participantsCount = count($opportunity['participants']);
-              $targetNumber = collect($opportunity['schedule'])->sum('target_number');
-            @endphp
-            <p class="mt-2"><strong>Total Volunteers:</strong> <span class="volunteer-count">{{ $participantsCount }} / {{ $targetNumber }}</span></p>
-          @endif
-        </div>
-
-        {{-- 🔹 RIGHT PANEL --}}
-        <div class="col-md-6 right-panel">
+           
           <h6>Tasks</h6>
           <ul>
             @if(!empty($opportunity['task_details']))
@@ -419,29 +581,41 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
           @if($userRole === 'SDA Assistant' && ($opportunity['submitted_by'] ?? '') === $userEmail)
 <form method="POST" action="{{ route('volunteers-admin.opportunities.cancel', $opportunity['opportunity_id']) }}">
               @csrf
-              <button type="submit" class="btn btn-danger">Cancel Opportunity</button>
-            </form>
+    <button type="submit" class="btn btn-danger"
+        onclick="return confirm('Are you sure you want to cancel this opportunity? This will remove invitations and move the record to canceled opportunities.')">
+        Cancel Opportunity
+    </button>            </form>
           @else
             <div class="p-0 border-0 modal-footer">
-              @if(strtolower($opportunity['status'] ?? '') === 'pending')
-                <form method="POST" action="{{ route('volunteers-admin.opportunity.update-status', $opportunity['opportunity_id']) }}" class="d-inline">
-                  @csrf @method('PATCH')
-                  <input type="hidden" name="status" value="Approved">
-                  <button type="submit" class="btn btn-success">Approve</button>
-                </form>
-                <button type="button" class="btn btn-danger ms-2" data-bs-toggle="collapse" data-bs-target="#declineReason{{ $opportunity['opportunity_id'] }}">Decline</button>
-              @endif
+@if(in_array(strtolower($opportunity['status'] ?? ''), ['pending', 'waiting for approval', 'returned to sdao']))
+    {{-- Approve --}}
+    <form method="POST" action="{{ route('volunteers-admin.opportunity.update-status', $opportunity['opportunity_id']) }}" class="d-inline">
+      @csrf @method('PATCH')
+      <input type="hidden" name="status" value="Approved">
+      <button type="submit" class="btn btn-success">Approve</button>
+    </form>
+
+    {{-- Return --}}
+    <button type="button" class="btn btn-danger ms-2" data-bs-toggle="collapse"
+      data-bs-target="#returnReason{{ $opportunity['opportunity_id'] }}">
+      Return
+    </button>
+
+@elseif(strtolower($opportunity['status'] ?? '') === 'approved')
+    <span class="text-success fw-bold">This opportunity is already approved.</span>
+@endif
+    
             </div>
 
-            <div class="collapse" id="declineReason{{ $opportunity['opportunity_id'] }}">
+            <div class="collapse" id="returnReason{{ $opportunity['opportunity_id'] }}">
               <form method="POST" action="{{ route('volunteers-admin.opportunity.update-status', $opportunity['opportunity_id']) }}" class="mt-3">
                 @csrf @method('PATCH')
                 <input type="hidden" name="status" value="Returned">
                 <div class="mb-2">
-                  <label class="form-label">Reason for Decline</label>
+                  <label class="form-label">Reason for Return</label>
                   <textarea name="comment" class="form-control" rows="2" required></textarea>
                 </div>
-                <button type="submit" class="btn btn-danger">Submit Decline</button>
+                <button type="submit" class="btn btn-danger">Submit</button>
               </form>
             </div>
           @endif
@@ -452,11 +626,64 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
 </div>
 
           @endforeach
+          </div>
+
+          <div class="mt-4 d-flex justify-content-center">
+{{ $pagination->links('pagination::bootstrap-5') }}
+</div>
+
       @endif
   @endif
 </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+const cards = document.querySelectorAll('.status-card-container');
+
+function setActive(tab) {
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+}
+
+document.getElementById('filterAll').addEventListener('click', () => {
+    setActive(filterAll);
+    cards.forEach(card => card.style.display = "block");
+});
+
+document.getElementById('filterWaitingApproval').addEventListener('click', () => {
+    setActive(filterWaitingApproval);
+    cards.forEach(card => {
+        const status = card.dataset.status;
+        card.style.display =
+            ['pending', 'waiting', 'waiting for approval', 'returned to sdao'].includes(status)
+            ? "block" : "none";
+    });
+});
+
+document.getElementById('filterWaitingVolunteers').addEventListener('click', () => {
+    setActive(filterWaitingVolunteers);
+    cards.forEach(card => {
+        const status = card.dataset.status;
+        const participants = parseInt(card.dataset.participants);
+        const target = parseInt(card.dataset.target);
+        card.style.display = (status === 'approved' && participants < target)
+            ? "block" : "none";
+    });
+});
+
+document.getElementById('filterReturned').addEventListener('click', () => {
+    setActive(filterReturned);
+    cards.forEach(card => {
+        const status = card.dataset.status;
+        card.style.display = ['returned', 'returned to sdao'].includes(status)
+            ? "block" : "none";
+    });
+});
+
+
+
+  </script>
 </body>
 </html>

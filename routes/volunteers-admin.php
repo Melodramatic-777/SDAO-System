@@ -4,7 +4,7 @@ use App\Http\Controllers\AccountsScholarsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountsVolunteersController;
 use App\Http\Controllers\OpportunitiesController;
-use App\Http\Controllers\StudentVolunteersController;
+use App\Http\Controllers\OpportunitiesDisplayController;
 
 
 Route::prefix('volunteers-admin')->group(function () {
@@ -14,7 +14,7 @@ Route::prefix('volunteers-admin')->group(function () {
         ->name('volunteers-admin.dashboard');
 
     // 🗓️ Opportunities page
-    Route::get('/opportunities', [OpportunitiesController::class, 'opportunities'])
+    Route::get('/opportunities', [OpportunitiesDisplayController::class, 'opportunities'])
         ->name('volunteers-admin.opportunities');
 
     // 🏆 Leaderboard

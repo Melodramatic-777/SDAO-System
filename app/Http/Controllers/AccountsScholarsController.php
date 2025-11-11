@@ -359,6 +359,53 @@ public function viewStudentProfile($student_no)
 }
 
 
+public function scholarProfile()
+{
+
+$student_no = session('scholar_accounts.student_no');
+
+    if (!$student_no) {
+        abort(403, 'Not logged in.');
+    }
+
+    $scholarsData = $this->database->getReference('scholars')->getValue();
+
+    $foundStudent = null;
+
+    foreach ($scholarsData as $academicYear => $terms) {
+        foreach ($terms as $term => $types) {
+            foreach ($types as $scholarshipType => $students) {
+                foreach ($students as $record) {
+                    if (($record['student_no'] ?? null) == $student_no) {
+                        $foundStudent = $record;
+                        $foundStudent['academic_year'] = $academicYear;
+                        $foundStudent['term'] = $term;
+                        $foundStudent['scholarship_type'] = $scholarshipType;
+                        break 4;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!$foundStudent) {
+        abort(404, 'Scholar profile not found.');
+    }
+
+    // Add temporary volunteer fields like the admin version
+    $foundStudent['hours_completed'] = $record['volunteer_hours'] ?? 0;
+    $foundStudent['activities'] = 0;
+    $foundStudent['hours_month'] = 0;
+    $foundStudent['remaining_hours'] = max(0, 10 - ($record['volunteer_hours'] ?? 0));
+
+    $offices = $this->database->getReference('offices')->getValue() ?? [];
+
+    return view('scholars.profile', [
+        'studentData' => $foundStudent,
+        'offices' => $offices
+
+    ]);
+}
 
 
 }

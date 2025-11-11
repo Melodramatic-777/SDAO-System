@@ -62,6 +62,8 @@
       color: #0056b3;
     }
 
+    
+
     .btn-success {
       background-color: #28a745;
       border-color: #28a745;
@@ -105,19 +107,58 @@
     }
 
     /* Modal layout - three columns for the modal content */
-    .modal-body .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
+.modal-dialog.modal-xxl {
+  max-width: 95% !important;
+}
 
-    .modal-body .row > .col-md-4 {
-      flex: 1 1 30%;
-    }
+.modal-body .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
 
-    .modal-body .row > .col-md-12 {
-      flex: 1 1 100%;
-    }
+.modal-body .row > .col-md-4 {
+  flex: 1 1 30%;
+}
+
+.modal-body .row > .col-md-12 {
+  flex: 1 1 100%;
+}
+
+.custom-wide-modal {
+  margin: 0;                     /* Remove auto margins */
+  max-width: 100% !important;    /* Ignore Bootstrap max width */
+  width: 100% !important;        /* Take full width */
+}
+
+/* Ensure the modal content touches left/right edges cleanly */
+.custom-wide-modal .modal-content {
+  width: 100%;
+  border-radius: 8px;
+  padding: 2rem;                /* Adjust interior spacing */
+}
+
+
+.modal-close-x {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 32px;
+  font-weight: 300;
+  color: #555;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 999;
+  transition: 0.2s ease;
+}
+
+.modal-close-x:hover {
+  color: #000;
+  transform: scale(1.15);
+}
+
   </style>
 </head>
 
@@ -152,7 +193,13 @@
     </nav>
   </header>
 
-<main class="page-container">
+<main class="p-4 container-fluid">
+
+  <a href="{{ route('volunteers-admin.history') }}" class="text-decoration-none">
+    ← Back to History
+  </a>
+
+  
   <h2 class="mb-4 text-center">{{ $office }} Opportunities</h2>
 
   <div class="row g-4">
@@ -175,8 +222,10 @@
 
       {{-- ✅ Modal for each opportunity --}}
       <div class="modal fade" id="opportunityModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+<div class="modal-dialog modal-dialog-centered custom-wide-modal">
           <div class="modal-content" style="border-radius: 8px; padding: 1.5rem;">
+<button type="button" class="modal-close-x" data-bs-dismiss="modal">×</button>
+
 
 
             <div class="modal-body">
@@ -312,9 +361,8 @@
       @endforelse
   </div>
 
-  <div class="mt-4 text-center">
-    <a href="{{ route('volunteers-admin.history') }}" class="btn btn-secondary">Back</a>
-  </div>
+
+</div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

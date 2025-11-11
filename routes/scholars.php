@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OpportunitiesController;
+use App\Http\Controllers\AccountsScholarsController;
+
 
 Route::prefix('scholars')->name('scholars.')->group(function () {
     // Scholar dashboard and pages
@@ -23,5 +25,7 @@ Route::post('/on-the-spot-volunteer', [OpportunitiesController::class, 'onTheSpo
     ->name('ontheSpotVolunteer');
 
 
-    Route::get('/profile', fn() => view('scholars.profile'))->name('profile');
+Route::get('/profile', [AccountsScholarsController::class, 'scholarProfile'])
+    ->name('profile');
+
 });

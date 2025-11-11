@@ -530,8 +530,8 @@ public function updateStatus(Request $request, $id)
     ];
 
     if ($validated['status'] === 'Returned' && !empty($validated['comment'])) {
-        $data['decline_comment'] = $validated['comment'];
-        $data['declined_at'] = now()->toDateTimeString();
+        $data['return_comment'] = $validated['comment'];
+        $data['returned_at'] = now()->toDateTimeString();
     }
 
     $reference->update($data);
@@ -902,5 +902,33 @@ public function onTheSpotVolunteer(Request $request)
 }
 
 
+
+public function edit($id)
+{
+    $opportunity = $this->database->getReference('opportunities/' . $id)->getValue();
+
+    return view('volunteers-offices.update-opportunity', [
+        'mode' => 'edit',
+        'opportunity' => $opportunity
+    ]);
 }
 
+public function update(Request $request, $id)
+{
+    date_default_timezone_set('Asia/Manila'); // Set PH timezone
+
+    $data = $request->all();
+    $data['status'] = 'Returned to SDAO'; // keep your required status update
+
+    // ✅ Add/Edit timestamp fields
+    $data['date_edited'] = date('Y-m-d');
+    $data['time_edited'] = date('H:i:s');
+
+    $this->database->getReference('opportunities/' . $id)->update($data);
+
+    return redirect()->route('volunteers-offices.home')->with('success', 'Opportunity updated and resubmitted.');
+}
+
+
+
+}
