@@ -11,7 +11,6 @@
   @vite('resources/css/volunteers.css')
 
   <style>
-  body { font-family: 'Inter', sans-serif; background: #f9f6f3; }
   #scholarsTable { transition: opacity 0.3s ease-in-out; max-width: 900px; margin: 0 auto; }
 
   .table-title-row th {
@@ -81,7 +80,7 @@
   </nav>
 </header>
 
-<div class="mt-4 row align-items-center">
+<div class="mx-5 mt-4 row align-items-center">
 
 {{-- LEFT STUDENT INFO --}}
 <div class="col-md-4">
@@ -124,64 +123,6 @@
 </div>
 
 
-{{-- MID - PIE + PROGRESS --}}
-<div class="text-center col-md-4">
-
-    @php
-        $hasHours = ($studentData['hours_completed'] ?? 0) > 0;
-    @endphp
-
-    {{-- Row container for 2 charts side-by-side --}}
-    <div class="gap-3 d-flex justify-content-center align-items-center">
-
-        {{-- PIE CHART OR NO DATA --}}
-        @if(!$hasHours)
-            <div class="d-flex justify-content-center align-items-center" style="width:200px; height:200px; border:1px dashed #ccc; border-radius:8px;">
-                <span class="text-muted" style="font-size: 1rem;">No data yet</span>
-            </div>
-        @else
-            <div>
-                <canvas id="pieChart" width="200" height="200"></canvas>
-                <small class="mt-1 d-block">Office Volunteer Hours</small>
-            </div>
-        @endif
-
-        {{-- PROGRESS DOUGHNUT --}}
-        <div style="width:200px; height:200px; position:relative;">
-            <canvas id="progressChart"></canvas>
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:1.7rem; font-weight:bold; color:#004aad;">
-                {{ $hasHours ? floor(($studentData['hours_completed'] / 10) * 100) : 0 }}%
-            </div>
-        </div>
-
-    </div>
-</div>
-
-
-{{-- RIGHT STAT CARDS --}}
-<div class="col-md-4">
-    <div class="status-cards">
-        <div class="status-card completed">
-            <h6>Hours Completed</h6>
-            <h3>{{ $studentData['hours_completed'] ?? 0 }}</h3>
-        </div>
-
-        <div class="status-card participated">
-            <h6>Activities Participated</h6>
-            <h3>{{ $studentData['activities'] ?? 0 }}</h3>
-        </div>
-
-        <div class="status-card month">
-            <h6>Hours This Month</h6>
-            <h3>{{ $studentData['hours_month'] ?? 0 }}</h3>
-        </div>
-
-        <div class="status-card remaining">
-            <h6>Remaining Hours</h6>
-            <h3>{{ $studentData['remaining_hours'] ?? 0 }}</h3>
-        </div>
-    </div>
-</div>
 
 </div>
 

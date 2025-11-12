@@ -44,19 +44,23 @@
     <!-- Left Section -->
     <div class="dashboard-left">
         <!-- Top Row -->
-        <div class="cards">
-            <div class="card">
-                <div class="card-title">Total Scholars</div>
-                <div class="card-value">{{ $total }}</div>
+<div class="cards">
+    <!-- Total Scholars Card -->
+    <div class="card">
+        <div class="card-title">Total Scholars</div>
+        <div class="card-value">{{ $total }}</div>
+    </div>
+
+    <!-- Scholarship Type Cards -->
+    @foreach($byScholarship as $type => $count)
+        <div class="card">
+            <div class="card-title">{{ strtoupper($type) }}</div>
+            <div class="card-subtitle text-muted" style="font-size: 0.9rem; margin-top: 0.3rem;">
             </div>
-            @foreach($byScholarship as $type => $count)
-                <div class="card">
-                    <div class="card-title">{{ strtoupper($type) }}</div>
-                    <div class="card-value">{{ $count }}</div>
-                </div>
-            @endforeach
-  
+            <div class="card-value" style="font-size: 2rem; margin-top: 0.5rem;">{{ $count }}</div>
         </div>
+    @endforeach
+</div>
 
         <!-- Chart + Extra Cards -->
         <div class="chart-row">

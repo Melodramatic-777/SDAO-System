@@ -18,38 +18,43 @@ class ScholarsDashboardController extends Controller
         $this->database = $factory->createDatabase();
     }
 
-   public function dashboard()
-    {
-        $ref = $this->database->getReference('scholars');
-        $scholars = $ref->getValue();
+public function dashboard()
+{
+    $ref = $this->database->getReference('scholars');
+    $scholars = $ref->getValue();
 
-        $total = 0;
-        $probationary = 0;
-        $byScholarship = [];
+    $total = 0;
+    $probationary = 0;
+    $byScholarship = [];
 
-        if ($scholars) {
-            foreach ($scholars as $academicYear => $types) {
+    if ($scholars) {
+        foreach ($scholars as $academicYear => $terms) {
+            foreach ($terms as $term => $types) {
                 foreach ($types as $scholarshipType => $students) {
                     foreach ($students as $studentId => $studentData) {
                         $total++;
 
-                        // Count per scholarship type (ex: BLUE, WHITE, etc.)
+                        // ✅ Count per scholarship type
                         if (!isset($byScholarship[$scholarshipType])) {
                             $byScholarship[$scholarshipType] = 0;
                         }
                         $byScholarship[$scholarshipType]++;
 
-                        // Count probationary
-                        if (isset($studentData['gwa_records'][$academicYear]['status']) &&
-                            strtolower($studentData['gwa_records'][$academicYear]['status']) === 'probationary') {
+                        // ✅ Count probationary
+                        if (
+                            isset($studentData['gwa_records'][$academicYear]['status']) &&
+                            strtolower($studentData['gwa_records'][$academicYear]['status']) === 'probationary'
+                        ) {
                             $probationary++;
                         }
                     }
                 }
             }
         }
-
-        return view('scholars-admin.dashboard', compact('total', 'probationary', 'byScholarship'));
     }
+
+    return view('scholars-admin.dashboard', compact('total', 'probationary', 'byScholarship'));
+}
+
 }
 

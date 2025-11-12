@@ -164,5 +164,54 @@ public function scholarOpportunities()
     ]);
 }
 
+public function joinedOpportunities()
+{
+    $scholar = session('scholar_accounts');
+    if (!$scholar) {
+        return redirect()->route('login')->with('error', 'Please log in first.');
+    }
+
+    $scholarId = $scholar['student_no'] ?? null;
+    if (!$scholarId) {
+        return redirect()->route('login');
+    }
+
+    // 🔹 Fetch all opportunities
+    $opportunities = $this->database->getReference('opportunities')->getValue() ?? [];
+
+    // 🔹 Filter only those the scholar joined
+    $joined = [];
+    foreach ($opportunities as $key => $opportunity) {
+        $participants = $opportunity['participants'] ?? [];
+        if (!is_array($participants)) continue;
+
+        foreach ($participants as $participant) {
+            if (($participant['scholar_id'] ?? '') === $scholarId) {
+                $opportunity['id'] = $key;
+                $joined[$key] = $opportunity;
+                break;
+            }
+        }
+    }
+
+    // 🔹 Paginate (5 per page)
+    $perPage = 5;
+    $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+    $items = collect($joined);
+    $pagedItems = $items->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+    $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
+        $pagedItems,
+        $items->count(),
+        $perPage,
+        $currentPage,
+        ['path' => request()->url(), 'query' => request()->query()]
+    );
+
+    return view('scholars.dashboard', [
+        'joinedOpportunities' => $pagedItems,
+        'pagination' => $pagination,
+    ]);
+}
 
 }

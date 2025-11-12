@@ -29,15 +29,15 @@ Route::prefix('scholars-admin')->group(function () {
         ->name('scholars-admin.import-scholars');
 
     // ✅ Scholars GWA Records
-    Route::get('/scholars', [ScholarRecordsController::class, 'index'])
+    Route::get('/scholars', [ScholarshipTypesController::class, 'indexRecord'])
         ->name('scholars-admin.scholars');
-    Route::post('/scholars/gwa', [ScholarRecordsController::class, 'store'])
+    Route::post('/scholars/gwa', [ScholarshipTypesController::class, 'store'])
         ->name('scholars-admin.gwa.store');
-    Route::put('/scholars/gwa/{id}', [ScholarRecordsController::class, 'update'])
+    Route::put('/scholars/gwa/{id}', [ScholarshipTypesController::class, 'update'])
         ->name('scholars-admin.gwa.update');
-    Route::delete('/scholars/gwa/{id}', [ScholarRecordsController::class, 'destroy'])
+    Route::delete('/scholars/gwa/{id}', [ScholarshipTypesController::class, 'destroy'])
         ->name('scholars-admin.gwa.destroy');
-Route::post('/save-all-gwa', [ScholarRecordsController::class, 'saveAllGwa'])
+Route::post('/save-all-gwa', [ScholarshipTypesController::class, 'saveAllGwa'])
     ->name('scholars-admin.saveAllGwa');
 
 

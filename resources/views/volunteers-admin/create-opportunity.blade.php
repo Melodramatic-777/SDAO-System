@@ -331,16 +331,10 @@ document.addEventListener("input", function(e) {
     if (e.target.matches('input[type="number"][min="1"]')) {
         let value = parseInt(e.target.value);
 
+        // ✅ Only enforce minimum of 1
         if (isNaN(value) || value < 1) {
             alert('Volunteers needed must be at least 1.');
             e.target.value = 1;
-            return;
-        }
-
-        // 🟩 New rule: must be an even number
-        if (value % 2 !== 0) {
-            alert('Volunteers needed must be an even number.');
-            e.target.value = value + 1; // auto-fix to next even number
         }
     }
 });

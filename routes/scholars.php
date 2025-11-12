@@ -9,7 +9,13 @@ use App\Http\Controllers\ScholarJoinController;
 
 Route::prefix('scholars')->name('scholars.')->group(function () {
     // Scholar dashboard and pages
-    Route::get('/dashboard', fn() => view('scholars.dashboard'))->name('dashboard');
+
+
+
+Route::get('/dashboard', [ScholarJoinController::class, 'joinedOpportunities'])
+    ->name('dashboard');
+
+
 
     Route::get('/volunteer-opportunities', [ScholarJoinController::class, 'scholarOpportunities'])
         ->name('volunteer-opportunities');

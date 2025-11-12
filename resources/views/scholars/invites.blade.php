@@ -105,8 +105,6 @@
 </header>
 
 <div class="container mt-4 text-center">
-  <h3 class="mb-4">Volunteer Invites</h3>
-
   @if (session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
   @elseif (session('error'))

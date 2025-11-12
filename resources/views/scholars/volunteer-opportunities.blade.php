@@ -44,7 +44,10 @@
 <div class="flex-wrap p-3 mb-3 bg-white border rounded shadow-sm filter-bar d-flex align-items-center justify-content-between">
   <div class="flex-wrap gap-2 d-flex align-items-center">
 <input type="text" id="filter-search" class="form-control search-input" placeholder="Search opportunities..." style="width: 220px;">
-    <select class="form-select" id="filter-office" style="width: 220px;">
+    
+
+
+<select class="form-select" id="filter-office" style="width: 220px;">
       <option value="">All Offices</option>
 <option value="SDA Office">SDA Office</option>
       @foreach($offices as $office)
@@ -145,7 +148,7 @@
         </div>
       </div>
     @empty
-      <p>No approved opportunities available.</p>
+      <p>No opportunities available.</p>
     @endforelse
   </div>
 
@@ -405,7 +408,7 @@ ${
                   );
                   const volunteerNames = joined.length
                     ? joined.map(j => j.name).join(", ")
-                    : "<em>No volunteers yet</em>";
+                    : "<em>No volunteers listed yet.</em>";
                   return `
                     <tr>
                       <td>${date}</td>
@@ -423,7 +426,7 @@ ${
             ${
               acceptedVolunteers.length
                 ? acceptedVolunteers.map(p => `<li>${p.name}</li>`).join("")
-                : "<li><em>No volunteers yet.</em></li>"
+                : "<li><em>No volunteers listed yet.</em></li>"
             }
           </ol>
         `

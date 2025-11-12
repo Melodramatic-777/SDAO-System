@@ -69,11 +69,10 @@
       text-align: center;
     }
 
-    .custom-wide-modal {
-      margin: 0;
-      max-width: 100% !important;
-      width: 100% !important;
-    }
+.custom-wide-modal {
+  max-width: 90% !important;   /* slightly narrower */
+  width: auto !important;
+}
 
     .custom-wide-modal .modal-content {
       width: 100%;
@@ -81,6 +80,10 @@
       padding: 2rem;
     }
 
+
+    .modal.show .modal-dialog {
+  margin: 2rem auto !important; /* add margin on left/right */
+}
     .modal-close-x {
       position: absolute;
       top: 12px;

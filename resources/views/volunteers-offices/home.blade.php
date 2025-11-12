@@ -216,31 +216,35 @@ $urgent = $all->filter(function($op) use ($normalize) {
     if (!$isUrgent) return false;
 
     $status = $normalize($op['status'] ?? '');
-    $participants = is_array($op['participants'] ?? []) ? count($op['participants']) : 0;
 
-    // compute target from schedule (sum of target_number if available), fallback to direct target_number
-    $target = 0;
-    if (!empty($op['schedule']) && is_array($op['schedule'])) {
-        // if schedule entries exist, sum their target_number if present
-        foreach ($op['schedule'] as $s) {
-            $target += isset($s['target_number']) ? (int) $s['target_number'] : 0;
-        }
-    } else {
-        $target = (int) ($op['target_number'] ?? 0);
+    // ✅ safely handle participants count
+    $participants = 0;
+    if (isset($op['participants']) && is_array($op['participants'])) {
+        $participants = count($op['participants']);
     }
 
-    // 1) waiting for approval (pending-like statuses)
+    // ✅ safely compute target
+    $target = 0;
+    if (!empty($op['schedule']) && is_array($op['schedule'])) {
+        foreach ($op['schedule'] as $s) {
+            $target += isset($s['target_number']) ? (int)$s['target_number'] : 0;
+        }
+    } else {
+        $target = (int)($op['target_number'] ?? 0);
+    }
+
+    // ✅ logic
     if (in_array($status, ['pending','waiting','waiting for approval','returned to sdao'])) {
         return true;
     }
 
-    // 2) approved but not yet full
     if ($status === 'approved' && $target > 0 && $participants < $target) {
         return true;
     }
 
     return false;
 })->count();
+
 @endphp
 
       <div class="status-cards">
@@ -264,11 +268,11 @@ $urgent = $all->filter(function($op) use ($normalize) {
         ]);
     })->count();
 
-    $waitingVolunteersCount = $allOpportunities->filter(function ($op) {
-        $participants = count($op['participants'] ?? []);
-        $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
-        return strtolower($op['status'] ?? '') === 'approved' && $participants < $target;
-    })->count();
+$waitingVolunteersCount = $allOpportunities->filter(function ($op) {
+    $participants = is_array($op['participants'] ?? null) ? count($op['participants']) : 0;
+    $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
+    return strtolower($op['status'] ?? '') === 'approved' && $participants < $target;
+})->count();
 
     $returnedCount = $allOpportunities->filter(function ($op) {
         return in_array(strtolower($op['status'] ?? ''), ['returned', 'returned to sdao']);
@@ -312,7 +316,7 @@ $urgent = $all->filter(function($op) use ($normalize) {
 
 <div class="p-3 mb-3 border rounded status-card-container"
      data-status="{{ strtolower($opportunity['status'] ?? '') }}"
-     data-participants="{{ count($opportunity['participants'] ?? []) }}"
+data-participants="{{ is_array($opportunity['participants'] ?? null) ? count($opportunity['participants']) : 0 }}"
      data-target="{{ (int) ($opportunity['schedule'][0]['target_number'] ?? 0) }}">
  <div class="d-flex justify-content-between align-items-center">
         <strong>{{ $opportunity['title'] ?? 'No Title' }}</strong>
@@ -456,9 +460,12 @@ $urgent = $all->filter(function($op) use ($normalize) {
 
     @php
         // ✅ Count only NON-declined participants
-        $participantsCount = collect($opportunity['participants'] ?? [])
-            ->filter(fn($p) => strtolower($p['status'] ?? '') !== 'declined')
-            ->count();
+$participantsCount = is_array($opportunity['participants'] ?? null)
+    ? collect($opportunity['participants'])
+        ->filter(fn($p) => strtolower($p['status'] ?? '') !== 'declined')
+        
+        ->count()
+    : 0;
 
         // ✅ Volunteers Needed (works for intermittent + regular)
         $schedule = collect($opportunity['schedule'] ?? []);

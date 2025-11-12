@@ -554,6 +554,32 @@ td {
 }
 
 /* Colors */
+
+.status-card.hoursCompleted {
+  background: #e6f1ff;
+  color: #2563eb;
+}
+
+.status-card.activitiesParticipated {
+  background: #e9f7ef;
+  color: #1e8449;
+}
+
+.status-card.hoursMonth {
+  background: #f5e3f4;
+  color: #8d3fac;
+}
+
+.status-card.remainingHours {
+  background: #fff9e6;
+  color: #d4ac0d;
+}
+
+
+
+
+
+
 .status-card.approved {
   background: #e9f7ef;
   color: #1e8449;

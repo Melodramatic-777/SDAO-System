@@ -5,9 +5,13 @@
 </head>
 <meta charset="UTF-8">
 <title>Home - NU Fairview SDAO</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
-@vite('resources/css/admin-activities.css')
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  @vite('resources/css/volunteers.css')
 
 <style>
 table {
@@ -80,6 +84,11 @@ table tbody tr:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+table thead tr:first-child {
+  background-color: #003DA5 !important;
+  color: white !important;
+}
+
   </style>
 <body>
 
@@ -111,94 +120,94 @@ table tbody tr:hover {
 </header>
 
 <!-- ✅ Scholars Section -->
-<div id="Scholars" class="px-5 py-4 container-fluid">
-<br>
-<br>
 
-  <!-- Button -->
-<div class="flex-wrap mb-3 d-flex justify-content-between align-items-center">
-    <!-- Import Button -->
-    <button class="btn btn-primary import-btn"
-      onclick="document.getElementById('importScholarsModal').style.display='block'">
-      Import Scholars CSV
+<!-- ✅ FILTER BAR -->
+<form method="GET" 
+      class="flex-wrap gap-2 p-3 mb-3 bg-white border rounded shadow-sm filter-bar d-flex align-items-center justify-content-between">
+
+  <!-- Left: Filter Dropdowns -->
+  <div class="flex-wrap gap-2 d-flex align-items-center">
+    <select name="academic_year" class="form-select" style="width: 180px;">
+      <option value="">All Academic Years</option>
+      @foreach($academicYears as $year)
+        <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+          {{ $year }}
+        </option>
+      @endforeach
+    </select>
+
+    <select name="term" class="form-select" style="width: 150px;">
+      <option value="">All Terms</option>
+      @foreach($terms as $term)
+        <option value="{{ $term }}" {{ request('term') == $term ? 'selected' : '' }}>
+          {{ $term }} Term
+        </option>
+      @endforeach
+    </select>
+
+    <select name="scholarship_type" class="form-select" style="width: 200px;">
+      <option value="">All Scholarship Types</option>
+      @foreach($scholarshipTypes as $type)
+        <option value="{{ $type }}" {{ request('scholarship_type') == $type ? 'selected' : '' }}>
+          {{ $type }}
+        </option>
+      @endforeach
+    </select>
+
+    <select name="program" class="form-select" style="width: 200px;">
+      <option value="">All Programs</option>
+      @foreach($programs as $program)
+        <option value="{{ $program }}" {{ request('program') == $program ? 'selected' : '' }}>
+          {{ $program }}
+        </option>
+      @endforeach
+    </select>
+
+    <select name="school" class="form-select" style="width: 200px;">
+      <option value="">All Schools</option>
+      @foreach($schools as $school)
+        <option value="{{ $school }}" {{ request('school') == $school ? 'selected' : '' }}>
+          {{ $school }}
+        </option>
+      @endforeach
+    </select>
+
+    <button type="submit" class="btn btn-primary ms-2">
+      <i class="bi bi-funnel me-1"></i> Apply
     </button>
 
-    <!-- Search Bar -->
-    <input type="text" id="searchScholars" placeholder="Search scholars..."
-      class="search-input">
-</div>
+    <button type="button" 
+            class="btn btn-secondary ms-2" 
+            onclick="window.location.href='{{ route('scholars-admin.scholars_accounts') }}'">
+      <i class="bi bi-arrow-clockwise me-1"></i> Reset
+    </button>
 
-  <br>
-  <br>
+      <input type="text" id="searchScholars" 
+         class="form-control search-input ms-auto" 
+         placeholder="Search scholars..." 
+         style="width: 260px;">
 
-<form method="GET" class="gap-3 mb-3 d-flex align-items-center" style="flex-wrap: wrap;">
-
-  <!-- Academic Year Filter -->
-  <select name="academic_year" class="form-select" style="width: 200px;">
-    <option value="">All Academic Years</option>
-    @foreach($academicYears as $year)
-      <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-        {{ $year }}
-      </option>
-    @endforeach
-  </select>
-
-  <!-- Term Filter -->
-  <select name="term" class="form-select" style="width: 200px;">
-    <option value="">All Terms</option>
-    @foreach($terms as $term)
-      <option value="{{ $term }}" {{ request('term') == $term ? 'selected' : '' }}>
-        {{ $term }} Term
-      </option>
-    @endforeach
-  </select>
-
-  <!-- Scholarship Type Filter -->
-  <select name="scholarship_type" class="form-select" style="width: 200px;">
-    <option value="">All Scholarship Types</option>
-    @foreach($scholarshipTypes as $type)
-      <option value="{{ $type }}" {{ request('scholarship_type') == $type ? 'selected' : '' }}>
-        {{ $type }}
-      </option>
-    @endforeach
-  </select>
-
-  <!-- Program Filter -->
-  <select name="program" class="form-select" style="width: 200px;">
-    <option value="">All Programs</option>
-    @foreach($programs as $program)
-      <option value="{{ $program }}" {{ request('program') == $program ? 'selected' : '' }}>
-        {{ $program }}
-      </option>
-    @endforeach
-  </select>
-
-  <!-- School Filter -->
-  <select name="school" class="form-select" style="width: 200px;">
-    <option value="">All Schools</option>
-    @foreach($schools as $school)
-      <option value="{{ $school }}" {{ request('school') == $school ? 'selected' : '' }}>
-        {{ $school }}
-      </option>
-    @endforeach
-  </select>
-
-  <button type="submit" class="btn btn-primary">Apply</button>
-
-  <a href="{{ route('scholars-admin.scholars_accounts') }}" class="btn btn-secondary">Reset</a>
+             <button class="btn btn-primary ms-2" 
+          onclick="document.getElementById('importScholarsModal').style.display='block'">
+    <i class="bi bi-file-earmark-arrow-up me-1"></i> Import New Scholars CSV
+  </button>
+  </div>
 
 </form>
 
-
-<h3 class="mb-3 fw-bold">
-  Scholars A.Y. {{ request('academic_year') ?? $latestYear }} — {{ request('term') ?? $latestTerm }} Term
-</h3>
+<div id="Scholars" class="px-5 py-4 container-fluid">
 
   <!-- Scholars Table -->
   <div class="rounded shadow-sm table-responsive">
-    <table id="tableScholars" class="table align-middle table-hover">
-      <thead class="table-dark">
-        <tr>
+    <table id="tableScholars">
+<thead>
+      <tr class="table-title-row">
+        <th colspan="10" class="py-3 text-center fw-bold fs-5">
+          Scholars A.Y. {{ request('academic_year') ?? $latestYear }} — {{ request('term') ?? $latestTerm }} Term
+        </th>
+      </tr>
+          <tr>
+          <th>#</th>
           <th>Student No.</th>
           <th>Email</th>
           <th>Full Name</th>
@@ -211,39 +220,40 @@ table tbody tr:hover {
         </tr>
       </thead>
       <tbody>
-        @forelse ($scholars as $scholar)
-          @php
-            $year = $scholar['academic_year'] ?? null;
-            $status = $year && isset($scholar['gwa_records'][$year]['status'])
-                      ? $scholar['gwa_records'][$year]['status']
-                      : 'N/A';
-          @endphp
-          <tr>
-            <td>{{ $scholar['student_no'] }}</td>
-            <td>{{ $scholar['email'] ?? 'N/A' }}</td>
-            <td>{{ $scholar['last_name'] }}, {{ $scholar['first_name'] }} {{ $scholar['middle_name'] ?? '' }} {{ $scholar['suffix'] ?? '' }}</td>
-            <td>{{ $scholar['birthday'] ?? 'N/A' }}</td>
-            <td>{{ $scholar['school'] ?? 'N/A' }}</td>
-            <td>{{ $scholar['program'] ?? 'N/A' }}</td>
-            <td>{{ $scholar['scholarship_type'] ?? 'N/A' }}</td>
-            <td>
-              @if(strtolower($status) === 'eligible')
-                <span class="badge bg-success">Eligible</span>
-              @elseif(strtolower($status) === 'probationary')
-                <span class="badge bg-warning text-dark">Probationary</span>
-              @elseif(strtolower($status) === 'ineligible')
-                <span class="badge bg-danger">Revoked</span>
-              @else
-                <span class="badge bg-secondary">{{ $status }}</span>
-              @endif
-            </td>
-            <td>{{ $scholar['created_at'] ?? 'N/A' }}</td>
-          </tr>
-        @empty
-          <tr>
-            <td colspan="10" class="text-center text-muted">No Scholars found.</td>
-          </tr>
-        @endforelse
+       @forelse ($scholars as $index => $scholar)
+        @php
+          $year = $scholar['academic_year'] ?? null;
+          $status = $year && isset($scholar['gwa_records'][$year]['status'])
+                    ? $scholar['gwa_records'][$year]['status']
+                    : 'N/A';
+        @endphp
+        <tr>
+          <td>{{ $loop->iteration + ($scholars->currentPage() - 1) * $scholars->perPage() }}</td>
+          <td>{{ $scholar['student_no'] }}</td>
+          <td>{{ $scholar['email'] ?? 'N/A' }}</td>
+          <td>{{ $scholar['last_name'] }}, {{ $scholar['first_name'] }} {{ $scholar['middle_name'] ?? '' }} {{ $scholar['suffix'] ?? '' }}</td>
+          <td>{{ $scholar['birthday'] ?? 'N/A' }}</td>
+          <td>{{ $scholar['school'] ?? 'N/A' }}</td>
+          <td>{{ $scholar['program'] ?? 'N/A' }}</td>
+          <td>{{ $scholar['scholarship_type'] ?? 'N/A' }}</td>
+          <td>
+            @if(strtolower($status) === 'eligible')
+              <span class="badge bg-success">Eligible</span>
+            @elseif(strtolower($status) === 'probationary')
+              <span class="badge bg-warning text-dark">Probationary</span>
+            @elseif(strtolower($status) === 'ineligible' || strtolower($status) === 'revoked')
+              <span class="badge bg-danger">Revoked</span>
+            @else
+              <span class="badge bg-secondary">{{ $status }}</span>
+            @endif
+          </td>
+          <td>{{ $scholar['created_at'] ?? 'N/A' }}</td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="10" class="text-center text-muted">No Scholars found.</td>
+        </tr>
+      @endforelse
       </tbody>
     </table>
   </div>
@@ -257,7 +267,7 @@ table tbody tr:hover {
 <div id="importScholarsModal" class="modal">
   <div class="p-4 rounded shadow-lg modal-content">
     <div class="mb-3 modal-header d-flex justify-content-between align-items-center">
-      <h3 class="m-0">Import Scholars CSV</h3>
+      <h3 class="m-0">Import New Scholars CSV</h3>
       <span class="close fs-3" style="cursor:pointer"
         onclick="document.getElementById('importScholarsModal').style.display='none'">&times;</span>
     </div>
