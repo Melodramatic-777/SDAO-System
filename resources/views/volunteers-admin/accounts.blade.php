@@ -44,52 +44,56 @@
 <div id="AspiringScholars">
 <h2>Aspiring Scholars</h2><br><br>
 
-<div class="mb-3 d-flex justify-content-between">
-  <button class="btn btn-primary" id="manageBtn">Manage</button>
+<!-- ✅ Unified Top Action Row -->
+<div class="flex-wrap gap-3 mb-4 d-flex align-items-center justify-content-between">
 
-  <form method="POST" action="{{ route('volunteers-admin.archive-aspiring-scholar') }}" id="deleteForm" style="display:none;">
-    @csrf
-    <button type="submit" class="btn btn-danger">Delete Selected</button>
-  </form>
-</div>
-  <!-- Button to open modal -->
-  <button class="btn" onclick="document.getElementById('createAspiringScholarAccount').style.display='block'">
-    Create Aspiring Scholar Account
-  </button>
+  <!-- Left side: Manage + Delete -->
+  <div class="gap-2 d-flex align-items-center">
+    <button class="btn btn-primary" id="manageBtn">Manage</button>
 
-<form method="GET" class="gap-3 mb-3 d-flex align-items-center" style="flex-wrap: wrap;">
+    <form method="POST" action="{{ route('volunteers-admin.archive-aspiring-scholar') }}" id="deleteForm" class="d-inline" style="display: none;">
+      @csrf
+      <button type="submit" class="btn btn-danger">Delete Selected</button>
+    </form>
+  </div>
 
-  <!-- School Filter -->
-  <select name="school" class="form-select" style="width: 200px;">
-    <option value="">All Schools</option>
-    @foreach($schools as $schoolData)
-      <option value="{{ $schoolData['name'] }}" {{ request('school') == $schoolData['name'] ? 'selected' : '' }}>
-        {{ $schoolData['name'] }}
-      </option>
-    @endforeach
-  </select>
-
-  <!-- Program Filter -->
-  <select name="program" class="form-select" style="width: 200px;">
-    <option value="">All Programs</option>
-    @foreach($schools as $schoolData)
-      @foreach($schoolData['programs'] as $program)
-        <option value="{{ $program }}" {{ request('program') == $program ? 'selected' : '' }}>
-          {{ $program }}
+  <!-- Middle: Filters -->
+  <form method="GET" class="flex-wrap gap-2 mb-0 d-flex align-items-center justify-content-center">
+    <select name="school" class="form-select" style="width: 200px;">
+      <option value="">All Schools</option>
+      @foreach($schools as $schoolData)
+        <option value="{{ $schoolData['name'] }}" {{ request('school') == $schoolData['name'] ? 'selected' : '' }}>
+          {{ $schoolData['name'] }}
         </option>
       @endforeach
-    @endforeach
-  </select>
+    </select>
 
-  <button type="submit" class="btn btn-primary">Apply</button>
+    <select name="program" class="form-select" style="width: 200px;">
+      <option value="">All Programs</option>
+      @foreach($schools as $schoolData)
+        @foreach($schoolData['programs'] as $program)
+          <option value="{{ $program }}" {{ request('program') == $program ? 'selected' : '' }}>
+            {{ $program }}
+          </option>
+        @endforeach
+      @endforeach
+    </select>
 
-  <a href="{{ route('volunteers-admin.accounts') }}" class="btn btn-secondary">Reset</a>
+    <button type="submit" class="btn btn-primary">Apply</button>
+    <a href="{{ route('volunteers-admin.accounts') }}" class="btn btn-secondary">Reset</a>
+  </form>
 
-</form>
+  <!-- Right side: Create Account -->
+  <button class="btn btn-success" onclick="document.getElementById('createAspiringScholarAccount').style.display='block'">
+    + Create Aspiring Scholar Account
+  </button>
 
-  <table id="tableAspiring" class="table table-bordered table-striped">
-<thead>
-  <tr>
+</div>
+
+
+<table class="table mx-auto text-center align-middle table-bordered">
+  <thead>
+  <tr class="table-header-row">
     <th class="manage-col" style="display:none;">
       <input type="checkbox" id="selectAll">
       Select All
@@ -121,7 +125,7 @@
     <td>{{ $scholar['created_at'] }}</td>
   </tr>
 @empty
-  <tr><td colspan="9" class="text-center">No Aspiring Scholar accounts found.</td></tr>
+  <tr><td colspan="9" class="text-center">No Aspiring Scholar found.</td></tr>
 @endforelse
 </tbody>
   </table>
@@ -196,30 +200,40 @@ document.getElementById('schoolDropdown').addEventListener('change', function ()
 });
 
 
-const manageBtn = document.querySelector('#manageBtn');
-const deleteForm = document.querySelector('#deleteForm');
-const manageCols = document.querySelectorAll('.manage-col');
+ const manageBtn = document.querySelector('#manageBtn');
+  const deleteForm = document.querySelector('#deleteForm');
+  const manageCols = document.querySelectorAll('.manage-col');
+  const selectAll = document.querySelector('#selectAll');
+  let manageMode = false;
 
-let manageMode = false;
+  manageBtn.addEventListener('click', () => {
+    manageMode = !manageMode;
 
-manageBtn.addEventListener('click', () => {
-  manageMode = !manageMode;
+    // Toggle Manage columns visibility
+    manageCols.forEach(col => {
+      col.style.display = manageMode ? '' : 'none';
+    });
 
-  manageCols.forEach(col => {
-    col.style.display = manageMode ? '' : 'none';
+    // Toggle Delete Selected button
+    deleteForm.style.display = manageMode ? 'inline-block' : 'none';
+
+    // Toggle button label
+    manageBtn.textContent = manageMode ? 'Cancel' : 'Manage';
+
+    // Reset all checkboxes when exiting manage mode
+    if (!manageMode) {
+      selectAll.checked = false;
+      document.querySelectorAll('input[name="selected_accounts[]"]').forEach(cb => cb.checked = false);
+    }
   });
 
-  deleteForm.style.display = manageMode ? '' : 'none';
-  manageBtn.textContent = manageMode ? "Cancel" : "Manage";
-});
-
-// ✅ SELECT ALL CHECKBOX
-document.getElementById('selectAll').addEventListener('change', function() {
-  let checked = this.checked;
-  document.querySelectorAll('input[name="selected_accounts[]"]').forEach(cb => {
-    cb.checked = checked;
+  // ✅ SELECT ALL CHECKBOX FUNCTIONALITY
+  selectAll.addEventListener('change', function() {
+    const checked = this.checked;
+    document.querySelectorAll('input[name="selected_accounts[]"]').forEach(cb => {
+      cb.checked = checked;
+    });
   });
-});
 
 
 </script>

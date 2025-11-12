@@ -438,6 +438,7 @@ $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunit
           <th>Date</th>
           <th>Time</th>
           <th>Volunteers Needed</th>
+          <th>Food Provided</th> {{-- ✅ New column --}}
         </tr>
       </thead>
       <tbody>
@@ -452,14 +453,19 @@ $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunit
               @endif
             </td>
             <td>{{ $s['target_number'] ?? 'N/A' }}</td>
+            <td>
+              @php
+                $food = strtolower($s['food_provided'] ?? 'no');
+              @endphp
+              {{ $food === 'yes' ? 'Yes' : 'No' }}
+            </td>
           </tr>
         @empty
-          <tr><td colspan="3" class="text-center text-muted">No schedule details provided</td></tr>
+          <tr><td colspan="4" class="text-center text-muted">No schedule details provided</td></tr>
         @endforelse
       </tbody>
     </table>
   </div>
-
 @else
   {{-- 🔹 Simple details for non-intermittent --}}
   @php
@@ -521,11 +527,6 @@ $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunit
             $targetNumber = $opportunity['target_number'] ?? 0;
         }
     @endphp
-
-    <p class="mt-2">
-        <strong>Total Volunteers:</strong>
-        <span class="volunteer-count">{{ $participantsCount }} / {{ $targetNumber }}</span>
-    </p>
 
     <ul class="volunteers-list">
         @foreach($opportunity['participants'] ?? [] as $participant)

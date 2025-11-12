@@ -143,51 +143,55 @@
 
   <!-- Table -->
   <div id="scholarsTable" class="mt-3">
-    <table class="table mx-auto text-center align-middle table-bordered">
-      <thead>
-        <tr class="table-title-row">
-          <th colspan="4" class="text-center fs-5">    List of Student Volunteers A.Y. {{ $latestYear }} - {{ ucfirst($latestTerm) }} Term
-</th>
-        </tr>
-        <tr class="table-header-row">
-          <th>Scholarship Type</th>
-          <th>Name</th>
-          <th>Total Volunteer Hour</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($scholars as $scholar)
-        <tr>
-          <td>{{ $scholar['scholarship_type'] ?? 'N/A' }}</td>
-          <td>
-            {{ $scholar['last_name'] ?? '' }},
-            {{ $scholar['first_name'] ?? '' }}
-            {{ $scholar['middle_name'] ?? '' }}
-            {{ $scholar['suffix'] ?? '' }}
-          </td>
-          <td>{{ $scholar['volunteer_hours'] ?? 0 }}</td>
-          <td class="text-center">
-<button type="button" 
-        class="btn btn-primary inviteBtn"
-        data-id="{{ $scholar['student_no'] ?? '' }}"
-        data-name="{{ $scholar['first_name'] ?? '' }} {{ $scholar['last_name'] ?? '' }}"
-        data-scholarship="{{ $scholar['scholarship_type'] ?? 'N/A' }}"
-        data-hours="{{ $scholar['volunteer_hours'] ?? 0 }}"
-        data-bs-toggle="modal"
-        data-bs-target="#inviteModal">
-  Invite
-</button>
+<table class="table mx-auto text-center align-middle table-bordered">
+  <thead>
+    <tr class="table-title-row">
+      <th colspan="5" class="text-center fs-5">
+        List of Student Volunteers A.Y. {{ $latestYear }} - {{ ucfirst($latestTerm) }} Term
+      </th>
+    </tr>
+    <tr class="table-header-row">
+      <th>#</th>
+      <th>Scholarship Type</th>
+      <th>Name</th>
+      <th>Total Volunteer Hour</th>
+      <th>Action</th>
+    </tr>
+  </thead>
 
-          </td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="4" class="text-center text-muted">No volunteers found</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
+  <tbody>
+    @forelse($scholars as $index => $scholar)
+      <tr>
+        <td>{{ $index + 1 }}</td>
+        <td>{{ $scholar['scholarship_type'] ?? 'N/A' }}</td>
+        <td>
+          {{ $scholar['last_name'] ?? '' }},
+          {{ $scholar['first_name'] ?? '' }}
+          {{ $scholar['middle_name'] ?? '' }}
+          {{ $scholar['suffix'] ?? '' }}
+        </td>
+        <td>{{ $scholar['volunteer_hours'] ?? 0 }}</td>
+        <td class="text-center">
+          <button type="button" 
+                  class="btn btn-primary inviteBtn"
+                  data-id="{{ $scholar['student_no'] ?? '' }}"
+                  data-name="{{ $scholar['first_name'] ?? '' }} {{ $scholar['last_name'] ?? '' }}"
+                  data-scholarship="{{ $scholar['scholarship_type'] ?? 'N/A' }}"
+                  data-hours="{{ $scholar['volunteer_hours'] ?? 0 }}"
+                  data-bs-toggle="modal"
+                  data-bs-target="#inviteModal">
+            Invite
+          </button>
+        </td>
+      </tr>
+    @empty
+      <tr>
+        <td colspan="5" class="text-center text-muted">No volunteers found</td>
+      </tr>
+    @endforelse
+  </tbody>
+</table>
+
 
     @if($scholars instanceof \Illuminate\Pagination\LengthAwarePaginator)
       <div class="mt-2 d-flex justify-content-center align-items-center">

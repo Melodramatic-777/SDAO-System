@@ -371,8 +371,7 @@ $urgent = $all->filter(function($op) use ($normalize) {
 @endphp
 
 @if($isIntermittent)
-
-  {{-- 🔸 Intermittent Schedule Table --}}
+  {{-- 🔸 Table for intermittent opportunities --}}
   <div class="table-responsive">
     <table class="table align-middle table-sm table-bordered">
       <thead class="table-light">
@@ -380,6 +379,7 @@ $urgent = $all->filter(function($op) use ($normalize) {
           <th>Date</th>
           <th>Time</th>
           <th>Volunteers Needed</th>
+          <th>Food Provided</th> {{-- ✅ New column --}}
         </tr>
       </thead>
       <tbody>
@@ -394,41 +394,57 @@ $urgent = $all->filter(function($op) use ($normalize) {
               @endif
             </td>
             <td>{{ $s['target_number'] ?? 'N/A' }}</td>
+            <td>
+              @php
+                $food = strtolower($s['food_provided'] ?? 'no');
+              @endphp
+              {{ $food === 'yes' ? 'Yes' : 'No' }}
+            </td>
           </tr>
         @empty
-          <tr><td colspan="3" class="text-center text-muted">No schedule details provided</td></tr>
+          <tr><td colspan="4" class="text-center text-muted">No schedule details provided</td></tr>
         @endforelse
       </tbody>
     </table>
   </div>
-
 @else
 
   {{-- 🔹 Non-Intermittent Schedule Info --}}
-  @php
-    $firstSchedule = $opportunity['schedule'][0] ?? [];
-    $date = $firstSchedule['date']
-        ?? $firstSchedule['start_date']
-        ?? $opportunity['start_date']
-        ?? null;
-    $start = $firstSchedule['start_time'] ?? ($opportunity['start_time'] ?? null);
-    $end = $firstSchedule['end_time'] ?? ($opportunity['end_time'] ?? null);
+    @php
+    $s = $opportunity['schedule'][0] ?? [];
+    $date = $s['date'] ?? $opportunity['start_date'] ?? null;
+    $start = $s['start_time'] ?? $opportunity['start_time'] ?? null;
+    $end = $s['end_time'] ?? $opportunity['end_time'] ?? null;
   @endphp
 
-  <p><strong>Date:</strong>
-    {{ !empty($date) ? \Carbon\Carbon::parse($date)->format('F j, Y') : 'N/A' }}
-  </p>
-
-  <p><strong>Time:</strong>
-    @if(!empty($start) && !empty($end))
-      {{ \Carbon\Carbon::parse($start)->format('g:i A') }} – {{ \Carbon\Carbon::parse($end)->format('g:i A') }}
-    @else
-      N/A
-    @endif
-  </p>
-
+  <div class="table-responsive">
+    <table class="table text-center align-middle table-sm table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Volunteers Needed</th>
+          <th>Food Provided</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ !empty($date) ? \Carbon\Carbon::parse($date)->format('F j, Y') : 'N/A' }}</td>
+          <td>{{ !empty($start) ? \Carbon\Carbon::parse($start)->format('g:i A') : 'N/A' }}</td>
+          <td>{{ !empty($end) ? \Carbon\Carbon::parse($end)->format('g:i A') : 'N/A' }}</td>
+          <td>{{ $s['target_number'] ?? $opportunity['target_number'] ?? 'N/A' }}</td>
+          <td class="border-0">
+            @php
+              $food = strtolower($s['food_provided'] ?? $opportunity['food_provided'] ?? 'no');
+            @endphp
+{{ $food === 'yes' ? 'Yes' : 'No' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 @endif
-
 
         </div>
 
@@ -451,10 +467,6 @@ $urgent = $all->filter(function($op) use ($normalize) {
             : ($opportunity['target_number'] ?? 0);
     @endphp
 
-    <p class="mt-2">
-        <strong>Total Volunteers:</strong>
-        <span class="volunteer-count">{{ $participantsCount }} / {{ $targetNumber }}</span>
-    </p>
 
     <ul class="volunteers-list">
         @foreach($opportunity['participants'] ?? [] as $participant)

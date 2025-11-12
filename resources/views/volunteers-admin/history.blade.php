@@ -8,61 +8,76 @@
   <!-- Fonts & Libraries -->
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   @vite('resources/css/volunteers.css')
 
-    <style>
+  <style>
     body {
-            font-family: 'Inter', sans-serif;
-            background: #f9f6f3;
-        }
+      font-family: 'Inter', sans-serif;
+      background: #f9f6f3;
+    }
 
-        main.page-container {
-            padding: 3rem 2rem;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+    .folder-card {
+      display: flex;
+      align-items: center;
+      border-radius: 12px;
+      border: 1px solid #d8d3c3;
+      background-color: #fff;
+      padding: 1.5rem;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
 
+    .folder-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
-        .folder-card {
-            border-radius: 12px;
-            border: 1px solid ;
-            padding: 1.5rem;
-            transition: transform 0.2s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
+    .folder-icon {
+      font-size: 2.5rem;
+      color: #f6d629;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
 
+    .folder-info {
+      text-align: left;
+    }
 
-        .folder-icon {
-            font-size: 2rem;
-        }
+    .folder-title {
+      font-weight: 600;
+      color: #333;
+      font-size: 1.1rem;
+    }
 
-        .folder-title {
-            font-weight: 600;
-        }
+    .folder-count {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
 
-        .folder-count {
-            font-size: 0.9rem;
-        }
-    </style>
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+  </style>
 </head>
 
 <body>
   <header class="custom-header">
     <div class="header-left">
-      <div class="logo">
+      <div class="gap-2 logo d-flex align-items-center">
         <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
         <span>Student Developments and Activities Office - SDA Assistant</span>
       </div>
     </div>
 
-    <div class="header-right-group">
-      <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
+    <div class="gap-3 header-right-group d-flex align-items-center">
+      <p class="m-0">Welcome, {{ session('volunteers_admin.first_name') }}!</p>
       <form method="POST" action="{{ route('admin.logout') }}">
         @csrf
-        <button type="submit" class="side-button">
+        <button type="submit" class="bg-transparent border-0 side-button">
           <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
         </button>
       </form>
@@ -80,33 +95,30 @@
     </nav>
   </header>
 
-<main class="page-container">
-  <h2 class="mb-4 text-center">Opportunities by Office</h2>
+  <main class="p-4 container-fluid">
+    <h2 class="mb-4 text-center">Opportunities by Office</h2>
 
-  <div class="row g-4">
-    @forelse ($groupedOpportunities as $office => $opportunities)
-
-      <div class="col-md-4">
-<a href="{{ route('volunteers-admin.office-opportunities', ['office' => urlencode($office)]) }}" class="text-decoration-none">
-
-          <div class="p-4 text-center folder-card">
-            <div class="mb-3 folder-icon">
-              <i class="bi bi-folder-fill text-warning fs-1"></i>
+    <div class="row g-4">
+      @forelse ($groupedOpportunities as $office => $opportunities)
+        <div class="col-md-4">
+          <a href="{{ route('volunteers-admin.office-opportunities', ['office' => urlencode($office)]) }}" class="text-decoration-none text-dark">
+            <div class="folder-card">
+              <div class="folder-icon">
+                <i class="bi bi-folder-fill"></i>
+              </div>
+              <div class="folder-info">
+                <div class="folder-title">{{ $office }}</div>
+                <div class="folder-count">{{ count($opportunities) }} Opportunities</div>
+              </div>
             </div>
-            <div class="folder-title fs-5">{{ $office }}</div>
-            <div class="mt-2 folder-count">{{ count($opportunities) }} Opportunities</div>
-          </div>
-        </a>
-      </div>
-    @empty
-      <p class="text-center text-muted">No opportunities found.</p>
-    @endforelse
-  </div>
-</main>
+          </a>
+        </div>
+      @empty
+        <p class="text-center text-muted">No opportunities found.</p>
+      @endforelse
+    </div>
+  </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
-  </body>
-  </html>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

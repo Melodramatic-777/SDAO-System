@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountsVolunteersController;
 use App\Http\Controllers\OpportunitiesController;
 use App\Http\Controllers\OpportunitiesDisplayController;
+use App\Http\Controllers\SubmitOpportunityController;
 
 
 Route::prefix('volunteers-admin')->group(function () {
@@ -67,7 +68,7 @@ Route::prefix('volunteers-admin')->group(function () {
 
 
     // Save opportunity to Firebase
-    Route::post('/store-opportunity', [OpportunitiesController::class, 'store'])
+    Route::post('/store-opportunity', [SubmitOpportunityController::class, 'store'])
         ->name('volunteers-admin.store-opportunity');
 
 

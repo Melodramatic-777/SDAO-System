@@ -6,40 +6,79 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <style>
-    #fullcalendar {
-        max-width: 100%;
-        margin: 10px 0;
-        min-height: 400px; /* Ensure calendar is visible */
+    /* Make the overall form wider and centered */
+    .form-container {
+        max-width: 1300px; /* ⬅️ wider form */
+        margin: 0 auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+
+    .form-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+#fullcalendar {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 600px; /* ⬅️ give it more vertical room */
+    overflow: visible !important;
+}
+
+
+
+.fc-scroller {
+    overflow: visible !important; /* Fix internal clipping inside FullCalendar */
+}
     .fc-daygrid-day.selected {
         background-color: #4caf50 !important;
         color: white !important;
     }
+
     .fc-daygrid-day:hover {
         cursor: pointer;
         background-color: #a5d6a7 !important;
     }
+
+    /* Two-column grid */
     .form-grid {
         display: flex;
-        gap: 20px;
+        gap: 30px; /* ⬅️ a bit more spacing */
         flex-wrap: wrap;
     }
-    .form-left, .form-right {
-        flex: 1;
-        min-width: 300px;
-    }
+
+    .form-left {
+    flex: 1;
+    min-width: 500px; /* wider column */
+    overflow: visible !important;
+}
+
+    .form-right {
+    flex: 1;
+    min-width: 500px; /* wider column */
+    overflow: visible !important;
+}
+
     .form-row {
         display: flex;
         gap: 10px;
         margin-bottom: 10px;
     }
+
     .time-row input {
         width: 45%;
     }
+
     .radio-group label, .checkbox-group label {
         display: block;
         margin: 5px 0;
     }
+
     .btn-secondary {
         padding: 5px 10px;
         margin-top: 5px;
@@ -49,42 +88,90 @@
         border: none;
         border-radius: 4px;
     }
+
     .btn-secondary:hover {
         background-color: #1976d2;
     }
+
     #scheduled-entries div {
         margin-bottom: 5px;
         font-size: 14px;
     }
 
-.radio-group input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #2196f3;
-  border-radius: 50%;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: 8px;
-  background-color: white;
-}
+    .radio-group input[type="radio"] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #2196f3;
+        border-radius: 50%;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-right: 8px;
+        background-color: white;
+    }
 
-.radio-group input[type="radio"]:checked {
-  background-color: #2196f3;
-  border-color: #2196f3;
-}
+    .radio-group input[type="radio"]:checked {
+        background-color: #2196f3;
+        border-color: #2196f3;
+    }
 
-.radio-group label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  cursor: pointer;
-}
+    .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    #scheduled-entries table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    #scheduled-entries th, #scheduled-entries td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    #scheduled-entries th {
+        background-color: #2196f3;
+        color: white;
+    }
+
+    #scheduled-entries tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    #scheduled-entries tr:hover {
+        background-color: #e3f2fd;
+    }
+
+    .form-submit {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .btn-submit {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background-color: #43a047;
+    }
 </style>
+
 
 <div class="form-container">
     <h2 class="form-title">Request Volunteer Form</h2>
@@ -95,9 +182,9 @@
             <!-- Left Column -->
 <div class="form-left">
     <!-- ✅ Urgent field on top of Title -->
-    <label><strong>Is this opportunity urgent?</strong></label>
+    <label>Is this opportunity urgent?</label>
     <div class="radio-group" style="margin-bottom: 10px;">
-        <label><input type="radio" name="is_urgent" value="yes"> Yes, urgent</label>
+        <label><input type="radio" name="is_urgent" value="yes"> Yes</label>
         <label><input type="radio" name="is_urgent" value="no" checked> No</label>
     </div>
 
@@ -121,10 +208,6 @@
                             <label>Start Date</label>
                             <input type="date" name="start_date">
                         </div>
-                        <div>
-                            <label>End Date</label>
-                            <input type="date" name="end_date">
-                        </div>
                     </div>
 
                     <label>Time of activity</label>
@@ -143,23 +226,26 @@
                     <h4>Custom Schedule (Month Calendar)</h4>
                     <div id="fullcalendar"></div>
 
-                    <div id="time-details" style="margin-top:10px;">
-                        <label>Start Time</label>
-                        <input type="time" id="calendar-start-time">
-                        <label>End Time</label>
-                        <input type="time" id="calendar-end-time">
-                        <label>Volunteers Needed</label>
-                        <input type="number" id="calendar-target-number" min="1">
-                        <button type="button" id="add-calendar-schedule" class="btn-secondary">Add Schedule</button>
-                    </div>
+<div id="time-details" style="margin-top:10px;">
+    <label>Start Time</label>
+    <input type="time" id="calendar-start-time">
 
-                               <label>Food Provided</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="food_provided" value="yes"> Yes</label>
-                    <label><input type="radio" name="food_provided" value="no"> No</label>
-                </div>
-                    <h5>Scheduled Entries</h5>
-                    <div id="scheduled-entries"></div>
+    <label>End Time</label>
+    <input type="time" id="calendar-end-time">
+
+    <label>Volunteers Needed</label>
+    <input type="number" id="calendar-target-number" min="1">
+
+    <!-- 🟩 Moved Food Provided to here -->
+    <label>Food Provided</label>
+    <div class="radio-group" style="margin-top: 5px; margin-bottom: 10px;">
+        <label><input type="radio" name="food_provided" value="yes"> Yes</label>
+        <label><input type="radio" name="food_provided" value="no"> No</label>
+    </div>
+
+    <button type="button" id="add-calendar-schedule" class="btn-secondary">Add Schedule</button>
+</div>
+               
                 </div>
 
                 <div id="food-provided-bottom">
@@ -176,6 +262,9 @@
 
             <!-- Right Column -->
             <div class="form-right">
+                     <h5>Scheduled Entries</h5>
+                    <div id="scheduled-entries"></div>
+                    
                 <label>Task Details</label>
                 <textarea name="task_details" placeholder="Enter description...." required></textarea>
 
@@ -203,46 +292,109 @@ document.addEventListener("DOMContentLoaded", function() {
     let addedDates = new Set();
 
     // Toggle between intermittent YES/NO
-    radios.forEach(radio => {
-        radio.addEventListener("change", () => {
-            if (radio.value === "1") {
-                intermittentDetails.style.display = "block";
-                regularSchedule.style.display = "none";
-                foodProvidedBottom.style.display = "none"; // hide duplicate
-                document.querySelectorAll("#regular-schedule input").forEach(i => i.value = "");
-            } else {
-                intermittentDetails.style.display = "none";
-                regularSchedule.style.display = "block";
-                foodProvidedBottom.style.display = "block"; // show again
-                document.querySelectorAll(".scheduled-entry-input").forEach(i => i.remove());
-                scheduledEntries.innerHTML = "";
-            }
+radios.forEach(radio => {
+    radio.addEventListener("change", () => {
+        if (radio.value === "1") {
+            intermittentDetails.style.display = "block";
+            regularSchedule.style.display = "none";
+            foodProvidedBottom.style.display = "none";
+            document.querySelectorAll("#regular-schedule input").forEach(i => i.value = "");
+
+            // 👇 Force FullCalendar to render once visible
+            setTimeout(() => {
+                calendar.render();
+
+                const timeInputs = document.querySelectorAll('#calendar-start-time, #calendar-end-time');
+timeInputs.forEach(input => {
+    input.addEventListener('focus', () => {
+        document.getElementById('time-details').scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
         });
     });
+});
+
+                calendar.today(); // show the active/current month
+            }, 200);
+
+        } else {
+            intermittentDetails.style.display = "none";
+            regularSchedule.style.display = "block";
+            foodProvidedBottom.style.display = "block";
+            document.querySelectorAll(".scheduled-entry-input").forEach(i => i.remove());
+            scheduledEntries.innerHTML = "";
+        }
+    });
+});
+
+document.addEventListener("input", function(e) {
+    if (e.target.matches('input[type="number"][min="1"]')) {
+        let value = parseInt(e.target.value);
+
+        if (isNaN(value) || value < 1) {
+            alert('Volunteers needed must be at least 1.');
+            e.target.value = 1;
+            return;
+        }
+
+        // 🟩 New rule: must be an even number
+        if (value % 2 !== 0) {
+            alert('Volunteers needed must be an even number.');
+            e.target.value = value + 1; // auto-fix to next even number
+        }
+    }
+});
+
 
     // FullCalendar setup
     const calendarEl = document.getElementById('fullcalendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        selectable: true,
-        headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-        dateClick: function(info) {
-            const dateStr = info.dateStr;
-            const dayEl = info.dayEl;
-            if (selectedDates.has(dateStr)) {
-                selectedDates.delete(dateStr);
-                dayEl.classList.remove('selected');
-            } else {
-                selectedDates.add(dateStr);
-                dayEl.classList.add('selected');
-            }
-        },
-        dayCellDidMount: function(info) {
-            const dateStr = info.date.toISOString().split('T')[0];
-            if (selectedDates.has(dateStr)) info.el.classList.add('selected');
-            else info.el.classList.remove('selected');
+const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    selectable: true,
+    validRange: {
+        start: new Date().toISOString().split('T')[0] // disable all days before today
+    },
+ headerToolbar: {
+        left: 'prev',
+        center: 'title',
+        right: 'next today'
+},
+    dateClick: function(info) {
+        const today = new Date().toISOString().split('T')[0];
+        const dateStr = info.dateStr;
+        const dayEl = info.dayEl;
+
+        // Prevent selecting past dates
+        if (dateStr < today) return;
+
+        if (selectedDates.has(dateStr)) {
+            selectedDates.delete(dateStr);
+            dayEl.classList.remove('selected');
+        } else {
+            selectedDates.add(dateStr);
+            dayEl.classList.add('selected');
         }
-    });
+    },
+    dayCellDidMount: function(info) {
+        const dateStr = info.date.toISOString().split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
+
+        // Disable past days visually
+        if (dateStr < today) {
+            info.el.classList.add('fc-day-disabled');
+            info.el.style.backgroundColor = '#f5f5f5';
+            info.el.style.cursor = 'not-allowed';
+            return;
+        }
+
+        // Reapply selected style if applicable
+        if (selectedDates.has(dateStr)) {
+            info.el.classList.add('selected');
+        } else {
+            info.el.classList.remove('selected');
+        }
+    }
+});
     calendar.render();
 
 let scheduleIndex = 0; // Track unique schedule inputs
@@ -275,9 +427,85 @@ document.getElementById('add-calendar-schedule').addEventListener('click', () =>
             document.querySelector('form').appendChild(input);
         });
 
-        const entryDiv = document.createElement('div');
-        entryDiv.textContent = `${date}: ${startTime} - ${endTime}, Volunteers Needed: ${targetNumber}`;
-        scheduledEntries.appendChild(entryDiv);
+// Create table if it doesn’t exist yet
+let table = scheduledEntries.querySelector('table');
+if (!table) {
+    table = document.createElement('table');
+    const header = document.createElement('thead');
+header.innerHTML = `
+    <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Volunteers Needed</th>
+        <th>Food Provided</th>
+    </tr>`;
+    table.appendChild(header);
+    table.appendChild(document.createElement('tbody'));
+    scheduledEntries.appendChild(table);
+}
+
+const tbody = table.querySelector('tbody');
+const row = document.createElement('tr');
+const foodProvided = document.querySelector('input[name="food_provided"]:checked')?.value || 'no';
+
+const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+
+function toggleBackButton() {
+    const backButton = document.querySelector('.fc-customBack-button');
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    const calendarDate = calendar.getDate();
+    const calendarMonth = calendarDate.getMonth();
+    const calendarYear = calendarDate.getFullYear();
+
+    // Show back button only if not in current month
+    if (calendarMonth !== currentMonth || calendarYear !== currentYear) {
+        backButton.style.display = 'inline-block';
+    } else {
+        backButton.style.display = 'none';
+    }
+}
+calendar.on('datesSet', toggleBackButton);
+
+// Format time like "1:00 PM"
+function formatTime(timeStr) {
+    const [hour, minute] = timeStr.split(':');
+    const dateObj = new Date();
+    dateObj.setHours(hour);
+    dateObj.setMinutes(minute);
+    return dateObj.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+row.innerHTML = `
+    <td>${scheduleIndex + 1}</td>
+    <td>${formattedDate}</td>
+    <td>${formatTime(startTime)}</td>
+    <td>${formatTime(endTime)}</td>
+    <td>${targetNumber}</td>
+    <td>${foodProvided.charAt(0).toUpperCase() + foodProvided.slice(1).toLowerCase()}</td>
+`;
+
+
+// Add hidden input for food_provided per schedule
+const foodInput = document.createElement('input');
+foodInput.type = 'hidden';
+foodInput.name = `schedule[${scheduleIndex}][food_provided]`;
+foodInput.value = foodProvided;
+foodInput.classList.add('scheduled-entry-input');
+document.querySelector('form').appendChild(foodInput);
+tbody.appendChild(row);
+
 
         scheduleIndex++; // increase only after adding a full set
     });

@@ -3,16 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OpportunitiesController;
 use App\Http\Controllers\AccountsScholarsController;
+use App\Http\Controllers\ScholarJoinController;
+
 
 
 Route::prefix('scholars')->name('scholars.')->group(function () {
     // Scholar dashboard and pages
     Route::get('/dashboard', fn() => view('scholars.dashboard'))->name('dashboard');
 
-    Route::get('/volunteer-opportunities', [OpportunitiesController::class, 'scholarOpportunities'])
+    Route::get('/volunteer-opportunities', [ScholarJoinController::class, 'scholarOpportunities'])
         ->name('volunteer-opportunities');
 
-    Route::post('/opportunities/join/{id}', [OpportunitiesController::class, 'join'])
+    Route::post('/opportunities/join/{id}', [ScholarJoinController::class, 'join'])
         ->name('opportunities.join');
 
 

@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   @vite('resources/css/volunteers.css')
 
@@ -22,6 +23,27 @@
     .table-header-row th {
       background-color: #FFD700 !important; color: black !important; font-weight: bold !important; text-align: center;
     }
+
+ 
+    .icon-btn {
+  background: none;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+}
+
+.icon-btn:hover {
+  color: #0056b3;
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+
 
   </style>
 </head>
@@ -78,64 +100,65 @@
       </div>
     </form>
   </div>
-
-  <!-- Table -->
-  <div id="scholarsTable" class="mt-3">
-    <table class="table mx-auto text-center align-middle table-bordered">
-      <thead>
+<!-- Table -->
+<div id="scholarsTable" class="mt-3">
+  <table class="table mx-auto text-center align-middle table-bordered">
+    <thead>
       <tr class="table-title-row">
-<th colspan="4" class="text-center fs-5">
-    List of Student Volunteers A.Y. {{ $latestYear }}
-</th>      </tr>
+        <th colspan="5" class="text-center fs-5">
+          List of Student Volunteers A.Y. {{ $latestYear }}
+        </th>
+      </tr>
       <tr class="table-header-row">
+        <th>#</th>
         <th>Scholarship Type</th>
         <th>Name</th>
         <th>Total Volunteer Hour</th>
-        <th>Action</th>
+        <th>View</th>
       </tr>
-      </thead>
-      <tbody>
-@forelse($scholars as $scholar)
-<tr>
-  <td>{{ $scholar['scholarship_type'] ?? 'N/A' }}</td>
+    </thead>
+    <tbody>
+      @forelse($scholars as $index => $scholar)
+        <tr>
+          <td>{{ $index + 1 }}</td>
+          <td>{{ $scholar['scholarship_type'] ?? 'N/A' }}</td>
+          <td>
+            {{ $scholar['last_name'] ?? '' }},
+            {{ $scholar['first_name'] ?? '' }}
+            {{ $scholar['middle_name'] ?? '' }}
+            {{ $scholar['suffix'] ?? '' }}
+          </td>
 
-  <td>
-    {{ $scholar['last_name'] ?? '' }},
-    {{ $scholar['first_name'] ?? '' }}
-    {{ $scholar['middle_name'] ?? '' }}
-    {{ $scholar['suffix'] ?? '' }}
-  </td>
+          <!-- ✅ Add volunteer hours input + total hours -->
+          <td>
+            <div class="gap-2 d-flex justify-content-center align-items-center">
+              <input 
+                type="number" 
+                class="form-control form-control-sm" 
+                style="width: 90px;" 
+                placeholder="+ hours"
+                min="1"
+              >
+              <span class="fw-bold">{{ $scholar['volunteer_hours'] ?? 0 }}</span>
+            </div>
+          </td>
+          <td>
+            <a href="{{ route('volunteers-admin.student-volunteer-detail', $scholar['student_no'] ?? '') }}"
+              class="icon-btn {{ empty($scholar['student_no']) ? 'disabled text-muted' : '' }}"
+              title="View Profile">
+              <i class="bi bi-eye fs-5"></i>
+            </a>
+          </td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="5" class="text-center text-muted">No student volunteers found</td>
+        </tr>
+      @endforelse
+    </tbody>
+  </table>
+</div>
 
-  <!-- ✅ Add volunteer hours input + total hours -->
-<td>
-  <div class="gap-2 d-flex justify-content-center align-items-center">
-    <input 
-      type="number" 
-      class="form-control form-control-sm" 
-      style="width: 90px;" 
-      placeholder="+ hours"
-      min="1"
-    >
-    <span class="fw-bold">{{ $scholar['volunteer_hours'] ?? 0 }}</span>
-  </div>
-</td>
-<td>
-  
-<a href="{{ route('volunteers-admin.student-volunteer-detail', $scholar['student_no'] ?? '') }}" 
-   class="btn btn-sm btn-primary {{ empty($scholar['student_no']) ? 'disabled btn-secondary' : 'btn-primary' }}">
-   View Profile
-</a>
-
-</td>
-</tr>
-@empty
-<tr>
-  <td colspan="4" class="text-center text-muted">No student volunteers found</td>
-</tr>
-@endforelse
-
-      </tbody>
-    </table>
 
     @if($scholars instanceof \Illuminate\Pagination\LengthAwarePaginator)
       <div class="mt-2 d-flex justify-content-center align-items-center">
