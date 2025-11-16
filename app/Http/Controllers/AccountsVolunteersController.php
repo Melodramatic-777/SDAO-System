@@ -27,12 +27,14 @@ public function showAspiringScholarsPage(Request $request)
 {
     // Get aspiring scholar accounts
     $aspiringAccounts = $this->database->getReference('aspiring_scholar_accounts')->getValue();
+    
     $aspiringScholars = [];
 
     if ($aspiringAccounts) {
 foreach ($aspiringAccounts as $id => $acc) {
             $aspiringScholars[] = [
                 'id' => $id,
+                'student_no' => $acc['student_no'] ?? '',
                 'first_name' => $acc['first_name'],
                 'middle_name' => $acc['middle_name'] ?? '',
                 'last_name' => $acc['last_name'],
@@ -53,7 +55,7 @@ foreach ($aspiringAccounts as $id => $acc) {
         foreach ($schools as $id => $school) {
             $schoolsList[] = [
                 'id' => $id,
-                'name' => $school['name'],
+                'name' => strtoupper($school['name']),
                 'programs' => $school['programs'] ?? []
             ];
         }
@@ -88,6 +90,7 @@ $total = $collection->count();
 public function storeAspiringScholarAccount(Request $request)
 {
     $data = $request->validate([
+        'student_no' => 'required|string',
         'first_name' => 'required|string',
         'middle_name' => 'nullable|string',
         'last_name' => 'required|string',
@@ -102,6 +105,7 @@ public function storeAspiringScholarAccount(Request $request)
 
     $this->database->getReference('aspiring_scholar_accounts/' . Str::uuid())
         ->set([
+            'student_no' => $data['student_no'],
             'first_name' => $data['first_name'],
             'middle_name' => $data['middle_name'],
             'last_name' => $data['last_name'],

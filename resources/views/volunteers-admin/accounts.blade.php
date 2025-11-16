@@ -6,7 +6,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   @vite('resources/css/volunteers.css')
+
+  <style>
+    
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+table thead {
+  background: #FFD700;       /* gold header */
+  color: #000; 
+                /* black text */
+}
+
+table th, 
+table td {
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: 14px;
+  padding: 12px;
+}
+
+table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* zebra striping */
+}
+
+table tbody tr:hover {
+  background-color: #fff8dc; /* soft highlight */
+}
+
+.search-input {
+    width: 300px;
+    max-width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Focus Effect */
+.search-input:focus {
+    outline: none;
+    border-color: #003DA5;        /* matching primary color */
+    box-shadow: 0 2px 8px rgba(0,61,165,0.3);
+}
+
+/* Import Button for consistency */
+.import-btn {
+    background-color: #003DA5;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.import-btn:hover {
+    background-color: #00297d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+table thead tr:first-child {
+  background-color: #003DA5 !important;
+  color: white !important;
+}
+
+.status-cell {
+    text-align: center !important;
+}
+
+.center-cell {
+    text-align: center !important;
+}
+  </style>
 </head>
 <body>
 
@@ -40,95 +133,138 @@
   </nav>
 </header>
 
-<!-- ✅ Aspiring Scholars Content -->
-<div id="AspiringScholars">
-<h2>Aspiring Scholars</h2><br><br>
 
-<!-- ✅ Unified Top Action Row -->
-<div class="flex-wrap gap-3 mb-4 d-flex align-items-center justify-content-between">
 
-  <!-- Left side: Manage + Delete -->
-  <div class="gap-2 d-flex align-items-center">
-    <button class="btn btn-primary" id="manageBtn">Manage</button>
+<form id="filterForm" method="GET" action="{{ route('volunteers-admin.accounts') }}"
+      class="flex-wrap gap-2 p-3 mb-3 bg-white border rounded shadow-sm filter-bar d-flex align-items-center justify-content-between">
 
-    <form method="POST" action="{{ route('volunteers-admin.archive-aspiring-scholar') }}" id="deleteForm" class="d-inline" style="display: none;">
-      @csrf
-      <button type="submit" class="btn btn-danger">Delete Selected</button>
+       <div class="flex-wrap gap-2 d-flex align-items-center">
+
+        <select name="school" class="form-select" style="width: 180px;">
+            <option value="">All Schools</option>
+            @foreach($schools as $schoolData)
+                <option value="{{ $schoolData['name'] }}" 
+                        {{ request('school') == $schoolData['name'] ? 'selected' : '' }}>
+                    {{ $schoolData['name'] }}
+                </option>
+            @endforeach
+        </select>
+
+        <select name="program" class="form-select" style="width: 200px;">
+            <option value="">All Programs</option>
+            @foreach($schools as $schoolData)
+                @foreach($schoolData['programs'] as $program)
+                    <option value="{{ $program }}" 
+                            {{ request('program') == $program ? 'selected' : '' }}>
+                        {{ $program }}
+                    </option>
+                @endforeach
+            @endforeach
+        </select>
+
+        <button type="submit" class="btn btn-primary ms-2"><i class = "bi bi-funnel me-1"></i>Apply</button>
+    <button type="button" 
+            class="btn btn-secondary ms-2" 
+            onclick="window.location.href='{{ route('volunteers-admin.accounts') }}'">
+      <i class="bi bi-arrow-clockwise me-1"></i> Reset
+    </button>        
+    </div>
+
+    <!-- RIGHT SIDE: Create Account -->
+    <button type="button" class="btn btn-success"
+            onclick="document.getElementById('createAspiringScholarAccount').style.display='block'">
+        + Create Aspiring Scholar Account
+    </button>
+
+</form>
+
+
+
+    <!-- LEFT SIDE: Manage + Delete Selected -->
+<div class="gap-2 mb-3 d-flex align-items-center">
+
+    <!-- MANAGE BUTTON -->
+    <button class="gap-1 btn btn-primary d-flex align-items-center" id="manageBtn" type="button">
+        <i class="bi bi-gear"></i> Manage
+    </button>
+
+    <!-- DELETE FORM (POST + hidden by default) -->
+    <form method="POST" action="{{ route('volunteers-admin.archive-aspiring-scholar') }}"
+          id="deleteForm" class="d-inline" style="display: none;">
+        @csrf
+        <button type="submit" class="gap-1 btn btn-danger d-flex align-items-center">
+            <i class="bi bi-trash"></i> Delete Selected
+        </button>
     </form>
-  </div>
-
-  <!-- Middle: Filters -->
-  <form method="GET" class="flex-wrap gap-2 mb-0 d-flex align-items-center justify-content-center">
-    <select name="school" class="form-select" style="width: 200px;">
-      <option value="">All Schools</option>
-      @foreach($schools as $schoolData)
-        <option value="{{ $schoolData['name'] }}" {{ request('school') == $schoolData['name'] ? 'selected' : '' }}>
-          {{ $schoolData['name'] }}
-        </option>
-      @endforeach
-    </select>
-
-    <select name="program" class="form-select" style="width: 200px;">
-      <option value="">All Programs</option>
-      @foreach($schools as $schoolData)
-        @foreach($schoolData['programs'] as $program)
-          <option value="{{ $program }}" {{ request('program') == $program ? 'selected' : '' }}>
-            {{ $program }}
-          </option>
-        @endforeach
-      @endforeach
-    </select>
-
-    <button type="submit" class="btn btn-primary">Apply</button>
-    <a href="{{ route('volunteers-admin.accounts') }}" class="btn btn-secondary">Reset</a>
-  </form>
-
-  <!-- Right side: Create Account -->
-  <button class="btn btn-success" onclick="document.getElementById('createAspiringScholarAccount').style.display='block'">
-    + Create Aspiring Scholar Account
-  </button>
 
 </div>
+    
+<div id="scholarsTable" class="px-5 py-4 container-fluid">
+<div id="apiringScholarsTable" class="rounded shadow-sm table-responsive">
 
-
-<table class="table mx-auto text-center align-middle table-bordered">
+<table id="apiringScholarsTable">
   <thead>
-  <tr class="table-header-row">
-    <th class="manage-col" style="display:none;">
-      <input type="checkbox" id="selectAll">
-      Select All
-    </th>
-    <th>First Name</th>
-    <th>Middle Name</th>
-    <th>Last Name</th>
-    <th>Suffix</th>
-    <th>Email</th>
-    <th>School</th>
-    <th>Program</th>
-    <th>Created At</th>
-  </tr>
-</thead>
 
-<tbody>
-@forelse ($aspiringScholars as $id => $scholar)
-  <tr>
-    <td class="manage-col" style="display:none;">
-<input type="checkbox" name="selected_accounts[]" form="deleteForm" value="{{ $scholar['id'] }}">
-    </td>
-    <td>{{ $scholar['first_name'] }}</td>
-    <td>{{ $scholar['middle_name'] }}</td>
-    <td>{{ $scholar['last_name'] }}</td>
-    <td>{{ $scholar['suffix'] }}</td>
-    <td>{{ $scholar['email'] }}</td>
-    <td>{{ $scholar['school'] }}</td>
-    <td>{{ $scholar['program'] }}</td>
-    <td>{{ $scholar['created_at'] }}</td>
-  </tr>
-@empty
-  <tr><td colspan="9" class="text-center">No Aspiring Scholar found.</td></tr>
-@endforelse
-</tbody>
-  </table>
+    <!-- TITLE ROW -->
+    <tr class="table-title-row">
+      <th colspan="11" class="py-3 text-center fw-bold fs-5">
+        Aspiring Scholars
+      </th>
+    </tr>
+
+    <!-- ACTUAL HEADER ROW -->
+    <tr>
+      <th class="manage-col" style="display:none; width: 80px;">
+        <input type="checkbox" id="selectAll"> Select All
+      </th>
+      
+      <th>#</th> 
+      <th>Student No.</th>
+      <th>First Name</th>
+      <th>Middle Name</th>
+      <th>Last Name</th>
+      <th>Suffix</th>
+      <th>Email</th>
+      <th>School</th>
+      <th>Program</th>
+      <th>Created At</th>
+    </tr>
+
+  </thead>
+
+  <tbody>
+ @foreach ($aspiringScholars as $index => $scholar)
+<tr>
+
+  <!-- Manage column checkbox -->
+  <td class="manage-col" style="display:none;">
+    <input type="checkbox" name="selected_accounts[]" 
+           form="deleteForm" value="{{ $scholar['id'] }}">
+  </td>
+
+  <!-- Row number (#) – auto counts with pagination -->
+  <td class="text-center fw-bold">
+    {{ ($aspiringScholars->currentPage() - 1) * $aspiringScholars->perPage() + ($index + 1) }}
+  </td>
+
+  <td>{{ $scholar['student_no'] }}</td>
+  <td>{{ $scholar['first_name'] }}</td>
+  <td>{{ $scholar['middle_name'] }}</td>
+  <td>{{ $scholar['last_name'] }}</td>
+  <td>{{ $scholar['suffix'] }}</td>
+  <td>{{ $scholar['email'] }}</td>
+  <td>{{ $scholar['school'] }}</td>
+  <td>{{ $scholar['program'] }}</td>
+  <td>{{ $scholar['created_at'] }}</td>
+
+</tr>
+@endforeach
+
+  </tbody>
+
+</table>
+</div>
+
 
   {{-- Pagination links --}}
   {{ $aspiringScholars->links() }}
@@ -150,10 +286,11 @@
   <option value="" disabled selected>Select School</option>
   @foreach ($schools as $school)
     <option value="{{ $school['name'] }}" data-programs='@json($school["programs"])'>
-      {{ $school['name'] }}
+      {{ strtoupper($school['name']) }}
     </option>
   @endforeach
 </select>
+
 <br/>
 
 <label>Program</label>
@@ -161,6 +298,9 @@
   <option value="" disabled selected>Select a School First</option>
 </select>
 <br/>
+
+<label>Student Number</label>
+<input type="text" name="student_no" required><br/>
 
       <label>First Name</label>
       <input type="text" name="first_name" required><br/>

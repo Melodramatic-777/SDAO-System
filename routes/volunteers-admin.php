@@ -29,7 +29,7 @@ Route::prefix('volunteers-admin')->group(function () {
     Route::get('student-volunteers', [AccountsScholarsController::class, 'showStudentVolunteers'])
     ->name('volunteers-admin.student-volunteers');
     // Student Volunteer Detail Page
-    Route::get('student/{student_no}',  [AccountsScholarsController::class, 'viewStudentProfile']
+    Route::get('student/{student_no}',  [AccountsScholarsController::class, 'showVolunteerDetail']
     )->name('volunteers-admin.student-volunteer-detail');
 
 

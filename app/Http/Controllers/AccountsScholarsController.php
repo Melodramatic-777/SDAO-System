@@ -38,22 +38,25 @@ class AccountsScholarsController extends Controller
         foreach ($scholarsData as $academicYear => $terms) {
             foreach ($terms as $term => $types) {  // ✅ NEW level loop
                 foreach ($types as $scholarshipType => $records) {
-                    foreach ($records as $scholar) {
-                        $scholars[] = [
-                            'student_no'       => $scholar['student_no'] ?? '',
-                            'email'            => $scholar['email'] ?? '',
-                            'first_name'       => $scholar['first_name'] ?? '',
-                            'middle_name'      => $scholar['middle_name'] ?? '',
-                            'last_name'        => $scholar['last_name'] ?? '',
-                            'school'           => $scholar['school'] ?? '',
-                            'program'          => $scholar['program'] ?? '',
-                            'birthday'         => $scholar['birthday'] ?? '',
-                            'scholarship_type' => $scholarshipType,
-                            'academic_year'    => $academicYear,
-                            'term'             => $term, // ✅ include term in table dataset
-                            'created_at'       => $scholar['created_at'] ?? ''
-                        ];
-                    }
+foreach ($records as $scholarId => $scholar) {
+    $scholars[] = [
+        'student_no'       => $scholar['student_no'] ?? '',
+        'email'            => $scholar['email'] ?? '',
+        'first_name'       => $scholar['first_name'] ?? '',
+        'middle_name'      => $scholar['middle_name'] ?? '',
+        'last_name'        => $scholar['last_name'] ?? '',
+        'school'           => $scholar['school'] ?? '',
+        'program'          => $scholar['program'] ?? '',
+        'birthday'         => $scholar['birthday'] ?? '',
+        'scholarship_type' => $scholarshipType,
+        'academic_year'    => $academicYear,
+        'term'             => $term,
+        'created_at'       => $scholar['created_at'] ?? '',
+        
+        // ✅ ADD THIS
+        'gwa_records'      => $scholar['gwa_records'] ?? []
+    ];
+}
                 }
             }
         }
@@ -76,7 +79,17 @@ if ($request->filled('term')) {
     $collection = $collection->where('term', $request->term);
 }
 if ($request->filled('scholarship_type')) {
-    $collection = $collection->where('scholarship_type', $request->scholarship_type);
+    if ($request->scholarship_type === 'Aspiring Scholar') {
+        $collection = $collection->where('is_aspiring', true);
+    } else {
+        $collection = $collection->where('scholarship_type', $request->scholarship_type);
+    }
+}
+
+if (!$request->filled('scholarship_type')) {
+    $collection = $collection->filter(function ($item) {
+        return empty($item['is_aspiring']) || $item['is_aspiring'] == false;
+    });
 }
 
 if ($request->filled('program')) {
@@ -241,88 +254,187 @@ $term = $request->term;
     }
 
 
-    
-public function showStudentVolunteers(Request $request)
+ public function showStudentVolunteers(Request $request)
 {
     $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
 
+    // If empty DB
     if (!$scholarsData) {
         return view('volunteers-admin.student-volunteers', [
             'scholars' => [],
+            'academicYears' => [],
+            'terms' => [],
             'scholarshipTypes' => [],
-            'offices' => [],
+            'programs' => [],
+            'schools' => [],
             'latestYear' => null
         ]);
     }
 
-    // ✅ Get latest academic year
-    $academicYears = array_keys($scholarsData);
-    rsort($academicYears);
-    $latestYear = $academicYears[0];
-
+    // Extract all scholars (whole DB)
     $flattened = [];
 
-    foreach ($scholarsData[$latestYear] as $term => $types) {
-        foreach ($types as $scholarshipType => $records) {
-            foreach ($records as $scholarId => $scholar) {
+    foreach ($scholarsData as $year => $terms) {
+        foreach ($terms as $term => $types) {
+            foreach ($types as $scholarshipType => $records) {
+                foreach ($records as $id => $scholar) {
 
-                $flattened[] = [
-                    'student_no'       => $scholar['student_no'] ?? '',
-                    'first_name'       => $scholar['first_name'] ?? '',
-                    'middle_name'      => $scholar['middle_name'] ?? '',
-                    'last_name'        => $scholar['last_name'] ?? '',
-                    'suffix'           => $scholar['suffix'] ?? '',
-                    'volunteer_hours'  => $scholar['volunteer_hours'] ?? 0,
-                    'scholarship_type' => $scholarshipType,
-                    'term'             => $term,
-                    'academic_year'    => $latestYear
-                ];
+                    $flattened[] = [
+                        'student_no'       => $scholar['student_no'] ?? '',
+                        'email'            => $scholar['email'] ?? '',
+                        'first_name'       => $scholar['first_name'] ?? '',
+                        'middle_name'      => $scholar['middle_name'] ?? '',
+                        'last_name'        => $scholar['last_name'] ?? '',
+                        'suffix'           => $scholar['suffix'] ?? '',
+                        'birthday'         => $scholar['birthday'] ?? '',
+                        'school'           => $scholar['school'] ?? '',
+                        'program'          => $scholar['program'] ?? '',
+                        'scholarship_type' => $scholarshipType,
+                        'academic_year'    => $year,
+                        'term'             => $term,
+                        'volunteer_hours'  => $scholar['volunteer_hours'] ?? 0,
+                        'gwa_records'      => $scholar['gwa_records'] ?? []
+                    ];
+                }
             }
         }
     }
 
+
+$aspiringData = $this->database->getReference('aspiring_scholar_accounts')->getValue() ?? [];
+
+foreach ($aspiringData as $id => $scholar) {
+    $flattened[] = [
+       'student_no'       => $scholar['student_no'] ?? '',
+        'email'            => $scholar['email'] ?? '',
+        'first_name'       => $scholar['first_name'] ?? '',
+        'middle_name'      => $scholar['middle_name'] ?? '',
+        'last_name'        => $scholar['last_name'] ?? '',
+        'suffix'           => $scholar['suffix'] ?? '',
+        'birthday'         => $scholar['birthday'] ?? '',
+        'school'           => $scholar['school'] ?? '',
+        'program'          => $scholar['program'] ?? '',
+        'scholarship_type' => null,
+        'academic_year'    => null,
+        'term'             => null,
+        'volunteer_hours'  => 0,
+        'gwa_records'      => [],
+        'is_aspiring'      => true,
+    ];
+}
+
+
     $collection = collect($flattened);
 
-    // ✅ Filters
-    if ($request->filled('scholarship_type')) {
+    // Build dropdown data
+$academicYears = $collection->pluck('academic_year')
+    ->filter(fn($v) => !empty($v))
+    ->unique()
+    ->sortDesc()
+    ->values();
+
+$terms = $collection->pluck('term')
+    ->filter(fn($v) => !empty($v))
+    ->unique()
+    ->sort()
+    ->values();
+
+$scholarshipTypes = $collection->pluck('scholarship_type')
+    ->filter(fn($v) => !empty($v))
+    ->unique()
+    ->sort()
+    ->values();
+
+$programs = $collection->pluck('program')
+    ->filter(fn($v) => !empty($v))
+    ->unique()
+    ->sort()
+    ->values();
+
+$schools = $collection->pluck('school')
+    ->filter(fn($v) => !empty($v))
+    ->unique()
+    ->sort()
+    ->values();
+
+
+    // Latest Year
+    $latestYear = $academicYears->first();
+
+    // Filters
+    if ($request->filled('academic_year')) {
+        $collection = $collection->where('academic_year', $request->academic_year);
+    }
+
+    if ($request->filled('term')) {
+        $collection = $collection->where('term', $request->term);
+    }
+
+if ($request->filled('scholarship_type')) {
+    if ($request->scholarship_type === 'Aspiring Scholar') {
+        $collection = $collection->where('is_aspiring', true);
+    } else {
         $collection = $collection->where('scholarship_type', $request->scholarship_type);
+    }
+}
+
+if (!$request->filled('scholarship_type')) {
+    $collection = $collection->filter(function ($item) {
+        return empty($item['is_aspiring']) || $item['is_aspiring'] == false;
+    });
+}
+
+    if ($request->filled('program')) {
+        $collection = $collection->where('program', $request->program);
+    }
+
+    if ($request->filled('school')) {
+        $collection = $collection->where('school', $request->school);
     }
 
     if ($request->filled('search')) {
         $search = strtolower($request->search);
-        $collection = $collection->filter(function ($scholar) use ($search) {
-            $fullName = strtolower(($scholar['first_name'] ?? '') . ' ' . ($scholar['middle_name'] ?? '') . ' ' . ($scholar['last_name'] ?? ''));
-            return str_contains($fullName, $search);
+        $collection = $collection->filter(function ($item) use ($search) {
+            return str_contains(strtolower($item['first_name']), $search) ||
+                   str_contains(strtolower($item['last_name']), $search) ||
+                   str_contains(strtolower($item['student_no']), $search);
         });
     }
 
-    // ✅ Pagination
+    // Pagination
     $perPage = 10;
     $page = $request->get('page', 1);
-    $scholarsPaginated = new LengthAwarePaginator(
-        $collection->forPage($page, $perPage)->values(),
-        $collection->count(),
+    $total = $collection->count();
+    $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
+    $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+        $items,
+        $total,
         $perPage,
         $page,
-        ['path' => $request->url(), 'query' => $request->query()]
+        ['path' => $request->url()]
     );
 
-    // ✅ Scholarship Types for Filter Dropdown
-    $scholarshipTypes = $collection->pluck('scholarship_type')->unique()->values();
-
     return view('volunteers-admin.student-volunteers', [
-        'scholars' => $scholarsPaginated,
+        'scholars' => $paginated,
+        'academicYears' => $academicYears,
+        'terms' => $terms,
         'scholarshipTypes' => $scholarshipTypes,
+        'programs' => $programs,
+        'schools' => $schools,
         'latestYear' => $latestYear
     ]);
 }
 
+
 public function viewStudentProfile($student_no)
 {
-    $scholarsData = $this->database->getReference('scholars')->getValue();
+    $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
+    $aspiringData = $this->database->getReference('aspiring_scholar_accounts')->getValue() ?? [];
 
     $foundStudent = null;
 
+    // 🔵 FIRST: Search in regular scholars
     foreach ($scholarsData as $academicYear => $terms) {
         foreach ($terms as $term => $types) {
             foreach ($types as $scholarshipType => $students) {
@@ -332,9 +444,24 @@ public function viewStudentProfile($student_no)
                         $foundStudent['academic_year'] = $academicYear;
                         $foundStudent['term'] = $term;
                         $foundStudent['scholarship_type'] = $scholarshipType;
+                        $foundStudent['is_aspiring'] = false;
                         break 4;
                     }
                 }
+            }
+        }
+    }
+
+    // 🔵 SECOND: If not found, search aspiring scholars
+    if (!$foundStudent) {
+        foreach ($aspiringData as $id => $record) {
+            if (($record['student_no'] ?? null) == $student_no) {
+                $foundStudent = $record;
+                $foundStudent['academic_year'] = null;
+                $foundStudent['term'] = null;
+                $foundStudent['scholarship_type'] = null;
+                $foundStudent['is_aspiring'] = true;
+                break;
             }
         }
     }
@@ -343,21 +470,10 @@ public function viewStudentProfile($student_no)
         abort(404, 'Student not found.');
     }
 
-    // Dummy placeholders temporarily (since you haven't linked volunteer hours history yet)
-    $foundStudent['hours_completed'] = $record['volunteer_hours'] ?? 0;
-    $foundStudent['activities'] = 0;
-    $foundStudent['hours_month'] = 0;
-    $foundStudent['remaining_hours'] = max(0, 10 - ($record['volunteer_hours'] ?? 0));
-
-    // Offices (for dropdown)
-    $offices = $this->database->getReference('offices')->getValue() ?? [];
-
     return view('volunteers-admin.student-volunteer-detail', [
-        'studentData' => $foundStudent,
-        'offices' => $offices
+        'student' => $foundStudent
     ]);
 }
-
 
 public function scholarProfile()
 {
@@ -407,5 +523,36 @@ $student_no = session('scholar_accounts.student_no');
     ]);
 }
 
+public function showVolunteerDetail($student_no)
+{
+    $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
+
+    $studentData = null;
+
+    foreach ($scholarsData as $year => $terms) {
+        foreach ($terms as $term => $types) {
+            foreach ($types as $type => $records) {
+                foreach ($records as $id => $scholar) {
+                    if (($scholar['student_no'] ?? '') == $student_no) {
+                        $studentData = $scholar;
+                        break 4; // exit all loops
+                    }
+                }
+            }
+        }
+    }
+
+    if (!$studentData) {
+        return redirect()->back()->with('error', 'Student not found.');
+    }
+
+    // Load offices (needed by your dropdown)
+    $offices = $this->database->getReference('offices')->getValue() ?? [];
+
+    return view('volunteers-admin.student-volunteer-detail', [
+        'studentData' => $studentData,
+        'offices'     => $offices
+    ]);
+}
 
 }

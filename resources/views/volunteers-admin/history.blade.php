@@ -12,11 +12,6 @@
   @vite('resources/css/volunteers.css')
 
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f9f6f3;
-    }
-
     .folder-card {
       display: flex;
       align-items: center;

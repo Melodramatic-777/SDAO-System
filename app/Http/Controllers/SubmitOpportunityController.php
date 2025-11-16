@@ -29,6 +29,7 @@ class SubmitOpportunityController extends Controller
             'title' => 'required|string|max:255',
             'location' => 'required|string',
             'start_date' => 'nullable|date',
+            'description' => 'required|string',
             'task_details' => 'required|string',
             'skills_needed' => 'required|string',
             'schedule' => 'nullable|array',
@@ -88,6 +89,32 @@ if ($isIntermittent) {
     ]];
 }
 
+// AUTO-SET URGENT IF WITHIN 3 DAYS
+$today = now()->startOfDay();
+
+// Determine first upcoming date
+if ($isIntermittent) {
+    // Pick the earliest schedule date
+    $firstDate = collect($request->input('schedule', []))
+        ->pluck('date')
+        ->filter()
+        ->map(fn($d) => \Carbon\Carbon::parse($d))
+        ->sort()
+        ->first();
+} else {
+    $firstDate = $validated['start_date']
+        ? \Carbon\Carbon::parse($validated['start_date'])
+        : null;
+}
+
+// Default urgent = no
+$isUrgent = 'no';
+
+// If date exists, check if within 3 days
+if ($firstDate && $firstDate->diffInDays($today) <= 3) {
+    $isUrgent = 'yes';
+}
+
         // Compose full opportunity data
         $opportunityData = [
             'opportunity_id'       => $opportunityId,
@@ -97,6 +124,7 @@ if ($isIntermittent) {
             'title'                => $validated['title'],
             'location'             => $validated['location'],
             'start_date'           => $validated['start_date'],
+            'description'          => $validated['description'],
             'task_details'         => $validated['task_details'],
             'skills_needed'        => $validated['skills_needed'],
             'status'               => $status,
@@ -104,7 +132,7 @@ if ($isIntermittent) {
             'schedule'             => $scheduleData,
             'is_intermittent'      => $isIntermittent,
             'intermittent_details' => $validated['intermittent_details'] ?? null,
-            'is_urgent'            => $request->input('is_urgent', 'no'),
+            'is_urgent' => $isUrgent,
             'food_provided'        => $validated['food_provided'],
         ];
 

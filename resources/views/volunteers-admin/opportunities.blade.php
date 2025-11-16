@@ -369,7 +369,12 @@ $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunit
                   <div class="d-flex justify-content-between align-items-center">
                 <strong>{{ $opportunity['title'] ?? 'No Title' }}</strong>
                 <div>
-@if(strtolower($opportunity['status']) === 'approved' && $participantsCount < $targetNumber)
+
+                  @if(
+    strtolower($opportunity['status']) === 'approved' 
+    && $participantsCount < $targetNumber
+    && strtolower($opportunity['submitted_by_role'] ?? '') === 'sda assistant'
+)
 
     <span class="badge bg-primary">Waiting for Volunteers</span>
 
@@ -383,6 +388,8 @@ $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunit
     <span class="{{ $badgeClass }}">{{ ucfirst($status) }}</span>
 
 @endif
+
+
 
                   @if(!empty($opportunity['is_urgent']) && ($opportunity['is_urgent'] === true || $opportunity['is_urgent'] === 'yes'))
                     <span class="badge bg-danger ms-2">Urgent</span>

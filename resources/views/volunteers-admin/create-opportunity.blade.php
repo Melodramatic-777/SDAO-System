@@ -182,11 +182,6 @@
             <!-- Left Column -->
 <div class="form-left">
     <!-- ✅ Urgent field on top of Title -->
-    <label>Is this opportunity urgent?</label>
-    <div class="radio-group" style="margin-bottom: 10px;">
-        <label><input type="radio" name="is_urgent" value="yes"> Yes</label>
-        <label><input type="radio" name="is_urgent" value="no" checked> No</label>
-    </div>
 
     <label>Title of activity</label>
     <input type="text" name="title" placeholder="Enter title proposal" required>
@@ -262,8 +257,12 @@
 
             <!-- Right Column -->
             <div class="form-right">
-                     <h5>Scheduled Entries</h5>
+                    <h5 id="scheduled-header" style="display:none;">Scheduled Entries</h5>
                     <div id="scheduled-entries"></div>
+
+                <label>Description</label>
+                <textarea name="description" placeholder="Enter activity description..." required></textarea>
+
                     
                 <label>Task Details</label>
                 <textarea name="task_details" placeholder="Enter description...." required></textarea>
@@ -340,6 +339,7 @@ document.addEventListener("input", function(e) {
 });
 
 
+
     // FullCalendar setup
     const calendarEl = document.getElementById('fullcalendar');
 const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -394,6 +394,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
 let scheduleIndex = 0; // Track unique schedule inputs
 
 document.getElementById('add-calendar-schedule').addEventListener('click', () => {
+    document.getElementById('scheduled-header').style.display = 'block';
     const startTime = document.getElementById('calendar-start-time').value;
     const endTime = document.getElementById('calendar-end-time').value;
     const targetNumber = document.getElementById('calendar-target-number').value;
@@ -434,6 +435,7 @@ header.innerHTML = `
         <th>End Time</th>
         <th>Volunteers Needed</th>
         <th>Food Provided</th>
+        <th>Edit</th>
     </tr>`;
     table.appendChild(header);
     table.appendChild(document.createElement('tbody'));
@@ -488,6 +490,16 @@ row.innerHTML = `
     <td>${formatTime(endTime)}</td>
     <td>${targetNumber}</td>
     <td>${foodProvided.charAt(0).toUpperCase() + foodProvided.slice(1).toLowerCase()}</td>
+    <td>
+        <button type="button" class="edit-btn" data-index="${scheduleIndex}" style="
+            padding:4px 8px; 
+            background:#003DA5;
+            color:white;
+            border:none;
+            border-radius:4px;
+            cursor:pointer;
+        ">Edit</button>
+    </td>
 `;
 
 
@@ -512,6 +524,108 @@ tbody.appendChild(row);
     document.getElementById('calendar-target-number').value = '';
 });
 });
+
+
+document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("edit-btn")) {
+        const index = e.target.getAttribute("data-index");
+        const row = e.target.closest("tr");
+
+        const cells = row.querySelectorAll("td");
+
+        const original = {
+            number: cells[0].innerText,
+            date: cells[1].innerText,
+            start: cells[2].innerText,
+            end: cells[3].innerText,
+            volunteers: cells[4].innerText,
+            food: cells[5].innerText,
+        };
+
+        row.innerHTML = `
+            <td>${original.number}</td>
+            <td><input type="date" id="edit-date-${index}" value="${new Date(original.date).toISOString().split('T')[0]}"></td>
+            <td><input type="time" id="edit-start-${index}"></td>
+            <td><input type="time" id="edit-end-${index}"></td>
+            <td><input type="number" min="1" id="edit-volunteers-${index}" value="${original.volunteers}"></td>
+            <td>
+                <select id="edit-food-${index}">
+                    <option value="Yes" ${original.food === "Yes" ? "selected" : ""}>Yes</option>
+                    <option value="No" ${original.food === "No" ? "selected" : ""}>No</option>
+                </select>
+            </td>
+            <td>
+                <button type="button" class="save-edit" data-index="${index}" style="
+                    padding:4px 8px;
+                    background:#4caf50;
+                    color:white;
+                    border:none;
+                    border-radius:4px;
+                    cursor:pointer;
+                ">Save</button>
+
+                <button type="button" class="cancel-edit" data-index="${index}" style="
+                    padding:4px 8px;
+                    background:#b71c1c;
+                    color:white;
+                    border:none;
+                    border-radius:4px;
+                    cursor:pointer;
+                    margin-left:5px;
+                ">Cancel</button>
+            </td>
+        `;
+    }
+
+    // SAVE EDIT
+    if (e.target.classList.contains("save-edit")) {
+        const index = e.target.getAttribute("data-index");
+
+        const newDate = document.getElementById(`edit-date-${index}`).value;
+        const newStart = document.getElementById(`edit-start-${index}`).value;
+        const newEnd = document.getElementById(`edit-end-${index}`).value;
+        const newVol = document.getElementById(`edit-volunteers-${index}`).value;
+        const newFood = document.getElementById(`edit-food-${index}`).value;
+
+        if (!newDate || !newStart || !newEnd || !newVol) {
+            return alert("Please complete all fields before saving.");
+        }
+
+        const row = e.target.closest("tr");
+
+        row.innerHTML = `
+            <td>${parseInt(index) + 1}</td>
+            <td>${new Date(newDate).toLocaleDateString()}</td>
+            <td>${formatTime(newStart)}</td>
+            <td>${formatTime(newEnd)}</td>
+            <td>${newVol}</td>
+            <td>${newFood}</td>
+            <td>
+                <button type="button" class="edit-btn" data-index="${index}" style="
+                    padding:4px 8px; 
+                    background:#003DA5;
+                    color:white;
+                    border:none;
+                    border-radius:4px;
+                    cursor:pointer;
+                ">Edit</button>
+            </td>
+        `;
+
+        // Update hidden input fields
+        document.querySelector(`input[name="schedule[${index}][date]"]`).value = newDate;
+        document.querySelector(`input[name="schedule[${index}][start_time]"]`).value = newStart;
+        document.querySelector(`input[name="schedule[${index}][end_time]"]`).value = newEnd;
+        document.querySelector(`input[name="schedule[${index}][target_number]"]`).value = newVol;
+        document.querySelector(`input[name="schedule[${index}][food_provided]"]`).value = newFood;
+    }
+
+    // CANCEL EDIT → reload table
+    if (e.target.classList.contains("cancel-edit")) {
+        location.reload(); // quickest revert
+    }
+});
+
 
 </script>
 

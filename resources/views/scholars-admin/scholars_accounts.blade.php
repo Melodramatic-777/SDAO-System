@@ -37,6 +37,8 @@ table th {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center !important;
+  vertical-align: middle !important;
 }
 
 table tbody tr:nth-child(even) {
@@ -87,6 +89,14 @@ table tbody tr:hover {
 table thead tr:first-child {
   background-color: #003DA5 !important;
   color: white !important;
+}
+
+.status-cell {
+    text-align: center !important;
+}
+
+.center-cell {
+    text-align: center !important;
 }
 
   </style>
@@ -222,21 +232,26 @@ table thead tr:first-child {
       <tbody>
        @forelse ($scholars as $index => $scholar)
         @php
-          $year = $scholar['academic_year'] ?? null;
-          $status = $year && isset($scholar['gwa_records'][$year]['status'])
-                    ? $scholar['gwa_records'][$year]['status']
-                    : 'N/A';
+$year = $scholar['academic_year'] ?? null;
+$status = $year && isset($scholar['gwa_records'][$year]['status'])
+            ? $scholar['gwa_records'][$year]['status']
+            : 'N/A';
         @endphp
         <tr>
           <td>{{ $loop->iteration + ($scholars->currentPage() - 1) * $scholars->perPage() }}</td>
           <td>{{ $scholar['student_no'] }}</td>
           <td>{{ $scholar['email'] ?? 'N/A' }}</td>
           <td>{{ $scholar['last_name'] }}, {{ $scholar['first_name'] }} {{ $scholar['middle_name'] ?? '' }} {{ $scholar['suffix'] ?? '' }}</td>
-          <td>{{ $scholar['birthday'] ?? 'N/A' }}</td>
-          <td>{{ $scholar['school'] ?? 'N/A' }}</td>
-          <td>{{ $scholar['program'] ?? 'N/A' }}</td>
-          <td>{{ $scholar['scholarship_type'] ?? 'N/A' }}</td>
-          <td>
+<td>
+    {{ $scholar['birthday'] ? \Carbon\Carbon::parse($scholar['birthday'])->format('F d, Y') : 'N/A' }}
+</td>          <td>{{ $scholar['school'] ?? 'N/A' }}</td>
+<td class="center-cell">
+    {{ $scholar['program'] ?? '' }}
+</td>
+<td class="center-cell">
+    {{ $scholar['scholarship_type'] ?? '' }}
+</td>
+          <td class="status-cell">
             @if(strtolower($status) === 'eligible')
               <span class="badge bg-success">Eligible</span>
             @elseif(strtolower($status) === 'probationary')

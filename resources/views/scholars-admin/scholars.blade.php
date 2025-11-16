@@ -130,7 +130,7 @@ table tbody tr:hover {
     <select name="term" class="form-select" style="width:150px;">
       <option value="">All Terms</option>
       @foreach($terms as $t)
-        <option value="{{ $t }}" {{ request('term')==$t?'selected':'' }}>{{ $t }} Term</option>
+<option value="{{ $t }}" {{ request('term')==$t?'selected':'' }}>{{ $t }}</option>
       @endforeach
     </select>
 
@@ -167,54 +167,68 @@ table tbody tr:hover {
     
 
 <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by name or student no..." style="width: 220px;">
+<button id="saveAllBtn" class="btn btn-success ms-2">
+    <i class="bi bi-save me-1"></i> Save All GWA
+</button>
   </div>
 </div>
 
-
 <div id="Scholars" class="px-5 py-4 container-fluid">
-<!-- ✅ TABLE -->
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Student No.</th>
-<th>Scholar Name</th>
-<th>School</th>
-<th>Program</th>
-<th>Scholarship Type</th>
-<th>1st</th>
-<th>2nd</th>
-<th>3rd</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody>
-@foreach($gwaRecords as $index => $record)
-<tr id="row-{{ $record['student_number'] }}"
-    data-year="{{ $record['academic_year'] }}"
-    data-term="{{ $record['term'] }}"
-    data-type="{{ $record['scholarship_type'] }}"
-    data-school="{{ $record['school'] }}"
-    data-program="{{ $record['program'] }}"
-    data-grade="{{ $record['grade_requirement'] }}"
-    data-cutoff="{{ $record['eligibility_cutoff'] }}">
+    <!-- ✅ TABLE -->
+    <table>
+        <thead>
 
-<td style="text-align:center; width:50px;">{{ $loop->iteration }}</td>
-<td>{{ $record['student_number'] }}</td>
-<td>{{ $record['scholar_name'] }}</td>
-<td>{{ $record['school'] }}</td>
-<td>{{ $record['program'] }}</td>
-<td>{{ $record['scholarship_type'] }}</td>
+      <tr class="table-title-row">
+        <th colspan="10" class="py-3 text-center fw-bold fs-5">
+          Scholars A.Y. {{ $latestAcademicYear }} — {{ $latestTerm }} Term
+        </th>
+      </tr>
 
-<td><input type="number" step="0.01" class="gwa-input" data-term="1st" value="{{ $record['gwa_1st'] }}"></td>
-<td><input type="number" step="0.01" class="gwa-input" data-term="2nd" value="{{ $record['gwa_2nd'] }}"></td>
-<td><input type="number" step="0.01" class="gwa-input" data-term="3rd" value="{{ $record['gwa_3rd'] }}"></td>
+            <!-- Existing Columns -->
+            <tr>
+                <th>#</th>
+                <th>Student No.</th>
+                <th>Scholar Name</th>
+                <th>School</th>
+                <th>Program</th>
+                <th>Scholarship Type</th>
+                <th>1st</th>
+                <th>2nd</th>
+                <th>3rd</th>
+                <th>Status</th>
+            </tr>
+        </thead>
 
-<td class="status">{{ $record['status'] }}</td>
-</tr>
-@endforeach
-</tbody>
-</table>
+        <tbody>
+            @foreach($gwaRecords as $index => $record)
+              <tr id="row-{{ $record['student_number'] }}"
+                data-firebase="{{ $record['firebase_id'] }}"               
+                data-year="{{ $record['academic_year'] }}"
+                data-term="{{ $record['term'] }}"
+                data-type="{{ $record['scholarship_type'] }}"
+                data-school="{{ $record['school'] }}"
+                data-program="{{ $record['program'] }}"
+                data-grade="{{ $record['grade_requirement'] }}"
+                data-cutoff="{{ $record['eligibility_cutoff'] }}">
+
+                <td style="text-align:center; width:50px;">{{ $loop->iteration }}</td>
+                <td>{{ $record['student_number'] }}</td>
+                <td>{{ $record['scholar_name'] }}</td>
+                <td>{{ $record['school'] }}</td>
+                <td>{{ $record['program'] }}</td>
+                <td>{{ $record['scholarship_type'] }}</td>
+
+                <td><input type="number" step="0.01" class="gwa-input" data-term="1st" value="{{ $record['gwa_1st'] }}"></td>
+                <td><input type="number" step="0.01" class="gwa-input" data-term="2nd" value="{{ $record['gwa_2nd'] }}"></td>
+                <td><input type="number" step="0.01" class="gwa-input" data-term="3rd" value="{{ $record['gwa_3rd'] }}"></td>
+
+                <td class="status">{{ $record['status'] }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+
 </div>
 </div>
 
@@ -234,44 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ✅ Save All button
-    document.getElementById('saveAllBtn').addEventListener('click', function () {
-        const scholars = [];
-
-        document.querySelectorAll('tr[id^="row-"]').forEach(row => {
-            const scholar = {
-                student_number: row.querySelector('td:first-child').textContent.trim(),
-                academic_year: row.dataset.year,
-                term: row.dataset.term,
-                scholarship_type: row.dataset.type,
-                gwa_1st: row.querySelector('input[data-term="1st"]').value || null,
-                gwa_2nd: row.querySelector('input[data-term="2nd"]').value || null,
-                gwa_3rd: row.querySelector('input[data-term="3rd"]').value || null,
-                status: row.querySelector('.status').textContent.trim()
-            };
-            scholars.push(scholar);
-        });
-
-        fetch("{{ route('scholars-admin.saveAllGwa') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({ scholars })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) alert("✅ All GWA records saved successfully!");
-            else alert("❌ Failed to save records.");
-        })
-        .catch(err => {
-            console.error("⚠ Save error:", err);
-            alert("⚠ Error saving records.");
-        });
     });
-
-});
 
 function evaluateRow(row) {
     const statusCell = row.querySelector('.status');
@@ -295,14 +272,11 @@ function evaluateRow(row) {
         if (!isFinite(gwa)) continue;
         hasValue = true;
 
-        // ✅ Rule logic:
-        // - If GWA < cutoff  → automatic fail (too low)
-        // - If GWA < gradeRequirement → not meeting requirement
-        // - If GWA >= gradeRequirement → meeting requirement
+      
         if (isFinite(gradeCutoff) && gwa < gradeCutoff) {
-            failedCount++; // below cutoff = too low
+            failedCount++; 
         } else if (gwa < gradeRequirement) {
-            failedCount++; // did not meet requirement threshold
+            failedCount++; 
         }
     }
 
@@ -310,7 +284,7 @@ function evaluateRow(row) {
     if (hasValue) {
         if (failedCount === 0) finalStatus = 'Eligible';
         else if (failedCount === 1) finalStatus = 'Probationary';
-        else if (failedCount >= 2) finalStatus = 'Revoked';
+        else if (failedCount >= 1) finalStatus = 'Revoked';
     }
 
     statusCell.textContent = finalStatus;
@@ -320,6 +294,54 @@ function evaluateRow(row) {
         finalStatus === 'Probationary' ? 'orange' :
         finalStatus === 'Revoked' ? 'red' : 'black';
 }
+
+
+document.getElementById('saveAllBtn').addEventListener('click', function () {
+
+    let rows = document.querySelectorAll('tbody tr');  
+    let updates = [];
+
+    rows.forEach(row => {
+        const studentId   = row.dataset.firebase; 
+        const year        = row.dataset.year;
+        const term        = row.dataset.term;
+        const type        = row.dataset.type;
+
+        const gwa1 = row.querySelector('input[data-term="1st"]').value || null;
+        const gwa2 = row.querySelector('input[data-term="2nd"]').value || null;
+        const gwa3 = row.querySelector('input[data-term="3rd"]').value || null;
+        const status = row.querySelector('.status').textContent;
+
+        updates.push({
+            firebase_id: studentId,
+            academic_year: year,
+            term: term,
+            scholarship_type: type,
+            gwa_1st: gwa1,
+            gwa_2nd: gwa2,
+            gwa_3rd: gwa3,
+            status: status
+        });
+    });
+
+    fetch("{{ route('scholars-admin.scholars.save') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ records: updates })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert("GWA Records saved successfully!");
+    })
+    .catch(err => {
+        alert("Error saving GWA");
+        console.error(err);
+    });
+});
+
 
 </script>
 
