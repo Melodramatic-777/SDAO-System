@@ -99,6 +99,49 @@ table thead tr:first-child {
     text-align: center !important;
 }
 
+
+.status-eligible {
+    background-color: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-eligible {
+    background-color: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;   /* rounded corners */
+    font-weight: 600;
+}
+
+.status-probationary {
+    background-color: #ffc107;
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-revoked {
+    background-color: #dc3545;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-na {
+    background-color: #6c757d;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+
   </style>
 <body>
 
@@ -197,13 +240,18 @@ table thead tr:first-child {
          placeholder="Search scholars..." 
          style="width: 260px;">
 
-             <button class="btn btn-primary ms-2" 
-          onclick="document.getElementById('importScholarsModal').style.display='block'">
-    <i class="bi bi-file-earmark-arrow-up me-1"></i> Import New Scholars CSV
-  </button>
+            
   </div>
 
 </form>
+
+<div class="px-5 mb-3 container-fluid d-flex justify-content-end">
+    <button class="btn btn-primary ms-2"
+            onclick="document.getElementById('importScholarsModal').style.display='block'">
+        <i class="bi bi-file-earmark-arrow-up me-1"></i> Import Scholars
+    </button>
+</div>
+
 
 <div id="Scholars" class="px-5 py-4 container-fluid">
 
@@ -251,18 +299,20 @@ $status = $year && isset($scholar['gwa_records'][$year]['status'])
 <td class="center-cell">
     {{ $scholar['scholarship_type'] ?? '' }}
 </td>
-          <td class="status-cell">
-            @if(strtolower($status) === 'eligible')
-              <span class="badge bg-success">Eligible</span>
-            @elseif(strtolower($status) === 'probationary')
-              <span class="badge bg-warning text-dark">Probationary</span>
-            @elseif(strtolower($status) === 'ineligible' || strtolower($status) === 'revoked')
-              <span class="badge bg-danger">Revoked</span>
-            @else
-              <span class="badge bg-secondary">{{ $status }}</span>
-            @endif
-          </td>
-          <td>{{ $scholar['created_at'] ?? 'N/A' }}</td>
+<td class="status-cell">
+  @if(strtolower($status) === 'eligible')
+    <span class="status-eligible">Eligible</span>
+  @elseif(strtolower($status) === 'probationary')
+    <span class="status-probationary">Probationary</span>
+  @elseif(strtolower($status) === 'ineligible' || strtolower($status) === 'revoked')
+    <span class="status-revoked">Revoked</span>
+  @else
+    <span class="status-na">{{ $status }}</span>
+  @endif
+</td>
+<td>
+    {{ $scholar['created_at'] ? \Carbon\Carbon::parse($scholar['created_at'])->format('F d, Y g:i A') : 'N/A' }}
+</td>
         </tr>
       @empty
         <tr>
