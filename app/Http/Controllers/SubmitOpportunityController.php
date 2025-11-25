@@ -258,7 +258,7 @@ class SubmitOpportunityController extends Controller
             ->with('success', 'Opportunity submitted and auto-approved!');
     }
 
-    return redirect()->route('volunteers-offices.home')
+    return redirect()->route('volunteers-offices.request-volunteer')
         ->with('success', 'Opportunity submitted! Pending approval by SDA Assistant.');
 }
 

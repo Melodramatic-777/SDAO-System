@@ -13,6 +13,7 @@ Route::prefix('volunteers-admin')->group(function () {
     Route::view('/dashboard', 'volunteers-admin.dashboard')->name('volunteers-admin.dashboard');
     Route::view('/leader-board', 'volunteers-admin.leader-board')->name('volunteers-admin.leader-board');
     Route::view('/inquiries', 'volunteers-admin.inquiries')->name('volunteers-admin.inquiries');
+    Route::view('/home', 'volunteers-admin.home')->name('volunteers-admin.home');
 
     Route::controller(OpportunitiesDisplayController::class)->group(function () {
         Route::get('/opportunities', 'opportunities')->name('volunteers-admin.opportunities');
