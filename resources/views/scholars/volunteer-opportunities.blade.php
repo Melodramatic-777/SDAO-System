@@ -374,7 +374,7 @@ function showDetail(id) {
             ? `<button class="mt-3 btn btn-secondary" disabled>Joined</button>`
             : isFull
                 ? `<button class="mt-3 btn btn-dark" disabled>Full</button>`
-                : `<button class="mt-3 btn btn-primary" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
+                : `<button id="joinBtn" class="mt-3 btn btn-primary" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
         }
 
         <hr class="my-4">
@@ -420,12 +420,13 @@ function formatDatePretty(dateString) {
 // ---------- JOIN OPPORTUNITY ----------
 async function joinOpportunity(id) {
   const btn = document.getElementById("joinBtn");
-  btn.disabled = true;
-  
-  btn.innerText = "Joining...";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Joining...";
+  }
 
   try {
-    const response = await fetch(`/scholars/opportunities/join/${id}`, {
+    const response = await fetch(`{{ url('/scholars/opportunities/join') }}/${id}`, {
       method: "POST",
       headers: {
         "X-CSRF-TOKEN": csrfToken,
@@ -436,17 +437,28 @@ async function joinOpportunity(id) {
     });
 
     const data = await response.json();
+
     if (response.ok) {
-      alert('Joined successfully!');
+      alert("Joined successfully!");
       location.reload();
     } else {
-      alert(data.error || data.message || 'Failed to join.');
+      alert(data.error || data.message || "Failed to join.");
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = "Join";
+      }
     }
+
   } catch (err) {
     console.error(err);
-    alert('Error joining opportunity.');
+    alert("Error connecting to server.");
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "Join";
+    }
   }
 }
+
 
 document.getElementById("otherReasonCheck").addEventListener("change", function () {
   document.getElementById("otherReasonInput").disabled = !this.checked;
