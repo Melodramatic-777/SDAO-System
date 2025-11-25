@@ -1,0 +1,602 @@
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background: #f9fafc;
+    
+}
+
+
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background: #fff;
+    margin: 5% auto;
+    padding: 2rem;
+    width: 50%;
+    border-radius: 8px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close {
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+
+.modal-dialog.modal-xl {
+  max-width: 90%;       /* responsive width */
+  width: auto;          /* allow shrinking */
+  margin: 1.75rem auto; /* vertical & horizontal centering */
+}
+
+.custom-modal-content {
+  max-height: 90vh;     /* fit within viewport height */
+  overflow-y: auto;     /* scroll if content is tall */
+  border-radius: 12px;  /* optional: keep rounded corners */
+}
+
+
+/* === Page Container for Responsive Side Margins === */
+.page-container {
+  padding: 0 20px;      /* small margin by default */
+  max-width: 1400px;    /* prevent stretching too wide on large screens */
+  margin: 0 auto;       /* center the content */
+  width: 100%;
+}
+
+/* Adjust spacing for larger screens */
+@media (min-width: 768px) {
+  .page-container {
+    padding: 0 40px;   /* medium margin */
+  }
+}
+
+@media (min-width: 1200px) {
+  .page-container {
+    padding: 0 60px;   /* slightly bigger margin */
+  }
+}
+
+
+/* === Custom Header === */
+.custom-header {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 2rem;
+    border-bottom: 2px solid #003DA5;
+}
+
+.custom-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: bold;
+    color: #003DA5;
+}
+
+.custom-header .logo img {
+    height: 40px;
+    width: auto;
+}
+
+.side-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.side-button img {
+    height: 30px;
+    width: auto;
+}
+
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+}
+
+.header-right-group p {
+    color: #003DA5;
+    font-weight: 100;
+    font-size: 1rem;
+    margin: 0;
+}
+
+
+/* === Header Styles === */
+header {
+    background-color: #003DA5;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header .logo {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+header nav a {
+    color: white;
+    margin: 0 0.75rem;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* === Dashboard Layout === */
+.dashboard-row {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+  align-items: stretch;
+}
+
+
+/* Custom Modal */
+.custom-modal-content {
+  background: #fff;
+  margin: 5% auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.custom-modal-body {
+  padding: 1.5rem;
+}
+
+
+/* Left column: stacked buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Right column: stats grid */
+.status-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Action Cards */
+.action-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  text-align: left;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.action-card:hover {
+  border-color: #003DA5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.action-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #003DA5;
+}
+
+.action-card p {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Status Cards */
+.status-card {
+  text-align: center;
+  padding: 25px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.status-card span {
+  display: block;
+  margin-top: 10px;
+  font-size: 24px;
+}
+
+/* Colors */
+
+.status-card.hoursCompleted {
+  background: #e6f1ff;
+  color: #2563eb;
+}
+
+.status-card.activitiesParticipated {
+  background: #e9f7ef;
+  color: #1e8449;
+}
+
+.status-card.hoursMonth {
+  background: #f5e3f4;
+  color: #8d3fac;
+}
+
+.status-card.remainingHours {
+  background: #fff9e6;
+  color: #d4ac0d;
+}
+
+
+
+    .left-panel {
+      border-right: 1px solid #f0e6cc;
+    }
+
+    .status-badge {
+      background: #ffa857;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .volunteer-count {
+      font-weight: bold;
+      color: #0056b3;
+    }
+
+    .volunteers-list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 0.5rem;
+    }
+
+    .volunteers-list li {
+      font-size: 0.9rem;
+      padding: 2px 0;
+    }
+
+    .right-panel h6 {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .right-panel ul {
+      padding-left: 20px;
+      font-size: 0.9rem;
+    }
+
+    .view-details-btn {
+      background: none;
+      border: none;
+      color: #0d6efd;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+
+
+
+    .status-card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    transition: 0.2s;
+  }
+
+  .status-card:hover { transform: translateY(-3px); }
+
+  .status-card h6 { font-size: 0.9rem; margin-bottom: 6px; color: #555; font-weight: 600; }
+  .status-card h3 { font-size: 2rem; margin: 0; font-weight: 700; }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+
+
+
+
+.status-filter {
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  gap: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 12px; /* <-- Added spacing */
+
+}
+
+.status-tab {
+  padding-bottom: 4px;
+  transition: 0.25s ease;
+}
+
+/* Light Mode (Default) */
+@media (prefers-color-scheme: light) {
+  .status-tab {
+    color: #6c6c6c;
+  }
+  .status-tab.active {
+    color: #000;
+    border-bottom: 2px solid #0056b3; /* NU Yellow Accent */
+  }
+  .status-tab:hover {
+    color: #000;
+  }
+}
+  
+
+.status-tab .badge {
+  font-size: 0.75rem;
+  vertical-align: text-top;
+  padding: 3px 7px;
+  border-radius: 8px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+table thead {
+  background: #FFD700;       /* gold header */
+  color: #000; 
+                /* black text */
+}
+
+table th, 
+table td {
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: 14px;
+  padding: 12px;
+}
+
+table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* zebra striping */
+}
+
+table tbody tr:hover {
+  background-color: #fff8dc; /* soft highlight */
+}
+
+.search-input {
+    width: 300px;
+    max-width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Focus Effect */
+.search-input:focus {
+    outline: none;
+    border-color: #003DA5;        /* matching primary color */
+    box-shadow: 0 2px 8px rgba(0,61,165,0.3);
+}
+
+/* Import Button for consistency */
+.import-btn {
+    background-color: #003DA5;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.import-btn:hover {
+    background-color: #00297d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+table thead tr:first-child {
+  background-color: #003DA5 !important;
+  color: white !important;
+}
+
+.status-cell {
+    text-align: center !important;
+}
+
+.center-cell {
+    text-align: center !important;
+}
+
+
+.status-card.approved {
+  background: #e9f7ef;
+  color: #1e8449;
+}
+
+.status-card.volunteers {
+  background-color: #f0f0f0; /* grey */
+  color: #666565;
+}
+
+.status-card.waiting {
+  background: #fff9e6;
+  color: #d4ac0d;
+}
+
+.status-card.returned {
+  background: #f5e3f4;
+  color: #8d3fac;
+}
+
+
+.status-card.urgent {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+
+
+/* Panels */
+.left-panel {
+  border-right: 1px solid #f0e6cc;
+}
+
+.right-panel h6 {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.right-panel ul {
+  padding-left: 20px;
+  font-size: 0.9rem;
+}
+
+/* Status Badges */
+.status-badge {
+  background: #ffa857;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* Volunteer List */
+.volunteer-count {
+  font-weight: bold;
+  color: #0056b3;
+}
+
+.volunteers-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+}
+
+.volunteers-list li {
+  font-size: 0.9rem;
+  padding: 2px 0;
+}
+
+/* Buttons */
+.view-details-btn {
+  background: none;
+  border: none;
+  color: #0d6efd;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Modal Sizes */
+.modal-dialog.modal-xl {
+  max-width: 100% !important;
+  min-width: 1500px;
+}
+
+.modal-content.custom-modal-content {
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+/* Status Cards */
+.status-card {
+  background: white;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.status-card:hover {
+  transform: translateY(-3px);
+}
+
+.status-card h6 {
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  color: #555;
+  font-weight: 600;
+}
+
+.status-card h3 {
+  font-size: 2rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+/* Status Filter Tabs */
+.status-filter {
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  gap: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 12px;
+}
+
+
+
+.status-tab .badge {
+  font-size: 0.75rem;
+  vertical-align: text-top;
+  padding: 3px 7px;
+  border-radius: 8px;
+}

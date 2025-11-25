@@ -143,7 +143,7 @@ table thead tr:first-child {
 
 <header>
   <nav>
-    <a href="{{ route('volunteers-admin.dashboard') }}">Leader Board</a>
+    <a href="{{ route('volunteers-admin.dashboard') }}">Dashboard</a>
     <a href="{{ route('volunteers-admin.opportunities') }}">Volunteer Requests</a>
     <a href="{{ route('volunteers-admin.history') }}">History</a>
     <a href="{{ route('volunteers-admin.student-volunteers') }}">Student Volunteers</a>

@@ -10,79 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   @vite('resources/css/volunteers.css')
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
 
-    #scholarsTable {
-      transition: opacity 0.3s ease-in-out;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .table-title-row th {
-      background-color: #004aad !important;
-      color: white !important;
-      text-align: center;
-      font-size: 1.25rem;
-    }
-
-    .table-header-row th {
-      background-color: #FFD700 !important;
-      color: black !important;
-      font-weight: bold !important;
-      text-align: center;
-    }
-
-    .custom-modal-content {
-      background: #fff;
-      margin: 5% auto;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-    .custom-modal-content .modal-header {
-      border-bottom: 2px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .custom-modal-content .modal-body {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .custom-modal-content .modal-footer {
-      border-top: 2px solid #eee;
-    }
-
-    .view-details-btn {
-      background: none;
-      border: none;
-      padding: 0;
-      margin: 0;
-      font: inherit;
-      color: inherit;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .view-details-btn:hover {
-      color: #0d6efd;
-      text-decoration: underline;
-    }
-
-    .logout-btn {
-      background-color: #f8f9fa !important;
-      border: 0px solid #ddd !important;
-    }
-
-    .logout-btn:focus,
-    .logout-btn:active {
-      outline: none !important;
-      box-shadow: none !important;
-      border-color: #ddd !important;
-    }
-  </style>
 </head>
 <body>
 
@@ -106,7 +34,8 @@
 
 <header>
 <nav>
-    <a href="{{ route('volunteers-offices.home') }}">Home</a>
+    <a href="{{ route('volunteers-offices.dashboard-office') }}">Dashboard</a>
+    <a href="{{ route('volunteers-offices.request-volunteer') }}">Volunteer Opportunities</a>
     <a href="{{ route('volunteers-offices.history-office') }}">History</a>
 </nav>
 </header>

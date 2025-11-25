@@ -58,9 +58,9 @@ class OpportunitiesDisplayController extends Controller
 
 return view('volunteers-admin.opportunities', [
     'groupedOpportunities' => $grouped,
-    'opportunities' => $pagedOpportunities->items(), // paginated items for display
-    'pagination' => $pagedOpportunities, // keep paginator for page links
-    'allOpportunities' => $opportunities // ✅ full list for counts
+    'opportunities' => $pagedOpportunities->items(),   // for display
+    'pagination' => $pagedOpportunities,               // paginator
+    'allOpportunities' => $opportunities               // FULL LIST → used for counts + filters
 ]);
 
 

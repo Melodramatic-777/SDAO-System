@@ -5,53 +5,10 @@
   <title>Leaderboard - NU Fairview SDAO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  @vite('resources/css/volunteers.css')
-
-
-    <style>
-
-    .leaderboard-container {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 20px;
-      border-radius: 12px;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 24px;
-      color: #333;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      font-size: 15px;
-    }
-
-    table thead {
-      background: #FFD500; /* Yellow Header */
-    }
-
-    table thead th {
-      padding: 12px;
-      font-weight: bold;
-      color: #333;
-      border: 1px solid #ddd;
-    }
-
-    table tbody td {
-      padding: 12px;
-      border: 1px solid #ddd;
-      color: #444;
-    }
-
-    table tbody tr:nth-child(even) {
-      background: #f7f7f7;
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  @vite('resources/css/Volunteer_Admin.css')
 
 </head>
 <body>
@@ -74,10 +31,11 @@
         </div>
     </header>
 
+    
 <!-- ✅ Navigation -->
 <header>
     <nav>
-    <a href="{{ route('volunteers-admin.dashboard') }}">Leader Board</a>
+    <a href="{{ route('volunteers-admin.dashboard') }}">Dashboard</a>
     <a href="{{ route('volunteers-admin.opportunities') }}">Volunteer Requests</a>
     <a href="{{ route('volunteers-admin.history') }}">History</a>
     <a href="{{ route('volunteers-admin.student-volunteers') }}">Student Volunteers</a>
@@ -85,6 +43,59 @@
     <a href="{{ route('volunteers-admin.inquiries') }}">Contact</a>
     </nav>
     </header>
+
+  <main class="page-container">
+
+
+        <div class="dashboard-row">
+      <div class="action-buttons">
+        <a href="{{ route('volunteers-admin.create-opportunity') }}" class="action-card">
+          <div class="card-icon">📝</div>
+          <h3>Submit a Volunteer Opportunity</h3>
+          <p>Propose a new volunteer activity for approval.</p>
+        </a>
+
+        <a href="{{ route('volunteers-admin.invite-volunteer') }}" class="action-card">
+          <div class="card-icon">📩</div>
+          <h3>Invite a Student Volunteer</h3>
+          <p>Send an invitation for student volunteers to join your activity.</p>
+        </a>
+      </div>
+
+      
+      @php
+$approved = collect($allOpportunities ?? [])->where('status', 'Approved')->count();
+$returned = collect($allOpportunities ?? [])->whereIn('status', ['Returned', 'Returned to SDAO'])->count();
+$waiting = collect($allOpportunities ?? [])->whereNotIn('status', ['Approved', 'Returned', 'Returned to SDAO'])->count();
+
+        $total = collect($opportunities ?? [])->count();
+$urgent = collect($opportunities ?? [])->filter(function($op) {
+    $isUrgent = !empty($op['is_urgent']) && ($op['is_urgent'] === true || $op['is_urgent'] === 'yes');
+    if (!$isUrgent) return false;
+
+    $status = strtolower($op['status'] ?? '');
+    $participants = count($op['participants'] ?? []);
+    $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
+
+    // Only count if:
+    // 1) Waiting for approval (Pending)
+    if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) return true;
+
+    // 2) Approved but not full
+    if ($status === 'approved' && $participants < $target) return true;
+
+    return false; // Otherwise do not count
+})->count();
+      @endphp
+
+      <div class="status-cards">
+        <div class="status-card approved">Approved <span>{{ $approved }}</span></div>
+        <div class="status-card waiting">Waiting for Approval <span>{{ $waiting }}</span></div>
+        <div class="status-card returned">Returned <span>{{ $returned }}</span></div>
+        <div class="status-card urgent">Urgent <span>{{ $urgent }}</span></div>
+      </div>
+        </div>
+
 <div class="leaderboard-container">
   <h2>Volunteer Hours Leaderboard</h2>
   <table>
@@ -172,8 +183,9 @@
   </table>
 </div>
 
-<!-- ✅ JS Logic -->
-<script>
+</main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 
 

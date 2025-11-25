@@ -170,6 +170,36 @@
     .btn-submit:hover {
         background-color: #43a047;
     }
+
+
+    .task-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.task-table th {
+    background-color: #003DA5;
+    color: white;
+    padding: 8px;
+    text-align: left;
+}
+
+.task-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    vertical-align: top;
+}
+
+.task-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.task-table tr:hover {
+    background-color: #e3f2fd;
+}
+
 </style>
 
 
@@ -186,8 +216,36 @@
     <label>Title of activity</label>
     <input type="text" name="title" placeholder="Enter title proposal" required>
 
-                <label>Location</label>
-                <input type="text" name="location" placeholder="Enter Location" required>
+<label>Location</label>
+
+<!-- LEVEL DROPDOWN -->
+<select id="level" required>
+    <option value="" selected disabled>Select Level</option>
+    <option value="Level 1">Level 1</option>
+    <option value="Level 2">Level 2</option>
+    <option value="Level 3">Level 3</option>
+    <option value="Level 4">Level 4</option>
+    <option value="Level 5">Level 5</option>
+    <option value="Others">Others</option>
+</select>
+
+<!-- Custom LEVEL input - hidden -->
+<input type="text" id="level-other-input" placeholder="Enter custom level..."
+       style="display:none; margin-top:8px;">
+
+<!-- ROOM DROPDOWN -->
+<select id="room" required disabled>
+    <option value="" selected disabled>Select Room / Area</option>
+</select>
+
+<!-- Custom ROOM input - hidden -->
+<input type="text" id="room-other-input" placeholder="Enter custom room/area..."
+       style="display:none; margin-top:8px;">
+
+
+<!-- Hidden final field that is submitted -->
+<input type="hidden" name="location" id="location">
+
 
                 <!-- Intermittent Option -->
                 <label>My event happens intermittently?</label>
@@ -264,11 +322,96 @@
                 <textarea name="description" placeholder="Enter activity description..." required></textarea>
 
                     
-                <label>Task Details</label>
-                <textarea name="task_details" placeholder="Enter description...." required></textarea>
+                <label>Task Selection</label>
 
-                <label>Skills Needed</label>
-                <textarea name="skills_needed" placeholder="Enter description...." required></textarea>
+<table class="task-table">
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th>Task</th>
+            <th>Skills Recommended</th>
+            <th>Short Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Marshalling"></td>
+            <td>Marshalling</td>
+            <td>Crowd management, clear communication, alert, patient</td>
+            <td>Helps manage crowd flow, guide participants, and keep pathways clear.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Registration"></td>
+            <td>Registration</td>
+            <td>Organized, detail-oriented, friendly, basic data encoding</td>
+            <td>Handles check-in, attendance lists, and assists participants.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Ushering"></td>
+            <td>Ushering</td>
+            <td>Approachable, good communication, presentable</td>
+            <td>Guides attendees to seats and helps answer questions.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Photography"></td>
+            <td>Photography</td>
+            <td>Basic photography skills, attention to detail</td>
+            <td>Takes photos of key moments and activities.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Videography"></td>
+            <td>Videography</td>
+            <td>Basic video recording, timing awareness</td>
+            <td>Records event highlights and important segments.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Technical Support"></td>
+            <td>Technical Support</td>
+            <td>Basic IT skills, calm under pressure</td>
+            <td>Helps manage audio, projector, and technical systems.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Creatives/Design"></td>
+            <td>Creatives / Design</td>
+            <td>Basic design sense, creativity</td>
+            <td>Prepares visual materials, layouts, and social media assets.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Hosting"></td>
+            <td>Hosting</td>
+            <td>Confident speaker, energetic, good diction</td>
+            <td>Leads the program, introduces speakers, engages the audience.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Logistics"></td>
+            <td>Logistics</td>
+            <td>Physically capable, organized</td>
+            <td>Transfers equipment/materials and supports operations.</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Admin Support"></td>
+            <td>Admin Support</td>
+            <td>Detail-oriented, encoding, filing</td>
+            <td>Prepares documents, attendance, certificates, encodes data.</td>
+        </tr>
+
+        <!-- Others row -->
+        <tr>
+            <td><input type="checkbox" name="tasks[]" value="Others"></td>
+   <td>Others</td>
+
+    <!-- Skills Recommended -->
+    <td>
+        <input type="text" name="task_other_skills" placeholder="Enter skills recommended…" style="width:100%;">
+    </td>
+
+    <!-- Short Description -->
+    <td>
+        <input type="text" name="task_other_description" placeholder="Enter short description…" style="width:100%;">
+    </td>
+        </tr>
+    </tbody>
+</table>
             </div>
 
         </div>
@@ -626,7 +769,126 @@ document.addEventListener("click", function(e) {
     }
 });
 
+const rooms = {
+    "Level 1": [
+        "Sky Garden",
+        "LRC",
+        "Function Hall",
+        "Accounting Office",
+        "Registrar's Office",
+        "Level 1"
+    ],
+    "Level 2": [
+        "Room 204 (SDAO)",
+        "Room 210 (GCO)",
+        "Room 211 (Community Extension and NSTP Office)",
+        "Room 224-225"
+    ],
+    "Level 3": [
+        "Room 304 (Faculty Room)",
+        "Room 320 (Chapel)"
+    ],
+    "Level 4": [
+        "Room 411 (ITSO)",
+        "AVR"
+    ],
+    "Level 5": [
+        "Function Hall"
+    ]
+};
+
+const levelSelect = document.getElementById("level");
+const roomSelect = document.getElementById("room");
+const locationInput = document.getElementById("location");
+const levelOtherInput = document.getElementById("level-other-input");
+const roomOtherInput = document.getElementById("room-other-input");
+
+
+// WHEN LEVEL CHANGES -----------------------------------
+levelSelect.addEventListener("change", function () {
+    const selectedLevel = this.value;
+
+    roomSelect.innerHTML = `<option value="" disabled selected>Select Room / Area</option>`;
+    roomSelect.disabled = false;
+
+    // hide custom inputs
+    levelOtherInput.style.display = "none";
+    roomOtherInput.style.display = "none";
+
+    // If LEVEL = OTHERS
+    if (selectedLevel === "Others") {
+        levelOtherInput.style.display = "block";
+
+        // Show room dropdown BUT only "Others"
+        roomSelect.innerHTML = `
+            <option value="" disabled selected>Select Room / Area</option>
+            <option value="Others">Others</option>
+        `;
+        roomSelect.disabled = false;
+
+        locationInput.value = "";
+        return;
+    }
+
+    // Normal level → load rooms
+    rooms[selectedLevel].forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r;
+        opt.textContent = r;
+        roomSelect.appendChild(opt);
+    });
+
+    // Add room Others
+    const opt = document.createElement("option");
+    opt.value = "Others";
+    opt.textContent = "Others";
+    roomSelect.appendChild(opt);
+
+    locationInput.value = "";
+});
+
+
+// WHEN ROOM CHANGES -------------------------------------
+roomSelect.addEventListener("change", function () {
+    const selectedRoom = this.value;
+
+    roomOtherInput.style.display = "none"; // hide first
+
+    // If room = Others → show custom room input
+    if (selectedRoom === "Others") {
+        roomOtherInput.style.display = "block";
+        locationInput.value = "";
+        return;
+    }
+
+    // If level is custom
+    if (levelSelect.value === "Others") {
+        const lvlText = levelOtherInput.value.trim();
+        locationInput.value = lvlText + " - " + selectedRoom;
+        return;
+    }
+
+    // Normal level + room
+    locationInput.value = levelSelect.value + " - " + selectedRoom;
+});
+
+
+// Custom LEVEL typing updates final value
+levelOtherInput.addEventListener("input", function () {
+    if (roomSelect.value && roomSelect.value !== "Others") {
+        locationInput.value = this.value.trim() + " - " + roomSelect.value;
+    }
+});
+
+// Custom ROOM typing updates final value
+roomOtherInput.addEventListener("input", function () {
+    const lvl = (levelSelect.value === "Others")
+        ? levelOtherInput.value.trim()
+        : levelSelect.value;
+
+    locationInput.value = lvl + " - " + this.value.trim();
+});
 
 </script>
 
-@endsection
+@endsection 

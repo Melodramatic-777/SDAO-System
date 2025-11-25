@@ -11,95 +11,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   @vite('resources/css/volunteers.css')
 
-  <style>
-    
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-  border: 1px solid #ddd;
-}
-
-table thead {
-  background: #FFD700;       /* gold header */
-  color: #000; 
-                /* black text */
-}
-
-table th, 
-table td {
-  border: 1px solid #ddd;
-  text-align: left;
-  font-size: 14px;
-  padding: 12px;
-}
-
-table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: center !important;
-  vertical-align: middle !important;
-}
-
-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9; /* zebra striping */
-}
-
-table tbody tr:hover {
-  background-color: #fff8dc; /* soft highlight */
-}
-
-.search-input {
-    width: 300px;
-    max-width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-size: 14px;
-    transition: all 0.2s ease-in-out;
-}
-
-/* Focus Effect */
-.search-input:focus {
-    outline: none;
-    border-color: #003DA5;        /* matching primary color */
-    box-shadow: 0 2px 8px rgba(0,61,165,0.3);
-}
-
-/* Import Button for consistency */
-.import-btn {
-    background-color: #003DA5;
-    color: #fff;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    transition: all 0.2s ease-in-out;
-}
-
-.import-btn:hover {
-    background-color: #00297d;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-table thead tr:first-child {
-  background-color: #003DA5 !important;
-  color: white !important;
-}
-
-.status-cell {
-    text-align: center !important;
-}
-
-.center-cell {
-    text-align: center !important;
-}
-  </style>
 </head>
 <body>
 
@@ -124,7 +36,7 @@ table thead tr:first-child {
 <!-- ✅ Navigation -->
 <header>
   <nav>
-    <a href="{{ route('volunteers-admin.dashboard') }}">Leader Board</a>
+    <a href="{{ route('volunteers-admin.dashboard') }}">Dashboard</a>
     <a href="{{ route('volunteers-admin.opportunities') }}">Volunteer Requests</a>
     <a href="{{ route('volunteers-admin.history') }}">History</a>
     <a href="{{ route('volunteers-admin.student-volunteers') }}">Student Volunteers</a>

@@ -10,95 +10,37 @@ use App\Http\Controllers\SubmitOpportunityController;
 
 Route::prefix('volunteers-admin')->group(function () {
 
-    // 📊 Dashboard
-    Route::get('/dashboard', fn() => view('volunteers-admin.dashboard'))
-        ->name('volunteers-admin.dashboard');
+    Route::view('/dashboard', 'volunteers-admin.dashboard')->name('volunteers-admin.dashboard');
+    Route::view('/leader-board', 'volunteers-admin.leader-board')->name('volunteers-admin.leader-board');
+    Route::view('/inquiries', 'volunteers-admin.inquiries')->name('volunteers-admin.inquiries');
 
-    // 🗓️ Opportunities page
-    Route::get('/opportunities', [OpportunitiesDisplayController::class, 'opportunities'])
-        ->name('volunteers-admin.opportunities');
+    Route::controller(OpportunitiesDisplayController::class)->group(function () {
+        Route::get('/opportunities', 'opportunities')->name('volunteers-admin.opportunities');
+    });
 
-    // 🏆 Leaderboard
-    Route::get('/leader-board', fn() => view('volunteers-admin.leader-board'))
-        ->name('volunteers-admin.leader-board');
+    Route::controller(AccountsScholarsController::class)->group(function () {
+        Route::get('/student-volunteers', 'showStudentVolunteers')->name('volunteers-admin.student-volunteers');
+        Route::get('/student/{student_no}', 'showVolunteerDetail')->name('volunteers-admin.student-volunteer-detail');
+    });
 
+    Route::controller(AccountsVolunteersController::class)->group(function () {
+        Route::get('/accounts', 'showAspiringScholarsPage')->name('volunteers-admin.accounts');
+        Route::post('/create-aspiring-scholar-account', 'storeAspiringScholarAccount')->name('volunteers-admin.create-aspiring-scholar-account');
+        Route::post('/volunteers-admin/aspiring-scholar/delete', 'archiveAspiringScholar')->name('volunteers-admin.archive-aspiring-scholar');
+    });
 
+    Route::controller(OpportunitiesController::class)->group(function () {
+        Route::get('/history', 'history')->name('volunteers-admin.history');
+        Route::get('/history/{office}', 'officeOpportunities')->name('volunteers-admin.office-opportunities');
+        Route::get('/create-opportunity', 'createOpportunity')->name('volunteers-admin.create-opportunity');
+        Route::get('/opportunities/{id}', 'show')->name('volunteers-admin.opportunities.show');
+        Route::patch('/opportunities/{id}/status', 'updateStatus')->name('volunteers-admin.opportunity.update-status');
+        Route::post('/opportunities/{id}/cancel', 'cancelOpportunity')->name('volunteers-admin.opportunities.cancel');
+        Route::get('/invite-volunteer', 'showScholars')->name('volunteers-admin.invite-volunteer');
+        Route::get('/volunteers/invite', 'showScholars')->name('volunteers.invite');
+        Route::post('/invite-scholar', 'inviteScholar')->name('volunteers-admin.inviteScholar');
+    });
 
-
-    // 👥 Student Volunteers
-    Route::get('student-volunteers', [AccountsScholarsController::class, 'showStudentVolunteers'])
-    ->name('volunteers-admin.student-volunteers');
-    // Student Volunteer Detail Page
-    Route::get('student/{student_no}',  [AccountsScholarsController::class, 'showVolunteerDetail']
-    )->name('volunteers-admin.student-volunteer-detail');
-
-
-
-
-
-    // 🧾 Account creation & management
-    Route::get('/accounts', [AccountsVolunteersController::class, 'showAspiringScholarsPage'])
-        ->name('volunteers-admin.accounts');
-
-    Route::post('/create-aspiring-scholar-account', [AccountsVolunteersController::class, 'storeAspiringScholarAccount'])
-        ->name('volunteers-admin.create-aspiring-scholar-account');
-    
-        Route::post('/volunteers-admin/aspiring-scholar/delete', [AccountsVolunteersController::class, 'archiveAspiringScholar'])
-    ->name('volunteers-admin.archive-aspiring-scholar');
-
-
-
-    // 🕓 History page
-    Route::get('/history', [OpportunitiesController::class, 'history'])
-        ->name('volunteers-admin.history');
-    Route::get('/history/{office}', [OpportunitiesController::class, 'officeOpportunities'])
-        ->name('volunteers-admin.office-opportunities');
-
-
-
-
-
-
-
-    // 📝 Volunteer opportunity form
-    Route::get('/create-opportunity', [OpportunitiesController::class, 'createOpportunity'])
-        ->name('volunteers-admin.create-opportunity');
-
-
-
-
-    // Save opportunity to Firebase
     Route::post('/store-opportunity', [SubmitOpportunityController::class, 'store'])
         ->name('volunteers-admin.store-opportunity');
-
-
-
-
-    // 📄 Opportunity details + actions
-    Route::get('/opportunities/{id}', [OpportunitiesController::class, 'show'])
-        ->name('volunteers-admin.opportunities.show');
-
-    Route::patch('/opportunities/{id}/status', [OpportunitiesController::class, 'updateStatus'])
-        ->name('volunteers-admin.opportunity.update-status');
-
-Route::post('/opportunities/{id}/cancel', [OpportunitiesController::class, 'cancelOpportunity'])
-    ->name('volunteers-admin.opportunities.cancel');
-
-
-
-
-
-    // ✉️ Invite Volunteer
-    Route::get('/invite-volunteer', [OpportunitiesController::class, 'showScholars'])
-        ->name('volunteers-admin.invite-volunteer');
-
-    Route::get('/volunteers/invite', [OpportunitiesController::class, 'showScholars'])
-        ->name('volunteers.invite');
-
-    Route::post('/invite-scholar', [OpportunitiesController::class, 'inviteScholar'])
-        ->name('volunteers-admin.inviteScholar');
-
-    // 📬 Inquiries
-    Route::get('/inquiries', fn() => view('volunteers-admin.inquiries'))
-        ->name('volunteers-admin.inquiries');
 });

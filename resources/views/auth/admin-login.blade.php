@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
 
-    @vite('resources/css/app.css') 
+  @vite('resources/css/volunteers.css')
     <style>
         * {
             box-sizing: border-box;
@@ -16,7 +16,7 @@
         }
 
         body {
-            background: url('/images/your-login-background.jpg') no-repeat center center/cover;
+        background: url('/public/images/login_bg.png') no-repeat center center/cover;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -45,22 +45,32 @@
             font-weight: 500;
         }
 
-        .login-container {
-            background-color: white;
-            max-width: 400px;
-            margin: 4rem auto;
-            padding: 2rem;
-            border: 2px solid #003DA5;
-            border-radius: 25px;
-            text-align: center;
-        }
+        .login-bg-wrapper {
+    background: url('/images/login_bg.png') no-repeat center center;
+    background-size: cover;
+    min-height: calc(100vh - 70px); /* adjust based on header height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 0;
+}
+
+.login-container {
+    background-color: white; /* solid background */
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    border: 2px solid #003DA5;
+    border-radius: 25px;
+    text-align: center;
+    color: #003DA5; /* change text color for readability */
+}
 
         .login-container h2 {
             color: #003DA5;
             font-size: 2rem;
             margin-bottom: 1.5rem;
             font-weight: 800;
-            font-style: italic;
         }
 
         .login-container label {
@@ -98,14 +108,15 @@
 <body>
     <header>
         <div class="logo">
-            <img src="/images/nu-logo.png" alt="NU Logo" height="30">
-            NU Fairview - SDAO
+      <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            Student Developments and Activities Office
         </div>
         <nav>
             <a href="/">ABOUT US</a>
             <a href="/#contact">CONTACT US</a>
         </nav>
     </header>
+    <div class="login-bg-wrapper">
 
     <div class="login-container">
         <h2>Log In</h2>
@@ -125,12 +136,11 @@
                 </div>
             @endif
 
-            <p><em>Forgot your password?</em><br>
-                Please visit the SDA Office to request a password reset.
-            </p>
+            <p><em>Forgot your password?</em><br>            </p>
 
             <button type="submit">Log In</button>
         </form>
+    </div>
     </div>
 </body>
 </html>

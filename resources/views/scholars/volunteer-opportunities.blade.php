@@ -165,10 +165,8 @@
 
 
 
-
-<!-- ON THE SPOT VOLUNTEER MODAL -->
 <div class="modal fade" id="onTheSpotModal" tabindex="-1" aria-labelledby="onTheSpotVolunteerLabel" aria-hidden="true">
-<div class="modal-dialog modal-dialog-centered modal-lg">
+<div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 65% !important;">
     <div class="p-3 modal-content">
 
       <div class="modal-header">
@@ -180,7 +178,9 @@
         @csrf
 
         <div class="modal-body">
+          <p>By submitting, you will be added to the pool of available on-the-spot volunteers. Offices will be able to select you if they need help.</p>
 
+          <!-- Office Selection -->
           <label class="form-label">Office</label>
           <select name="office" class="form-select" required>
             <option value="">Choose office</option>
@@ -189,7 +189,23 @@
             @endforeach
           </select>
 
-          <label class="mt-3 form-label">Reason</label>
+          <small class="mb-2 text-muted d-block">
+  If your chosen office does not select you, you will be transfered to other offices.
+</small>
+
+          <!-- Availability Date -->
+          <label class="mt-2 form-label">Available Date</label>
+          <input type="date" name="available_date" class="form-control" required>
+
+          <!-- Availability Time -->
+          <label class="mt-2 form-label">Available Time</label>
+          <div class="gap-2 d-flex">
+            <input type="time" name="available_start_time" class="form-control" required>
+            <span class="align-self-center">to</span>
+            <input type="time" name="available_end_time" class="form-control" required>
+          </div>
+
+          <label class="mt-3 form-label">Reason for Availability</label>
           <div class="form-check">
             <input class="form-check-input" type="checkbox" name="reasons[]" value="Vacant Schedule">
             <label class="form-check-label">Vacant Schedule</label>
@@ -210,12 +226,12 @@
             <label class="form-check-label">Others..</label>
           </div>
 
-          <input type="text" class="mt-2 form-control" placeholder="Please Specify" name="other_reason" id="otherReasonInput" disabled>
-
+          <input type="text" class="mt-2 form-control" placeholder="Please Specify"
+                 name="other_reason" id="otherReasonInput" disabled>
         </div>
 
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary w-100">Submit</button>
+          <button type="submit" class="btn btn-primary w-100">Mark Myself Available</button>
         </div>
       </form>
 

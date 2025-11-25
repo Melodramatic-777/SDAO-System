@@ -11,146 +11,8 @@
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-  @vite('resources/css/volunteers.css')
+  @vite('resources/css/Volunteer_Admin.css')
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
-    .custom-modal-content {
-      background: #fff;
-      margin: 5% auto;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .custom-modal-body {
-      padding: 1.5rem;
-    }
-
-    .left-panel {
-      border-right: 1px solid #f0e6cc;
-    }
-
-    .status-badge {
-      background: #ffa857;
-      color: white;
-      font-size: 0.85rem;
-      font-weight: bold;
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
-
-    .volunteer-count {
-      font-weight: bold;
-      color: #0056b3;
-    }
-
-    .volunteers-list {
-      list-style: none;
-      padding-left: 0;
-      margin-top: 0.5rem;
-    }
-
-    .volunteers-list li {
-      font-size: 0.9rem;
-      padding: 2px 0;
-    }
-
-    .right-panel h6 {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-    }
-
-    .right-panel ul {
-      padding-left: 20px;
-      font-size: 0.9rem;
-    }
-
-    .view-details-btn {
-      background: none;
-      border: none;
-      color: #0d6efd;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .modal-dialog.modal-xl {
-      max-width: 100% !important;
-      min-width: 1500px;
-    }
-
-    .modal-content.custom-modal-content {
-      max-height: 95vh;
-      overflow-y: auto;
-    }
-
-
-    .status-card {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
-    text-align: center;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    transition: 0.2s;
-  }
-
-  .status-card:hover { transform: translateY(-3px); }
-
-  .status-card h6 { font-size: 0.9rem; margin-bottom: 6px; color: #555; font-weight: 600; }
-  .status-card h3 { font-size: 2rem; margin: 0; font-weight: 700; }
-
-  .status-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-
-
-
-
-
-.status-filter {
-  font-size: 16px;
-  font-weight: 500;
-  display: flex;
-  gap: 1.5rem;
-  cursor: pointer;
-  user-select: none;
-  margin-top: 12px; /* <-- Added spacing */
-
-}
-
-.status-tab {
-  padding-bottom: 4px;
-  transition: 0.25s ease;
-}
-
-/* Light Mode (Default) */
-@media (prefers-color-scheme: light) {
-  .status-tab {
-    color: #6c6c6c;
-  }
-  .status-tab.active {
-    color: #000;
-    border-bottom: 2px solid #0056b3; /* NU Yellow Accent */
-  }
-  .status-tab:hover {
-    color: #000;
-  }
-}
-  
-
-.status-tab .badge {
-  font-size: 0.75rem;
-  vertical-align: text-top;
-  padding: 3px 7px;
-  border-radius: 8px;
-}
-
-
-  </style>
 </head>
 
 <body>
@@ -175,7 +37,7 @@
 
   <header>
     <nav>
-      <a href="{{ route('volunteers-admin.dashboard') }}">Leader Board</a>
+      <a href="{{ route('volunteers-admin.dashboard') }}">Dashboard</a>
       <a href="{{ route('volunteers-admin.opportunities') }}">Volunteer Requests</a>
       <a href="{{ route('volunteers-admin.history') }}">History</a>
       <a href="{{ route('volunteers-admin.student-volunteers') }}">Student Volunteers</a>
@@ -186,77 +48,62 @@
 
   <main class="page-container">
 
-    <div class="dashboard-row">
-      <div class="action-buttons">
-        <a href="{{ route('volunteers-admin.create-opportunity') }}" class="action-card">
-          <div class="card-icon">📝</div>
-          <h3>Submit a Volunteer Opportunity</h3>
-          <p>Propose a new volunteer activity for approval.</p>
-        </a>
 
-        <a href="{{ route('volunteers-admin.invite-volunteer') }}" class="action-card">
-          <div class="card-icon">📩</div>
-          <h3>Invite a Student Volunteer</h3>
-          <p>Send an invitation for student volunteers to join your activity.</p>
-        </a>
-      </div>
-
-      @php
-$approved = collect($opportunities ?? [])->where('status', 'Approved')->count();
-$returned = collect($opportunities ?? [])->whereIn('status', ['Returned', 'Returned to SDAO'])->count();
-$waiting = collect($opportunities ?? [])->whereNotIn('status', ['Approved', 'Returned', 'Returned to SDAO'])->count();
-
-        $total = collect($opportunities ?? [])->count();
-$urgent = collect($opportunities ?? [])->filter(function($op) {
-    $isUrgent = !empty($op['is_urgent']) && ($op['is_urgent'] === true || $op['is_urgent'] === 'yes');
-    if (!$isUrgent) return false;
-
-    $status = strtolower($op['status'] ?? '');
-    $participants = count($op['participants'] ?? []);
-    $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
-
-    // Only count if:
-    // 1) Waiting for approval (Pending)
-    if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) return true;
-
-    // 2) Approved but not full
-    if ($status === 'approved' && $participants < $target) return true;
-
-    return false; // Otherwise do not count
-})->count();
-      @endphp
-
-      <div class="status-cards">
-        <div class="status-card approved">Approved <span>{{ $approved }}</span></div>
-        <div class="status-card waiting">Waiting for Approval <span>{{ $waiting }}</span></div>
-        <div class="status-card returned">Returned <span>{{ $returned }}</span></div>
-        <div class="status-card urgent">Urgent <span>{{ $urgent }}</span></div>
-      </div>
-        </div>
 
 <section class="status-section">
   
 
-
 @php
-    $allCount = collect($allOpportunities)->count();
+    $allCount = collect($opportunities)->count();
 
-    $waitingApprovalCount = collect($allOpportunities)->filter(function ($op) {
+    $waitingApprovalCount = collect($opportunities)->filter(function ($op) {
         $status = strtolower($op['status'] ?? '');
         return in_array($status, ['pending', 'waiting', 'waiting for approval', 'returned to sdao']);
     })->count();
 
-    $waitingVolunteersCount = collect($allOpportunities)->filter(function ($op) {
+    $waitingVolunteersCount = collect($opportunities)->filter(function ($op) {
         $status = strtolower($op['status'] ?? '');
         $participants = count($op['participants'] ?? []);
         $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
         return $status === 'approved' && $participants < $target;
     })->count();
 
-    $returnedCount = collect($allOpportunities)->filter(function ($op) {
+    $returnedCount = collect($opportunities)->filter(function ($op) {
         return in_array(strtolower($op['status'] ?? ''), ['returned', 'returned to sdao']);
     })->count();
+
+    // MAIN FILTER
+    $filteredOpportunities = collect($opportunities)->filter(function($opportunity) {
+        $status = strtolower($opportunity['status'] ?? '');
+        $participantsCount = count($opportunity['participants'] ?? []);
+        $targetNumber = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
+
+        if (in_array($status, ['returned', 'returned to sdao'])) return true;
+
+        if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) return true;
+
+        if ($status === 'approved' && $participantsCount < $targetNumber) return true;
+
+        return false;
+    });
+
+    // Sorting Logic
+    $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunity) {
+        $status = strtolower($opportunity['status'] ?? '');
+        $participants = count($opportunity['participants'] ?? []);
+        $target = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
+        $isUrgent = !empty($opportunity['is_urgent']) &&
+                    ($opportunity['is_urgent'] === true || $opportunity['is_urgent'] === 'yes');
+
+        if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) return 4;
+        if ($isUrgent) return 3;
+        if ($status === 'approved' && $participants < $target) return 2;
+        if (in_array($status, ['returned', 'returned to sdao'])) return 1;
+
+        return 0;
+    });
 @endphp
+
 
 <div class="gap-4 mb-4 status-filter d-flex">
     <span class="status-tab active" id="filterAll">
@@ -280,7 +127,7 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
         <p>No submitted activities yet</p>
       @else
 @php
-  $filteredOpportunities = collect($opportunities)->filter(function($opportunity) {
+  $filteredOpportunities = collect($allOpportunities)->filter(function($opportunity) {
       $status = strtolower($opportunity['status'] ?? '');
       $participantsCount = count($opportunity['participants'] ?? []);
       $targetNumber = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
@@ -339,7 +186,7 @@ $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunit
         @else
         <div id="opportunitiesContainer">
 
-@foreach($opportunities as $opportunity)
+@foreach($filteredOpportunities as $opportunity)
             @php
               $status = strtolower($opportunity['status'] ?? 'waiting');
    switch($status) {
@@ -556,27 +403,24 @@ $filteredOpportunities = $filteredOpportunities->sortByDesc(function($opportunit
 
 
            
-          <h6>Tasks</h6>
-          <ul>
-            @if(!empty($opportunity['task_details']))
-              @foreach(explode("\n", $opportunity['task_details']) as $task)
-                <li>{{ trim($task) }}</li>
-              @endforeach
-            @else
-              <li>No tasks provided.</li>
-            @endif
-          </ul>
+<h6>Tasks</h6>
 
-          <h6>Skills Needed</h6>
-          <ul>
-            @if(!empty($opportunity['skills_needed']))
-              @foreach(is_array($opportunity['skills_needed']) ? $opportunity['skills_needed'] : explode("\n", $opportunity['skills_needed']) as $skill)
-                <li>{{ trim($skill) }}</li>
-              @endforeach
-            @else
-              <li>No skills provided.</li>
-            @endif
-          </ul>
+@if(!empty($opportunity['tasks']) && is_array($opportunity['tasks']))
+  <ul style="list-style-type: disc; padding-left: 20px;">
+    @foreach($opportunity['tasks'] as $taskItem)
+      <li class="mb-2">
+        <strong>{{ $taskItem['task'] ?? 'Unnamed Task' }}</strong><br>
+        <span><em>{{ $taskItem['description'] ?? 'No description provided.' }}</em></span><br>
+        <span>Skills: {{ $taskItem['skills'] ?? 'Not specified' }}</span>
+      </li>
+    @endforeach
+  </ul>
+@else
+  <ul>
+    <li>No tasks provided.</li>
+  </ul>
+@endif
+
 
           <hr>
 

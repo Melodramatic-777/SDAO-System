@@ -148,7 +148,7 @@ if ($userType === 'scholars') {
         // === Volunteers: Office ===
         if ($userType === 'office_accounts') {
             Session::put('volunteers_office', $authenticatedUser);
-            return redirect()->route('volunteers-offices.home');
+            return redirect()->route('volunteers-offices.dashboard-office');
         }
 
         return redirect('/');

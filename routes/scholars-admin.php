@@ -8,34 +8,29 @@ use App\Http\Controllers\ScholarsDashboardController;
 
 Route::prefix('scholars-admin')->group(function () {
 
-    // ✅ Dashboard
-    Route::get('/dashboard',  [ScholarsDashboardController::class, 'dashboard'])
-        ->name('scholars-admin.dashboard');
 
-    // ✅ Scholarship Types (CRUD)
-    Route::get('/scholarships', [ScholarshipTypesController::class, 'index'])
-        ->name('scholars-admin.scholarships');
-    Route::post('/scholarships', [ScholarshipTypesController::class, 'store'])
-        ->name('scholars-admin.scholarships.store');
-    Route::put('/scholarships/{id}', [ScholarshipTypesController::class, 'update'])
-        ->name('scholars-admin.scholarships.update');
-    Route::delete('/scholarships/{id}', [ScholarshipTypesController::class, 'destroy'])
-        ->name('scholars-admin.scholarships.destroy');
-
-    // ✅ Scholars Accounts
-    Route::get('/scholars_accounts', [AccountsScholarsController::class, 'showScholarsPage'])
-        ->name('scholars-admin.scholars_accounts');
-    Route::post('/import-scholars', [AccountsScholarsController::class, 'importScholars'])
-        ->name('scholars-admin.import-scholars');
-
-    // ✅ Scholars GWA Records
-Route::get('/scholars', [ScholarRecordsController::class, 'indexRecord'])
-    ->name('scholars-admin.scholars');
-
-Route::post('/scholars/save-gwa', [ScholarRecordsController::class, 'saveGwa'])
-    ->name('scholars-admin.scholars.save');
+    Route::controller(ScholarsDashboardController::class)->group(function () {
+        Route::get('/dashboard', 'dashboard')->name('scholars-admin.dashboard');
+    });
 
 
+    Route::controller(controller: ScholarshipTypesController::class)->group(function () {
+        Route::get('/scholarships', 'index')->name('scholars-admin.scholarships');
+        Route::post('/scholarships', 'store')->name('scholars-admin.scholarships.store');
+        Route::put('/scholarships/{id}', 'update')->name('scholars-admin.scholarships.update');
+        Route::delete('/scholarships/{id}', 'destroy')->name('scholars-admin.scholarships.destroy');
+    });
 
+
+    Route::controller(AccountsScholarsController::class)->group(function () {
+        Route::get('/scholars_accounts', 'showScholarsPage')->name('scholars-admin.scholars_accounts');
+        Route::post('/import-scholars', 'importScholars')->name('scholars-admin.import-scholars');
+    });
+
+
+    Route::controller(ScholarRecordsController::class)->group(function () {
+        Route::get('/scholars', 'indexRecord')->name('scholars-admin.scholars');
+        Route::post('/scholars/save-gwa', 'saveGwa')->name('scholars-admin.scholars.save');
+    });
 
 });

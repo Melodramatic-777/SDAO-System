@@ -173,7 +173,8 @@
 
 <header>
 <nav>
-    <a href="{{ route('volunteers-offices.home') }}">Home</a>
+    <a href="{{ route('volunteers-offices.dashboard-office') }}">Dashboard</a>
+    <a href="{{ route('volunteers-offices.request-volunteer') }}">Volunteer Opportunities</a>
     <a href="{{ route('volunteers-offices.history-office') }}">History</a>
 </nav>
 </header>
