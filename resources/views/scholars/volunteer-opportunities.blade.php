@@ -246,8 +246,8 @@
 
 
 
-const opportunities = @json($opportunities);
 const allOpportunities = @json($allOpportunities);
+const opportunities = allOpportunities;
 const scholarId = "{{ session('scholar_accounts.student_no') }}";
 const scholarName = "{{ session('scholar_accounts.first_name') }} {{ session('scholar_accounts.last_name') }}";
 const csrfToken = "{{ csrf_token() }}";
@@ -258,204 +258,145 @@ let currentSelectedId = null;
 // ---------- SHOW DETAILS ----------
 // ---------- SHOW DETAILS ----------
 function showDetail(id) {
-  currentSelectedId = id;
-  const op = opportunities.find(o => o.opportunity_id === id);
-  if (!op) return;
+    currentSelectedId = id;
+    const op = opportunities.find(o => o.opportunity_id === id);
+    if (!op) return;
 
-  const participants = op.participants || [];
-  const acceptedVolunteers = participants.filter(p => p.status === "Accepted");
-  const skills = (op.skills_needed || "").split(",");
-  const target = op.schedule?.[0]?.target_number ?? null;
-  const alreadyJoined = participants.some(p => p.scholar_id == scholarId);
-  const isFull = target !== null && acceptedVolunteers.length >= target;
-  const isIntermittent = op.is_intermittent == 1 || op.intermittent == 1;
+    const participants = op.participants || [];
+    const acceptedVolunteers = participants.filter(p => p.status === "Accepted");
 
-  // ✅ Build Schedule Table
-// ✅ Build Schedule Table
-let scheduleContent = "";
-if (isIntermittent) {
-  // --- Compute date range ---
-  const validDates = (op.schedule || [])
-    .map(s => s.date)
-    .filter(Boolean)
-    .map(d => new Date(d))
-    .sort((a, b) => a - b);
+    // FIX: use boolean for intermittent
+    const isIntermittent = op.is_intermittent === true || op.is_intermittent === "true";
 
-  let dateRangeText = "N/A";
-  if (validDates.length > 0) {
-    const start = validDates[0];
-    const end = validDates[validDates.length - 1];
-    if (start.getTime() === end.getTime()) {
-      dateRangeText = formatDatePretty(start.toISOString());
-    } else {
-dateRangeText = `${formatDatePretty(start.toISOString())} – ${formatDatePretty(end.toISOString())}`;
+    // FIX: tasks structure
+    const tasks = op.tasks || [];
 
-    }
-  }
+    // FIX: skills gathered from tasks
+    const skillsList = tasks.flatMap(t => (t.skills || "").split(",")).map(s => s.trim());
 
-  scheduleContent = `
-    <h6 class="mt-3 fw-bold">Schedule (Intermittent)</h6>
-    <p><strong>Estimated Dates:</strong> ${dateRangeText}</p>
+    // FIX: For full/limit
+    const target = op.schedule?.[0]?.target_number ?? null;
+    const alreadyJoined = participants.some(p => p.scholar_id == scholarId);
+    const isFull = target !== null && acceptedVolunteers.length >= target;
 
-    <div class="table-responsive">
-      <table class="table mt-2 text-center align-middle table-bordered">
-        <thead class="table-light">
-          <tr>
-            <th>Date</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Volunteers Needed</th>
-            <th>Food Provided</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${op.schedule.map(s => {
-            const date = s.date ? formatDatePretty(s.date) : "N/A";
-            const start = s.start_time ? formatTime(s.start_time) : "N/A";
-            const end = s.end_time ? formatTime(s.end_time) : "N/A";
-            const targetNum = s.target_number ?? "N/A";
-            const food = (s.food_provided || "no").toLowerCase();
-            const foodBadge = `<span class="px-3 py-2">${food === 'yes' ? 'Yes' : 'No'}</span>`;
+    // ---------------------
+    // BUILD SCHEDULE TABLE
+    // ---------------------
+    let scheduleContent = "";
 
-            return `
-              <tr>
-                <td>${date}</td>
-                <td>${start}</td>
-                <td>${end}</td>
-                <td>${targetNum}</td>
-                <td class="border-0">${foodBadge}</td>
-              </tr>
-            `;
-          }).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-else {
-    const s = op.schedule?.[0] ?? null;
-    const date = s?.date ? formatDatePretty(s.date) : "N/A";
-    const start = s?.start_time ? formatTime(s.start_time) : "N/A";
-    const end = s?.end_time ? formatTime(s.end_time) : "N/A";
-    const targetNum = s?.target_number ?? "N/A";
-    const food = (s?.food_provided || "no").toLowerCase();
-const foodBadge = `<span class="px-3 py-2">${food === 'yes' ? 'Yes' : 'No'}</span>`;
+    if (isIntermittent) {
 
+        const validDates = (op.schedule || [])
+            .map(s => s.date)
+            .filter(Boolean)
+            .map(d => new Date(d))
+            .sort((a, b) => a - b);
 
-    scheduleContent = `
-      <h6 class="mt-3 fw-bold">Schedule</h6>
-      <div class="table-responsive">
-        <table class="table mt-2 text-center align-middle table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>Date</th>
-              <th>Start Time</th>
-              <th>End Time</th>
-              <th>Volunteers Needed</th>
-              <th>Food Provided</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>${date}</td>
-              <td>${start}</td>
-              <td>${end}</td>
-              <td>${targetNum}</td>
-              <td class="border-0">${foodBadge}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
+        let dateRangeText = "N/A";
+        if (validDates.length > 0) {
+            const start = validDates[0];
+            const end = validDates[validDates.length - 1];
+            dateRangeText =
+                start.getTime() === end.getTime()
+                    ? formatDatePretty(start.toISOString())
+                    : `${formatDatePretty(start.toISOString())} – ${formatDatePretty(end.toISOString())}`;
+        }
 
-  // ✅ Fill in the right-side details
-  document.getElementById("opportunityDetail").innerHTML = `
-    <h4><strong>${op.title}</strong></h4>
-    <p><strong>Location:</strong> ${op.location}</p>
-    <p><strong>Submitted by:</strong> ${(op.submitted_by_role === "SDA Assistant") ? "SDA Office" : (op.submitted_by_role ?? "Unknown")}</p>
+        scheduleContent = `
+            <h6 class="mt-3 fw-bold">Schedule (Intermittent)</h6>
+            <p><strong>Estimated Dates:</strong> ${dateRangeText}</p>
 
-    ${scheduleContent}
-
-${
-  alreadyJoined
-    ? `<button class="px-4 mt-2 btn btn-secondary" disabled>Joined</button>`
-    : isFull
-      ? `<button class="px-4 mt-2 btn btn-dark" disabled>Full</button>`
-      : isIntermittent
-        ? `<button class="px-4 mt-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#intermittentJoinModal" onclick="openIntermittentModal('${op.opportunity_id}')">Join</button>`
-        : `<button class="px-4 mt-2 btn btn-primary" id="joinBtn" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
-}
-
-<!-- Row: Task Details + Skills Needed -->
-<div class="mt-4 row g-4">
-  <div class="col-md-8">
-    <h5 class="fw-bold">Task Details</h5>
-    <ul>${op.task_details.split("\n").map(t => `<li>${t}</li>`).join("")}</ul>
-  </div>
-  <div class="col-md-4">
-    <h5 class="fw-bold">Skills Needed</h5>
-    <ul>${skills.map(s => `<li>${s.trim()}</li>`).join("")}</ul>
-  </div>
-</div>
-
-<!-- Row: Current Volunteers -->
-<div class="mt-4 row">
-  <div class="col-12">
-    <h5 class="fw-bold">Current Volunteers</h5>
-    ${
-      isIntermittent
-        ? `
-          <div class="table-responsive">
-            <table class="table text-center align-middle table-bordered">
-              <thead class="table-light">
-                <tr>
-                  <th>Date</th>
-                  <th>Volunteers Needed</th>
-                  <th>Volunteers (Scholars)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${op.schedule.map((s, i) => {
-                  const date = s.date ? formatDatePretty(s.date) : "N/A";
-                  const needed = s.target_number ?? "N/A";
-                  const joined = (op.participants || []).filter(p =>
-                    Array.isArray(p.schedule_indices) && p.schedule_indices.includes(i)
-                  );
-                  const volunteerNames = joined.length
-                    ? joined.map(j => j.name).join(", ")
-                    : "<em>No volunteers listed yet.</em>";
-                  return `
+            <div class="table-responsive">
+              <table class="table mt-2 text-center align-middle table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Date</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Volunteers Needed</th>
+                    <th>Food</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${op.schedule.map(s => `
                     <tr>
-                      <td>${date}</td>
-                      <td>${needed}</td>
-                      <td>${volunteerNames}</td>
+                      <td>${formatDatePretty(s.date)}</td>
+                      <td>${formatTime(s.start_time)}</td>
+                      <td>${formatTime(s.end_time)}</td>
+                      <td>${s.target_number}</td>
+                      <td>${(s.food_provided || "no").toLowerCase() === "yes" ? "Yes" : "No"}</td>
                     </tr>
-                  `;
-                }).join("")}
-              </tbody>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+        `;
+    } else {
+
+        const s = op.schedule?.[0] ?? null;
+
+        scheduleContent = `
+            <h6 class="mt-3 fw-bold">Schedule</h6>
+            <table class="table text-center align-middle table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Date</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Volunteers Needed</th>
+                    <th>Food</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${formatDatePretty(s?.date)}</td>
+                    <td>${formatTime(s?.start_time)}</td>
+                    <td>${formatTime(s?.end_time)}</td>
+                    <td>${s?.target_number}</td>
+                    <td>${(s?.food_provided || "no").toLowerCase() === "yes" ? "Yes" : "No"}</td>
+                  </tr>
+                </tbody>
             </table>
-          </div>
-        `
-        : `
-          <ol>
-            ${
-              acceptedVolunteers.length
-                ? acceptedVolunteers.map(p => `<li>${p.name}</li>`).join("")
-                : "<li><em>No volunteers listed yet.</em></li>"
-            }
-          </ol>
-        `
+        `;
     }
-  </div>
-</div>
 
-  `;
+    // ---------------------
+    // BUILD HTML (SAFE)
+    // ---------------------
+    document.getElementById("opportunityDetail").innerHTML = `
+        <h4><strong>${op.title}</strong></h4>
+        <p><strong>Location:</strong> ${op.location}</p>
+        <p><strong>Submitted by:</strong> ${op.submitted_by_name}</p>
 
-  document.querySelectorAll(".opportunity-card").forEach(c => c.classList.remove("selected"));
-  const card = document.querySelector(`.opportunity-card[data-id="${id}"]`);
-  if (card) card.classList.add("selected");
+        ${scheduleContent}
+
+        ${alreadyJoined
+            ? `<button class="mt-3 btn btn-secondary" disabled>Joined</button>`
+            : isFull
+                ? `<button class="mt-3 btn btn-dark" disabled>Full</button>`
+                : `<button class="mt-3 btn btn-primary" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
+        }
+
+        <hr class="my-4">
+
+        <h5 class="fw-bold">Tasks</h5>
+        <ul>
+          ${tasks.map(t => `
+            <li><strong>${t.task}</strong> – ${t.description}</li>
+          `).join("")}
+        </ul>
+
+        <h5 class="mt-4 fw-bold">Skills Needed</h5>
+        <ul>
+          ${skillsList.map(s => `<li>${s}</li>`).join("")}
+        </ul>
+    `;
+
+    // highlight selected
+    document.querySelectorAll(".opportunity-card").forEach(c => c.classList.remove("selected"));
+    document.querySelector(`.opportunity-card[data-id="${id}"]`)?.classList.add("selected");
 }
+
 
 function formatTime(time) {
   if (!time) return "N/A";
