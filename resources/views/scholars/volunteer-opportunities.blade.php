@@ -286,11 +286,12 @@ function showDetail(id) {
 
     if (isIntermittent) {
 
-        const validDates = (op.schedule || [])
-            .map(s => s.date)
-            .filter(Boolean)
-            .map(d => new Date(d))
-            .sort((a, b) => a - b);
+      const validDates = (op.schedule || [])
+  .map(s => s.date)
+  .filter(d => d && !isNaN(new Date(d)))
+  .map(d => new Date(d))
+  .sort((a, b) => a - b);
+
 
         let dateRangeText = "N/A";
         if (validDates.length > 0) {
@@ -408,7 +409,24 @@ function formatTime(time) {
 
 function formatDatePretty(dateString) {
   if (!dateString) return "N/A";
+
   const date = new Date(dateString);
+
+  // If Firebase sends "YYYY/MM/DD" convert it first
+  if (isNaN(date)) {
+    // Try replacing / with -
+    const cleaned = dateString.replace(/\//g, "-");
+    const tryAgain = new Date(cleaned);
+    if (!isNaN(tryAgain)) {
+      return tryAgain.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+    return "N/A"; // invalid date completely
+  }
+
   return date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -576,11 +594,12 @@ function renderOpportunities(list) {
 
     if (isIntermittent) {
       // ✅ Compute date range for intermittent schedules
-      const validDates = (op.schedule || [])
-        .map(s => s.date)
-        .filter(Boolean)
-        .map(d => new Date(d))
-        .sort((a, b) => a - b);
+    const validDates = (op.schedule || [])
+  .map(s => s.date)
+  .filter(d => d && !isNaN(new Date(d)))
+  .map(d => new Date(d))
+  .sort((a, b) => a - b);
+
 
       let dateRangeText = "N/A";
       if (validDates.length > 0) {

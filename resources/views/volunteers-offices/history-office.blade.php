@@ -174,7 +174,7 @@
     <div class="logo">
       <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
       <span>Student Developments and Activities Office - Office</span>
-    </div>
+    </div>=
   </div>
   <div class="header-right-group">
     <p>Welcome, {{ session('volunteers_office.first_name') }}!</p>
@@ -190,7 +190,7 @@
 <header>
   <nav>
     <a href="{{ route('volunteers-offices.dashboard-office') }}">Dashboard</a>
-    <a href="{{ route('volunteers-offices.request-volunteer') }}">Volunteer Opportunities</a>
+    <a href="{{ route('volunteers-offices.request-volunteer') }}">Volunteer Requests</a>
     <a href="{{ route('volunteers-offices.history-office') }}">History</a>
   </nav>
 </header>
@@ -260,82 +260,64 @@
               <p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
               <p><strong>Submitted by:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
 
-@php
-  $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
+
+@php 
+    $s = $opportunity['schedule'][0] ?? null; 
 @endphp
 
-@if($isIntermittent)
-  <h6 class="fw-bold">Schedule (Intermittent)</h6>
-  <div class="mt-2 table-responsive">
-    <table class="table text-center align-middle table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th>Date</th>
-          <th>Start Time</th>
-          <th>End Time</th>
-          <th>Volunteers Needed</th>
-          <th>Food Provided</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($opportunity['schedule'] ?? [] as $schedule)
-          <tr>
-            <td>{{ \Carbon\Carbon::parse($schedule['date'])->format('F j, Y') }}</td>
-            <td>
-              {{ isset($schedule['start_time'])
-                  ? \Carbon\Carbon::parse($schedule['start_time'])->format('g:i A')
-                  : 'N/A' }}
-            </td>
-            <td>
-              {{ isset($schedule['end_time'])
-                  ? \Carbon\Carbon::parse($schedule['end_time'])->format('g:i A')
-                  : 'N/A' }}
-            </td>
-            <td>{{ $schedule['target_number'] ?? 'N/A' }}</td>
-            <td>
-              @php
-                $food = strtolower($schedule['food_provided'] ?? 'no');
-              @endphp
-{{ $food === 'yes' ? 'Yes' : 'No' }}
-            </td>
-          </tr>
-        @empty
-          <tr>
-            <td colspan="5" class="text-muted">No schedule details available.</td>
-          </tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
-@else
-  @php $s = $opportunity['schedule'][0] ?? null; @endphp
-  <h6 class="fw-bold">Schedule</h6>
-  <table class="table mt-2 text-center align-middle table-bordered">
+<h6 class="fw-bold">Schedule</h6>
+
+<table class="table mt-2 text-center align-middle table-bordered">
     <thead class="table-light">
-      <tr>
-        <th>Date</th>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Volunteers Needed</th>
-        <th>Food Provided</th>
-      </tr>
+        <tr>
+            <th>Date</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Volunteers Needed</th>
+            <th>Food Provided</th>
+        </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>{{ $s ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }}</td>
-        <td>{{ $s && isset($s['start_time']) ? \Carbon\Carbon::parse($s['start_time'])->format('g:i A') : 'N/A' }}</td>
-        <td>{{ $s && isset($s['end_time']) ? \Carbon\Carbon::parse($s['end_time'])->format('g:i A') : 'N/A' }}</td>
-        <td>{{ $s['target_number'] ?? 'N/A' }}</td>
-        <td>
-          @php
-            $food = strtolower($s['food_provided'] ?? 'no');
-          @endphp
-{{ $food === 'yes' ? 'Yes' : 'No' }}
-        </td>
-      </tr>
+        <tr>
+            {{-- DATE --}}
+            <td>
+                @if($s && !empty($s['date']))
+                    {{ \Carbon\Carbon::parse($s['date'])->format('F j, Y') }}
+                @else
+                    N/A
+                @endif
+            </td>
+
+            {{-- START TIME --}}
+            <td>
+                @if($s && !empty($s['start_time']))
+                    {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }}
+                @else
+                    N/A
+                @endif
+            </td>
+
+            {{-- END TIME --}}
+            <td>
+                @if($s && !empty($s['end_time']))
+                    {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
+                @else
+                    N/A
+                @endif
+            </td>
+
+            {{-- TARGET NUMBER --}}
+            <td>{{ $s['target_number'] ?? 'N/A' }}</td>
+
+            {{-- FOOD --}}
+            <td>
+                @php $food = strtolower($s['food_provided'] ?? 'no'); @endphp
+                {{ $food === 'yes' ? 'Yes' : 'No' }}
+            </td>
+        </tr>
     </tbody>
-  </table>
-@endif
+</table>
+
 
             </div>
 

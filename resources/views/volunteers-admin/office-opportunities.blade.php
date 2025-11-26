@@ -214,7 +214,13 @@
                     @endforeach
                   @else
                     @php $s = $opportunity['schedule'][0] ?? null; @endphp
-                    <p><strong>Date:</strong> {{ $s ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }}</p>
+<p><strong>Date:</strong>
+  @if($s && !empty($s['date']))
+    {{ \Carbon\Carbon::parse($s['date'])->format('F j, Y') }}
+  @else
+    N/A
+  @endif
+</p>
                     <p><strong>Time:</strong>
                       @if($s && isset($s['start_time']) && isset($s['end_time']))
                         {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
