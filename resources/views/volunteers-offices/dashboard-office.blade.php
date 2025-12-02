@@ -1,44 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dashboard - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  @vite('resources/css/Volunteer_Admin.css')
+@extends('volunteers-offices.layout')
 
-
-</head>
-<body>
+@section('content')
 
 <header class="custom-header">
     <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
         <div class="logo">
             <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office - Office</span>
+            <span>Student Developments and Activities Office</span>
         </div>
     </div>
+
     <div class="header-right-group">
         <p>Welcome, {{ session('volunteers_office.first_name') }}!</p>
-        <form method="POST" action="{{ route('admin.logout') }}">
-            @csrf
-            <button type="submit" class="side-button">
-                <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-            </button>
-        </form>
     </div>
 </header>
 
-<header>
-<nav>
-    <a href="{{ route('volunteers-offices.dashboard-office') }}">Dashboard</a>
-    <a href="{{ route('volunteers-offices.request-volunteer') }}">Volunteer Requests</a>
-    <a href="{{ route('volunteers-offices.history-office') }}">History</a>
-</nav>
-</header>
 
   <main class="page-container">
 
@@ -103,6 +86,4 @@ $urgent = collect($opportunities ?? [])->filter(function($op) {
 
 
 
-
-</body>
-</html>
+@endsection

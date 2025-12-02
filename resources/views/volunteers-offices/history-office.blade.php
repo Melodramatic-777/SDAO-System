@@ -1,199 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dashboard - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  @vite('resources/css/volunteers.css')
+@extends('volunteers-offices.layout')
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f9f6f3;
-    }
-
-    .folder-card {
-      border-radius: 12px;
-      border: 1px solid #d8d3c3;
-      padding: 1.5rem;
-      transition: .2s;
-      cursor: pointer;
-    }
-
-    .folder-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .folder-title {
-      font-weight: 600;
-    }
-
-    .modal-content {
-      padding: 1.5rem;
-    }
-
-    .custom-header {
-      position: relative;
-      z-index: 1 !important;
-    }
-
-    .modal-dialog.modal-xxl {
-      max-width: 95% !important;
-    }
-
-    .modal-backdrop {
-      z-index: -1 !important;
-    }
-
-    .modal-header {
-      border-bottom: none;
-    }
-
-.modal-body {
-  margin-left: 2rem;
-  margin-right: 2rem;
-}
-
-    .modal-title {
-      font-weight: bold;
-      color: #0056b3;
-    }
-
-    .btn-success {
-      background-color: #28a745;
-      border-color: #28a745;
-      font-weight: bold;
-      padding: 10px 30px;
-      border-radius: 50px;
-    }
-
-  
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: #333;
-    }
-
-    .row .col-md-4 {
-      margin-bottom: 20px;
-    }
-
-    .modal-dialog.modal-xxl {
-      max-width: 80% !important;
-    }
-
-    .modal-body .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
-
-    .modal-body .row > .col-md-4 {
-      flex: 1 1 30%;
-    }
-
-    .modal-body .row > .col-md-12 {
-      flex: 1 1 100%;
-    }
-
-.custom-wide-modal {
-  max-width: 90% !important;   /* slightly narrower */
-  width: auto !important;
-}
-
-    .custom-wide-modal .modal-content {
-      width: 100%;
-      border-radius: 8px;
-      padding: 2rem;
-    }
-
-.modal.show .modal-dialog {
-  margin: 2rem auto !important; /* add margin on left/right */
-}
-
-    .modal-close-x {
-      position: absolute;
-      top: 12px;
-      right: 18px;
-      font-size: 32px;
-      font-weight: 300;
-      color: #555;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      line-height: 1;
-      z-index: 999;
-      transition: 0.2s ease;
-    }
-
-    .modal-close-x:hover {
-      color: #000;
-      transform: scale(1.15);
-    }
-
-
-    .icon-btn {
-  background: none;
-  border: none;
-  color: #000;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 0;
-}
-
-.icon-btn:hover {
-  color: #0056b3;
-  transform: scale(1.1);
-  transition: 0.2s;
-}
-
-    .table-title-row th {
-      background-color: #004aad !important; color: white !important; text-align: center; font-size: 1.25rem;
-    }
-
-    .table-header-row th {
-      background-color: #FFD700 !important; color: black !important; font-weight: bold !important; text-align: center;
-    }
-
-  </style>
-</head>
-
-<body>
+@section('content')
 
 <header class="custom-header">
-  <div class="header-left">
-    <div class="logo">
-      <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-      <span>Student Developments and Activities Office - Office</span>
-    </div>=
-  </div>
-  <div class="header-right-group">
-    <p>Welcome, {{ session('volunteers_office.first_name') }}!</p>
-    <form method="POST" action="{{ route('admin.logout') }}">
-      @csrf
-      <button type="submit" class="side-button">
-        <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-      </button>
-    </form>
-  </div>
+    <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
+        <div class="logo">
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
+        </div>
+    </div>
+
+    <div class="header-right-group">
+        <p>Welcome, {{ session('volunteers_office.first_name') }}!</p>
+    </div>
 </header>
 
-<header>
-  <nav>
-    <a href="{{ route('volunteers-offices.dashboard-office') }}">Dashboard</a>
-    <a href="{{ route('volunteers-offices.request-volunteer') }}">Volunteer Requests</a>
-    <a href="{{ route('volunteers-offices.history-office') }}">History</a>
-  </nav>
-</header>
 
 <main class="p-4 container-fluid">
   <div class="row g-4">
@@ -388,7 +216,5 @@
   @endforeach
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+@endsection
 
-</body>
-</html>

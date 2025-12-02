@@ -1,48 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Accounts - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+@extends('volunteers-admin.layout')
 
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  @vite('resources/css/volunteers.css')
-
-
-</head>
-<body>
+@section('content')
 
 <header class="custom-header">
-  <div class="header-left">
-    <div class="logo">
-      <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-      <span>Student Developments and Activities Office - Activities</span>
-    </div>
-  </div>
-  <div class="header-right-group">
-    <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
-    <form method="POST" action="{{ route('admin.logout') }}">
-      @csrf
-      <button type="submit" class="side-button">
-        <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-      </button>
-    </form>
-  </div>
-</header>
+    <div class="header-left">
 
-<!-- ✅ Navigation -->
-<header>
-  <nav>
-    <a href="{{ route('volunteers-admin.dashboard') }}">Dashboard</a>
-    <a href="{{ route('volunteers-admin.opportunities') }}">Volunteer Requests</a>
-    <a href="{{ route('volunteers-admin.history') }}">History</a>
-    <a href="{{ route('volunteers-admin.student-volunteers') }}">Student Volunteers</a>
-    <a href="{{ route('volunteers-admin.accounts') }}">Accounts</a>
-    <a href="{{ route('volunteers-admin.inquiries') }}">Contact</a>
-  </nav>
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
+        <div class="logo">
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
+        </div>
+    </div>
+
+    <div class="header-right-group">
+        <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
+    </div>
 </header>
 
 
@@ -289,6 +266,4 @@ document.getElementById('schoolDropdown').addEventListener('change', function ()
 
 
 </script>
-
-</body>
-</html>
+@endsection

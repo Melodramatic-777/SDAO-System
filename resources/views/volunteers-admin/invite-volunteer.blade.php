@@ -1,118 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dashboard - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  @vite('resources/css/volunteers.css')
+@extends('volunteers-admin.layout')
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
+@section('content')
 
-    #scholarsTable {
-      transition: opacity 0.3s ease-in-out;
-      max-width: 900px;
-      margin: 0 auto;
-    }
+<header class="custom-header">
+    <div class="header-left">
 
-    .table-title-row th {
-      background-color: #004aad !important;
-      color: white !important;
-      text-align: center;
-      font-size: 1.25rem;
-    }
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
 
-    .table-header-row th {
-      background-color: #FFD700 !important;
-      color: black !important;
-      font-weight: bold !important;
-      text-align: center;
-    }
 
-    .custom-modal-content {
-      background: #fff;
-      margin: 5% auto;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-    .custom-modal-content .modal-header {
-      border-bottom: 2px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .custom-modal-content .modal-body {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .custom-modal-content .modal-footer {
-      border-top: 2px solid #eee;
-    }
-
-    .view-details-btn {
-      background: none;
-      border: none;
-      padding: 0;
-      margin: 0;
-      font: inherit;
-      color: inherit;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .view-details-btn:hover {
-      color: #0d6efd;
-      text-decoration: underline;
-    }
-
-    .logout-btn {
-      background-color: #f8f9fa !important;
-      border: 0px solid #ddd !important;
-    }
-
-    .logout-btn:focus,
-    .logout-btn:active {
-      outline: none !important;
-      box-shadow: none !important;
-      border-color: #ddd !important;
-    }
-  </style>
-</head>
-<body>
-
-<header class="p-3 custom-header d-flex justify-content-between align-items-center bg-light">
-  <div class="header-left d-flex align-items-center">
-    <div class="logo d-flex align-items-center">
-      <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30" class="me-2">
-      <span>Student Developments and Activities Office - SDA Assistant</span>
+        <div class="logo">
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
+        </div>
     </div>
-  </div>
-  <div class="header-right-group d-flex align-items-center">
-    <p class="mb-0 me-3">Welcome, {{ session('volunteers_admin.first_name') }}!</p>
-    <form method="POST" action="{{ route('admin.logout') }}">
-      @csrf
-      <button type="submit" class="p-1 border btn btn-light rounded-circle logout-btn">
-        <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-      </button>
-    </form>
-  </div>
-</header>
 
-<header>
-  <nav>
-    <a href="{{ route('volunteers-admin.dashboard') }}">Dashboard</a>
-    <a href="{{ route('volunteers-admin.opportunities') }}">Volunteer Requests</a>
-    <a href="{{ route('volunteers-admin.history') }}">History</a>
-    <a href="{{ route('volunteers-admin.student-volunteers') }}">Student Volunteers</a>
-    <a href="{{ route('volunteers-admin.accounts') }}">Accounts</a>
-    <a href="{{ route('volunteers-admin.inquiries') }}">Contact</a>
-  </nav>
+    <div class="header-right-group">
+        <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
+    </div>
 </header>
 
 <div class="container mt-4 text-center">
@@ -141,8 +48,15 @@
     </form>
   </div>
 
+
+
   <!-- Table -->
   <div id="scholarsTable" class="mt-3">
+
+          <a href="{{ route('volunteers-admin.dashboard') }}" class="text-decoration-none">
+        ← Back to Dashboard
+    </a>
+    
 <table class="table mx-auto text-center align-middle table-bordered">
   <thead>
     <tr class="table-title-row">
@@ -307,7 +221,4 @@ document.addEventListener("DOMContentLoaded", function () {
  
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+@endsection

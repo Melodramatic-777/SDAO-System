@@ -1,230 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dashboard - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+@extends('scholars.layout')
 
-  @vite('resources/css/volunteers.css')
-
-    <style>
-  body {
-      font-family: 'Inter', sans-serif;
-    }
-
-    .custom-modal-content {
-      background: #fff;
-      margin: 5% auto;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .custom-modal-body {
-      padding: 1.5rem;
-    }
-
-    .left-panel {
-      border-right: 1px solid #f0e6cc;
-    }
-
-    .status-badge {
-      background: #ffa857;
-      color: white;
-      font-size: 0.85rem;
-      font-weight: bold;
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
-
-    .volunteer-count {
-      font-weight: bold;
-      color: #0056b3;
-    }
-
-    .volunteers-list {
-      list-style: none;
-      padding-left: 0;
-      margin-top: 0.5rem;
-    }
-
-    .volunteers-list li {
-      font-size: 0.9rem;
-      padding: 2px 0;
-    }
-
-    .right-panel h6 {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-    }
-
-    .right-panel ul {
-      padding-left: 20px;
-      font-size: 0.9rem;
-    }
-
-    .view-details-btn {
-      background: none;
-      border: none;
-      color: #0d6efd;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .modal-dialog.modal-xl {
-      max-width: 100% !important;
-      min-width: 1500px;
-    }
-
-    .modal-content.custom-modal-content {
-      max-height: 95vh;
-      overflow-y: auto;
-    }
-
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px; /* slightly larger spacing for a wider layout */
-  width: 100%;
-  max-width: 520px;
-}
-
-
-.chart-section {
-  min-width: 300px;
-}
-
-.chart-box {
-  width: 280px;
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.chart-box canvas {
-  max-width: 280px;
-  max-height: 280px;
-}
-.volunteer-progress-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 2rem;
-  margin: 0 auto;
-  max-width: 1300px; /* ⬅️ ensures alignment with joined list */
-}
-
-/* Make chart section fill available height */
-.chart-section {
-  min-width: 350px; /* give some room for the right side */
-  flex: 1;
-}
-
-/* Ensure status cards align in grid and match chart height */
-/* Make status cards wider and balanced */
-.status-cards {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 25px;
-  width: 750px; /* more room now fits perfectly */
-}
-
-.status-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px; /* ⬅️ slightly more padding for breathing room */
-  text-align: center;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-  transition: 0.2s;
-}
-
-.status-card:hover {
-  transform: translateY(-3px);
-}
-
-.status-card h6 {
-  font-size: 1rem;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: 600;
-}
-
-.status-card h3 {
-  font-size: 2.2rem;
-  margin: 0;
-  font-weight: 700;
-}
-
-@media (min-width: 1200px) {
-  .status-cards {
-    min-height: 360px;
-  }
-}
-
-
-.status-tab {
-  padding-bottom: 4px;
-  transition: 0.25s ease;
-  cursor: pointer;
-}
-
-@media (prefers-color-scheme: light) {
-  .status-tab {
-    color: #6c6c6c;
-  }
-  .status-tab.active {
-    color: #000;
-    border-bottom: 2px solid #0056b3;
-  }
-  .status-tab:hover {
-    color: #000;
-  }
-}
-
-.status-tab .badge {
-  font-size: 0.75rem;
-  vertical-align: text-top;
-  padding: 3px 7px;
-  border-radius: 8px;
-}
-
-
-  </style>
-</head>
-<body>
+@section('content')
 
 <header class="custom-header">
     <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
         <div class="logo">
             <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office - Scholars</span>
+            <span>Student Developments and Activities Office</span>
         </div>
     </div>
+
     <div class="header-right-group">
         <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
-        <form method="POST" action="{{ route('admin.logout') }}">
-            @csrf
-            <button type="submit" class="side-button">
-                <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-            </button>
-        </form>
     </div>
 </header>
 
-<header>
-<nav>
-    <a href="{{ route('scholars.dashboard') }}">Dashboard</a>
-    <a href="{{ route('scholars.volunteer-opportunities') }}">Volunteer Opportunity</a>
-    <a href="{{ route('scholars.invites') }}">Volunteer Invite</a>
-    <a href="{{ route('scholars.profile') }}">Profile</a>
-</nav>
-</header>
+
+
 <section class="px-5 mt-5 page-container container-fluid">
 
 
@@ -615,7 +414,5 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-</body>
-</html>
+@endsection

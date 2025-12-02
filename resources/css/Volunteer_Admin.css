@@ -31,10 +31,13 @@ body {
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: white;
+  border-bottom: 1px solid #dee2e6;
 }
+
 
 .close {
     cursor: pointer;
@@ -125,6 +128,11 @@ body {
     margin: 0;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* spacing between button and logo */
+}
 
 /* === Header Styles === */
 header {
@@ -169,8 +177,9 @@ header nav a {
 }
 
 .custom-modal-body {
-  padding: 1.5rem;
+  padding-top: 10px;
 }
+
 
 
 /* Left column: stacked buttons */
@@ -485,6 +494,13 @@ table thead tr:first-child {
 }
 
 
+.task-title {
+    margin-bottom: 2px !important; /* almost no space */
+}
+
+.task-list {
+    margin-top: 0 !important;
+}
 
 /* Panels */
 .left-panel {
@@ -599,4 +615,307 @@ table thead tr:first-child {
   vertical-align: text-top;
   padding: 3px 7px;
   border-radius: 8px;
+}
+
+
+.custom-modal-content {
+  height: 90vh;          /* fills most of the screen */
+  max-height: 90vh;
+  overflow-y: auto;      /* prevents the modal from growing off-screen */
+}
+
+.modal {
+  backdrop-filter: blur(3px); /* optional: makes background nicer */
+}
+
+body.modal-open {
+  overflow: hidden !important; /* prevents background from scrolling */
+}
+
+/* Flex container for main content + notifications */
+.content-wrapper {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;   /* <-- This forces both columns to align */
+}
+
+/* Main content (leaderboard, etc.) */
+.main-content {
+    flex: 1 1 60%; /* take 60% width but shrink if needed */
+    min-width: 300px;
+        margin-top: 0 !important;
+
+}
+
+    /* Notifications Sidebar */
+    .otsv-panel {
+        flex: 0 0 300px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        max-height: 80vh;
+        overflow-y: auto;
+        font-family: 'Inter', sans-serif;
+    margin-top: 20px !important; /* match the dashboard-row gap */
+
+        
+        
+    }
+    .otsv-panel h3 {
+        margin-top: 1;
+        font-size: 1.2rem;
+        color: #003DA5;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+    .otsv-list { list-style: none; padding: 0; margin: 10px 0 0 0; }
+    .otsv-list li { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; color: #333; }
+    .otsv-list li:last-child { border-bottom: none; }
+    .otsv-list li:hover { background-color: #f9f9f9; cursor: default; }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .content-wrapper { flex-direction: column; }
+        .otsv-panel { flex: 1 1 100%; max-height: none; margin-top: 20px; }
+    }
+
+    .folder-card {
+      display: flex;
+      align-items: center;
+      border-radius: 12px;
+      border: 1px solid #d8d3c3;
+      background-color: #fff;
+      padding: 1.5rem;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .folder-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .folder-icon {
+      font-size: 2.5rem;
+      color: #f6d629;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    .folder-info {
+      text-align: left;
+    }
+
+    .folder-title {
+      font-weight: 600;
+      color: #333;
+      font-size: 1.1rem;
+    }
+
+    .folder-count {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+   .custom-header {
+      position: relative;
+      z-index: 1 !important;
+    }
+
+    .modal-dialog.modal-xxl {
+      max-width: 95% !important;
+    }
+
+    .modal-backdrop {
+      z-index: -1 !important;
+    }
+
+    .modal-body {
+      padding: 2rem;
+    }
+
+    .modal-title {
+      font-weight: bold;
+      color: #0056b3;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 0;
+    }
+
+    .icon-btn:hover {
+      color: #0056b3;
+      transform: scale(1.1);
+      transition: 0.2s;
+    }
+
+    .table-title-row th {
+      background-color: #004aad !important;
+      color: white !important;
+      text-align: center;
+      font-size: 1.25rem;
+    }
+
+    .table-header-row th {
+      background-color: #FFD700 !important;
+      color: black !important;
+      font-weight: bold !important;
+      text-align: center;
+    }
+
+.custom-wide-modal {
+  max-width: 90% !important;   /* slightly narrower */
+  width: auto !important;
+}
+
+    .custom-wide-modal .modal-content {
+      width: 100%;
+      border-radius: 8px;
+      padding: 2rem;
+    }
+
+
+    .modal.show .modal-dialog {
+  margin: 2rem auto !important; /* add margin on left/right */
+}
+    .modal-close-x {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      font-size: 32px;
+      font-weight: 300;
+      color: #555;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      line-height: 1;
+      z-index: 999;
+      transition: 0.2s ease;
+    }
+
+    .modal-close-x:hover {
+      color: #000;
+      transform: scale(1.15);
+    }
+
+
+        .icon-btn {
+  background: none;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+}
+
+.icon-btn:hover {
+  color: #0056b3;
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+table thead {
+  background: #FFD700;       /* gold header */
+  color: #000; 
+                /* black text */
+}
+
+table th, 
+table td {
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: 14px;
+  padding: 12px;
+}
+
+table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* zebra striping */
+}
+
+table tbody tr:hover {
+  background-color: #fff8dc; /* soft highlight */
+}
+
+.search-input {
+    width: 300px;
+    max-width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Focus Effect */
+.search-input:focus {
+    outline: none;
+    border-color: #003DA5;        /* matching primary color */
+    box-shadow: 0 2px 8px rgba(0,61,165,0.3);
+}
+
+/* Import Button for consistency */
+.import-btn {
+    background-color: #003DA5;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.import-btn:hover {
+    background-color: #00297d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+table thead tr:first-child {
+  background-color: #003DA5 !important;
+  color: white !important;
+}
+
+.status-cell {
+    text-align: center !important;
+}
+
+.center-cell {
+    text-align: center !important;
 }

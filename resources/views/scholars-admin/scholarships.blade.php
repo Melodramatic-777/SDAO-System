@@ -1,115 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
+@extends('scholars-admin.layout')
 
-    <title>Scholarships Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    @vite('resources/css/volunteers.css')
-
-<style>
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  border: 1px solid #ddd;
-}
-
-table thead {
-  background: #FFD700;
-  color: #000;
-}
-
-table th, 
-table td {
-  border: 1px solid #ddd;
-  text-align: left;
-  font-size: 14px;
-  padding: 12px;
-}
-
-table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  text-align: center !important;
-}
-
-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-table tbody tr:hover {
-  background-color: #fff8dc;
-}
-
-.search-input {
-  width: 300px;
-  padding: 8px 12px;
-  border-radius: 8px;
-}
-
-table thead tr:first-child {
-  background-color: #003DA5 !important;
-  color: white !important;
-}
-
-.center-cell {
-  text-align: center !important;
-}
-
-#manageModal .modal-dialog {
-    max-width: 100% !important;
-    width: 90% !important;
-    margin: 0 auto !important;
-}
-
-#manageModal .modal-content {
-    width: 100% !important;
-}
-#pdfPreview {
-    height: 500px !important;
-    width: 100% !important;   /* fill the right column */
-}
-
-#pdfFrame {
-    width: 100% !important;
-    height: 100% !important;
-}
-</style>
-</head>
-<body>
+@section('content')
 
 <header class="custom-header">
     <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
         <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" height="30">
-            <span>Student Developments and Activities Office - SDA Associate</span>
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
         </div>
     </div>
+
     <div class="header-right-group">
         <p>Welcome, {{ session('scholars_admin.first_name') }}!</p>
-        <form method="POST" action="{{ route('admin.logout') }}">
-            @csrf
-            <button type="submit" class="side-button">
-                <img src="{{ asset('images/Side.png') }}" height="30">
-            </button>
-        </form>
     </div>
 </header>
 
-<header>
-    <nav>
-        <a href="{{ route('scholars-admin.dashboard') }}">Dashboard</a>
-        <a href="{{ route('scholars-admin.scholars_accounts') }}">Accounts</a>
-        <a href="{{ route('scholars-admin.scholars') }}">Scholars</a>
-        <a href="{{ route('scholars-admin.scholarships') }}">Scholarships</a>
-    </nav>
-</header>
+  
 
 @if(session('success'))
     <p style="color:green">{{ session('success') }}</p>
@@ -363,5 +276,4 @@ function confirmDelete() {
 
 </script>
 
-</body>
-</html>
+@endsection

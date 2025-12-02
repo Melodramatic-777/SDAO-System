@@ -1,108 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Invites - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  @vite('resources/css/volunteers.css')
+@extends('scholars.layout')
 
-  <style>
-
-    .table-title-row th {
-      background-color: #004aad !important;
-      color: white !important;
-      text-align: center;
-      font-size: 1.25rem;
-    }
-
-    .table-header-row th {
-      background-color: #FFD700 !important;
-      color: black !important;
-      font-weight: bold !important;
-      text-align: center;
-    }
-
-    .custom-modal-content {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-
-    .logout-btn {
-      background-color: #f8f9fa !important;
-      border: 0px solid #ddd !important;
-    }
-
-    .logout-btn:focus,
-    .logout-btn:active {
-      outline: none !important;
-      box-shadow: none !important;
-      border-color: #ddd !important;
-    }
-
-    .badge {
-      font-size: 0.9rem;
-    }
-
-
-    /* Fix modal overlay blocking clicks */
-.modal {
-  z-index: 1055 !important;
-}
-
-.modal-backdrop {
-  z-index: 1050 !important;
-}
-
-.modal-dialog {
-  z-index: 1060 !important;
-}
-
-.custom-modal-content {
-  position: relative;
-  z-index: 1065;
-  background: #fff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-
-
-  </style>
-</head>
-
-<body>
+@section('content')
 
 <header class="custom-header">
-  <div class="header-left">
-    <div class="logo">
-      <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-      <span>Student Developments and Activities Office - Scholars</span>
+    <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
+        <div class="logo">
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
+        </div>
     </div>
-  </div>
-  <div class="header-right-group">
-    <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
-    <form method="POST" action="{{ route('admin.logout') }}">
-      @csrf
-      <button type="submit" class="side-button">
-        <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-      </button>
-    </form>
-  </div>
+
+    <div class="header-right-group">
+        <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
+    </div>
 </header>
 
-<header>
-<nav>
-    <a href="{{ route('scholars.dashboard') }}">Dashboard</a>
-    <a href="{{ route('scholars.volunteer-opportunities') }}">Volunteer Opportunity</a>
-    <a href="{{ route('scholars.invites') }}">Volunteer Invite</a>
-    <a href="{{ route('scholars.profile') }}">Profile</a>
-</nav>
-</header>
+
 
 <div class="container mt-4 text-center">
   @if (session('success'))
@@ -194,6 +114,4 @@
   </div>
 @endforeach
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection

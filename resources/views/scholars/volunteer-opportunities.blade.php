@@ -1,44 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dashboard - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+@extends('scholars.layout')
 
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  @vite('resources/css/volunteers.css')
-</head>
-<body>
+@section('content')
 
 <header class="custom-header">
-  <div class="header-left">
-    <div class="logo">
-      <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-      <span>Student Developments and Activities Office - Scholars</span>
+    <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
+        <div class="logo">
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
+        </div>
     </div>
-  </div>
-  <div class="header-right-group">
-    <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
-    <form method="POST" action="{{ route('admin.logout') }}">
-      @csrf
-      <button type="submit" class="side-button">
-        <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-      </button>
-    </form>
-  </div>
+
+    <div class="header-right-group">
+        <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
+    </div>
 </header>
 
-<header>
-  <nav>
-    <a href="{{ route('scholars.dashboard') }}">Dashboard</a>
-    <a href="{{ route('scholars.volunteer-opportunities') }}">Volunteer Opportunity</a>
-    <a href="{{ route('scholars.invites') }}">Volunteer Invite</a>
-    <a href="{{ route('scholars.profile') }}">Profile</a>
-  </nav>
-</header>
 
 <!-- Filter controls -->
 <div class="flex-wrap p-3 mb-3 bg-white border rounded shadow-sm filter-bar d-flex align-items-center justify-content-between">
@@ -72,7 +55,6 @@
 </div>
 
   </div>
-</div>
 
 
 <div class="container gap-3 px-3 d-flex">
@@ -166,7 +148,7 @@
 
 
 <div class="modal fade" id="onTheSpotModal" tabindex="-1" aria-labelledby="onTheSpotVolunteerLabel" aria-hidden="true">
-<div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 65% !important;">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="p-3 modal-content">
 
       <div class="modal-header">
@@ -750,7 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!-- INTERMITTENT JOIN MODAL -->
 <div class="modal fade" id="intermittentJoinModal" tabindex="-1" aria-labelledby="intermittentJoinLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="p-3 modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold">Join Schedule</h5>
@@ -768,5 +750,5 @@ document.addEventListener("DOMContentLoaded", () => {
     {{ $pagination->links('pagination::bootstrap-5') }}
 </div>
 
-</body>
-</html>
+@endsection
+

@@ -1,137 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>{{ $office }} - Opportunities</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  @vite('resources/css/volunteers.css')
+@extends('volunteers-admin.layout')
 
-  <style>
+@section('content')
 
-    .custom-header {
-      position: relative;
-      z-index: 1 !important;
-    }
-
-    .modal-dialog.modal-xxl {
-      max-width: 95% !important;
-    }
-
-    .modal-backdrop {
-      z-index: -1 !important;
-    }
-
-    .modal-body {
-      padding: 2rem;
-    }
-
-    .modal-title {
-      font-weight: bold;
-      color: #0056b3;
-    }
-
-    .icon-btn {
-      background: none;
-      border: none;
-      color: #000;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      padding: 0;
-    }
-
-    .icon-btn:hover {
-      color: #0056b3;
-      transform: scale(1.1);
-      transition: 0.2s;
-    }
-
-    .table-title-row th {
-      background-color: #004aad !important;
-      color: white !important;
-      text-align: center;
-      font-size: 1.25rem;
-    }
-
-    .table-header-row th {
-      background-color: #FFD700 !important;
-      color: black !important;
-      font-weight: bold !important;
-      text-align: center;
-    }
-
-.custom-wide-modal {
-  max-width: 90% !important;   /* slightly narrower */
-  width: auto !important;
-}
-
-    .custom-wide-modal .modal-content {
-      width: 100%;
-      border-radius: 8px;
-      padding: 2rem;
-    }
-
-
-    .modal.show .modal-dialog {
-  margin: 2rem auto !important; /* add margin on left/right */
-}
-    .modal-close-x {
-      position: absolute;
-      top: 12px;
-      right: 18px;
-      font-size: 32px;
-      font-weight: 300;
-      color: #555;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      line-height: 1;
-      z-index: 999;
-      transition: 0.2s ease;
-    }
-
-    .modal-close-x:hover {
-      color: #000;
-      transform: scale(1.15);
-    }
-  </style>
-</head>
-
-<body>
-  <header class="custom-header">
+<header class="custom-header">
     <div class="header-left">
-      <div class="logo">
-        <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-        <span>Student Developments and Activities Office - SDA Assistant</span>
-      </div>
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
+        <div class="logo">
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
+        </div>
     </div>
 
     <div class="header-right-group">
-      <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
-      <form method="POST" action="{{ route('admin.logout') }}">
-        @csrf
-        <button type="submit" class="side-button">
-          <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-        </button>
-      </form>
+        <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
     </div>
-  </header>
+</header>
 
-  <header>
-    <nav>
-      <a href="{{ route('volunteers-admin.dashboard') }}">Dashboard</a>
-      <a href="{{ route('volunteers-admin.opportunities') }}">Volunteer Requests</a>
-      <a href="{{ route('volunteers-admin.history') }}">History</a>
-      <a href="{{ route('volunteers-admin.student-volunteers') }}">Student Volunteers</a>
-      <a href="{{ route('volunteers-admin.accounts') }}">Accounts</a>
-      <a href="{{ route('volunteers-admin.inquiries') }}">Contact</a>
-    </nav>
-  </header>
+ 
 
   <main class="p-4 container-fluid">
 <a href="{{ route('volunteers-admin.history') }}" class="back-link text-decoration-none">
@@ -292,6 +183,4 @@
     @endforeach
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection

@@ -1,176 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Activities Admin</title>
-</head>
-<meta charset="UTF-8">
-<title>Home - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+@extends('scholars-admin.layout')
 
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  @vite('resources/css/volunteers.css')
-
-<style>
-table {
-  border-collapse: collapse;
-  width: 100%;
-  border: 1px solid #ddd;
-}
-
-table thead {
-  background: #FFD700;       /* gold header */
-  color: #000;               /* black text */
-}
-
-table th, 
-table td {
-  border: 1px solid #ddd;
-  text-align: left;
-  font-size: 14px;
-  padding: 12px;
-}
-
-table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: center !important;
-  vertical-align: middle !important;
-}
-
-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9; /* zebra striping */
-}
-
-table tbody tr:hover {
-  background-color: #fff8dc; /* soft highlight */
-}
-
-.search-input {
-    width: 300px;
-    max-width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-size: 14px;
-    transition: all 0.2s ease-in-out;
-}
-
-/* Focus Effect */
-.search-input:focus {
-    outline: none;
-    border-color: #003DA5;        /* matching primary color */
-    box-shadow: 0 2px 8px rgba(0,61,165,0.3);
-}
-
-/* Import Button for consistency */
-.import-btn {
-    background-color: #003DA5;
-    color: #fff;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    transition: all 0.2s ease-in-out;
-}
-
-.import-btn:hover {
-    background-color: #00297d;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-table thead tr:first-child {
-  background-color: #003DA5 !important;
-  color: white !important;
-}
-
-.status-cell {
-    text-align: center !important;
-}
-
-.center-cell {
-    text-align: center !important;
-}
-
-
-.status-eligible {
-    background-color: #28a745;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.status-eligible {
-    background-color: #28a745;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;   /* rounded corners */
-    font-weight: 600;
-}
-
-.status-probationary {
-    background-color: #ffc107;
-    color: #000;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-.status-revoked {
-    background-color: #dc3545;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-.status-na {
-    background-color: #6c757d;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-
-  </style>
-<body>
+@section('content')
 
 <header class="custom-header">
     <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
         <div class="logo">
             <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office - SDA Associate</span>
+            <span>Student Developments and Activities Office</span>
         </div>
     </div>
+
     <div class="header-right-group">
         <p>Welcome, {{ session('scholars_admin.first_name') }}!</p>
-        <form method="POST" action="{{ route('admin.logout') }}">
-            @csrf
-            <button type="submit" class="side-button">
-                <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-            </button>
-        </form>
     </div>
 </header>
 
-<header>
-<nav>
-    <a href="{{ route('scholars-admin.dashboard') }}">Dashboard</a>
-    <a href="{{ route('scholars-admin.scholars_accounts') }}">Accounts</a>
-    <a href="{{ route('scholars-admin.scholars') }}">Scholars</a>
-    <a href="{{ route('scholars-admin.scholarships') }}">Scholarships</a>
-</nav>
-</header>
+  
+
 
 <!-- ✅ Scholars Section -->
 
@@ -380,5 +233,4 @@ function setupTableSearch(inputId, tableId) {
 setupTableSearch("searchScholars", "tableScholars");
 </script>
 
-</body>
-</html>
+@endsection

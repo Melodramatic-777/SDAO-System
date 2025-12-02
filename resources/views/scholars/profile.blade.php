@@ -1,84 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Profile - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+@extends('scholars.layout')
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  @vite('resources/css/volunteers.css')
-
-  <style>
-  #scholarsTable { transition: opacity 0.3s ease-in-out; max-width: 900px; margin: 0 auto; }
-
-  .table-title-row th {
-    background-color: #004aad !important; color: white !important; text-align: center; font-size: 1.25rem;
-  }
-
-  .table-header-row th {
-    background-color: #FFD700 !important; color: black !important; font-weight: bold !important; text-align: center;
-  }
-
-  .status-card {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
-    text-align: center;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    transition: 0.2s;
-  }
-
-  .status-card:hover { transform: translateY(-3px); }
-
-  .status-card h6 { font-size: 0.9rem; margin-bottom: 6px; color: #555; font-weight: 600; }
-  .status-card h3 { font-size: 2rem; margin: 0; font-weight: 700; }
-
-  .status-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-
-  .info-label { font-weight: 600; color: #333; }
-  .info-value { font-weight: 500; color: #000; text-align: right; }
-
-  /* ✅ Make the container wider */
-  .container {
-      max-width: 2000px !important;
-  }
-  </style>
-
-</head>
-<body>
+@section('content')
 
 <header class="custom-header">
-  <div class="header-left">
-    <div class="logo">
-      <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-      <span>Student Developments and Activities Office - Scholars</span>
+    <div class="header-left">
+
+        <!-- SIDE BUTTON MOVED HERE -->
+<button type="submit" class="side-button header-btn">
+    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
+</button>
+
+
+        <div class="logo">
+            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
+            <span>Student Developments and Activities Office</span>
+        </div>
     </div>
-  </div>
-  <div class="header-right-group">
-    <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
-    <form method="POST" action="">
-      @csrf
-      <button type="submit" class="side-button">
-        <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-      </button>
-    </form>
-  </div>
+
+    <div class="header-right-group">
+        <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
+    </div>
 </header>
 
-<header>
-  <nav>
-    <a href="{{ route('scholars.dashboard') }}">Dashboard</a>
-    <a href="{{ route('scholars.volunteer-opportunities') }}">Volunteer Opportunity</a>
-    <a href="{{ route('scholars.invites') }}">Volunteer Invite</a>
-    <a href="{{ route('scholars.profile') }}">Profile</a>
-  </nav>
-</header>
 
 <div class="mx-5 mt-4 row align-items-center">
 
@@ -189,7 +132,5 @@
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-</body>
-</html>
+@endsection

@@ -1,0 +1,278 @@
+  body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .custom-modal-content {
+      background: #fff;
+      margin: 5% auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .custom-modal-body {
+      padding: 1.5rem;
+    }
+
+    .left-panel {
+      border-right: 1px solid #f0e6cc;
+    }
+
+    .status-badge {
+      background: #ffa857;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .volunteer-count {
+      font-weight: bold;
+      color: #0056b3;
+    }
+
+    .volunteers-list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 0.5rem;
+    }
+
+    .volunteers-list li {
+      font-size: 0.9rem;
+      padding: 2px 0;
+    }
+
+    .right-panel h6 {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .right-panel ul {
+      padding-left: 20px;
+      font-size: 0.9rem;
+    }
+
+    .view-details-btn {
+      background: none;
+      border: none;
+      color: #0d6efd;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .modal-dialog.modal-xl {
+      max-width: 100% !important;
+      min-width: 1500px;
+    }
+
+    .modal-content.custom-modal-content {
+      max-height: 95vh;
+      overflow-y: auto;
+    }
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px; /* slightly larger spacing for a wider layout */
+  width: 100%;
+  max-width: 520px;
+}
+
+
+.chart-section {
+  min-width: 300px;
+}
+
+.chart-box {
+  width: 280px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.chart-box canvas {
+  max-width: 280px;
+  max-height: 280px;
+}
+.volunteer-progress-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin: 0 auto;
+  max-width: 1300px; /* ⬅️ ensures alignment with joined list */
+}
+
+/* Make chart section fill available height */
+.chart-section {
+  min-width: 350px; /* give some room for the right side */
+  flex: 1;
+}
+
+/* Ensure status cards align in grid and match chart height */
+/* Make status cards wider and balanced */
+.status-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  width: 750px; /* more room now fits perfectly */
+}
+
+.status-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px; /* ⬅️ slightly more padding for breathing room */
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  transition: 0.2s;
+}
+
+.status-card:hover {
+  transform: translateY(-3px);
+}
+
+.status-card h6 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 600;
+}
+
+.status-card h3 {
+  font-size: 2.2rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+@media (min-width: 1200px) {
+  .status-cards {
+    min-height: 360px;
+  }
+}
+
+
+.status-tab {
+  padding-bottom: 4px;
+  transition: 0.25s ease;
+  cursor: pointer;
+}
+
+@media (prefers-color-scheme: light) {
+  .status-tab {
+    color: #6c6c6c;
+  }
+  .status-tab.active {
+    color: #000;
+    border-bottom: 2px solid #0056b3;
+  }
+  .status-tab:hover {
+    color: #000;
+  }
+}
+
+.status-tab .badge {
+  font-size: 0.75rem;
+  vertical-align: text-top;
+  padding: 3px 7px;
+  border-radius: 8px;
+}
+
+    .table-title-row th {
+      background-color: #004aad !important;
+      color: white !important;
+      text-align: center;
+      font-size: 1.25rem;
+    }
+
+    .table-header-row th {
+      background-color: #FFD700 !important;
+      color: black !important;
+      font-weight: bold !important;
+      text-align: center;
+    }
+
+    .custom-modal-content {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .logout-btn {
+      background-color: #f8f9fa !important;
+      border: 0px solid #ddd !important;
+    }
+
+    .logout-btn:focus,
+    .logout-btn:active {
+      outline: none !important;
+      box-shadow: none !important;
+      border-color: #ddd !important;
+    }
+
+    .badge {
+      font-size: 0.9rem;
+    }
+
+
+    /* Fix modal overlay blocking clicks */
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
+.modal-dialog {
+  z-index: 1060 !important;
+}
+
+.custom-modal-content {
+  position: relative;
+  z-index: 1065;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+#scholarsTable { transition: opacity 0.3s ease-in-out; max-width: 900px; margin: 0 auto; }
+
+  .table-title-row th {
+    background-color: #004aad !important; color: white !important; text-align: center; font-size: 1.25rem;
+  }
+
+  .table-header-row th {
+    background-color: #FFD700 !important; color: black !important; font-weight: bold !important; text-align: center;
+  }
+
+  .status-card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    transition: 0.2s;
+  }
+
+  .status-card:hover { transform: translateY(-3px); }
+
+  .status-card h6 { font-size: 0.9rem; margin-bottom: 6px; color: #555; font-weight: 600; }
+  .status-card h3 { font-size: 2rem; margin: 0; font-weight: 700; }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .info-label { font-weight: 600; color: #333; }
+  .info-value { font-weight: 500; color: #000; text-align: right; }
+
+  /* ✅ Make the container wider */
+  .container {
+      max-width: 2000px !important;
+  }
+
+  
