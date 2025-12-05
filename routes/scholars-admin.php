@@ -8,6 +8,12 @@ use App\Http\Controllers\ScholarsDashboardController;
 
 Route::prefix('scholars-admin')->group(function () {
 
+Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
+    ->name('scholars-admin.logout');
+
+Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create']);
+
+    
     Route::controller(ScholarsDashboardController::class)->group(function () {
         Route::get('/dashboard', 'dashboard')->name('scholars-admin.dashboard');
     });
@@ -28,4 +34,15 @@ Route::prefix('scholars-admin')->group(function () {
         Route::get('/scholars', 'indexRecord')->name('scholars-admin.scholars');
         Route::post('/scholars/save-gwa', 'saveGwa')->name('scholars-admin.scholars.save');
     });
+
+
+    Route::get('/download-template', function () {
+return response()->download(
+    public_path('templates/Import-Scholars_Template.xlsx'),
+    'Import-Scholars_Template.xlsx'
+);
+});
+
+
+
 });

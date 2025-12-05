@@ -1,27 +1,6 @@
 @extends('scholars-admin.layout')
 
 @section('content')
-
-<header class="custom-header">
-    <div class="header-left">
-
-        <!-- SIDE BUTTON MOVED HERE -->
-<button type="submit" class="side-button header-btn">
-    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-</button>
-
-
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('scholars_admin.first_name') }}!</p>
-    </div>
-</header>
-
   
 
 
@@ -88,56 +67,47 @@
 <section class="row" aria-label="Analytics" style="display:flex; gap:18px; align-items:flex-start;">
 
     <!-- LEFT: PROGRAM DISTRIBUTION -->
-
-
 <div class="col-3">
     <div class="card" style="height:100%; display:flex; flex-direction:column;">
 
-        <!-- TITLE + FILTERS IN ONE ROW -->
+        <!-- TITLE + FILTERS -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-
-            <!-- Title -->
             <div class="card-title" style="font-weight:700; color:var(--muted);">
                 Scholarship Distribution
             </div>
-
-            <!-- Filters -->
             <div style="display:flex; gap:10px;">
                 <select id="scholarYearFilter" class="form-select" style="width:180px;">
                     @foreach($allAcademicYears as $year)
-                        <option value="{{ $year }}" {{ $year == $recentYear ? 'selected' : '' }}>
-                            AY {{ $year }}
-                        </option>
+                        <option value="{{ $year }}" {{ $year == $recentYear ? 'selected' : '' }}>A.Y {{ $year }}</option>
                     @endforeach
                 </select>
-
                 <select id="scholarTermFilter" class="form-select" style="width:120px;">
                     <option value="all">All Terms</option>
                     @foreach(($termsByYear[strval($recentYear)] ?? []) as $t)
-                        <option value="{{ $t }}">{{ $t }}</option>
+                        <option value="{{ $t }}" {{ $t == $currentTerm ? 'selected' : '' }}>{{ $t }}</option>
                     @endforeach
                 </select>
             </div>
-
         </div>
-        <!-- END TITLE+FILTER ROW -->
 
-        <!-- Chart Wrapper -->
-        <div style="flex:1; display:flex; justify-content:center; align-items:center; padding:10px;">
-<canvas id="scholarChart" style="max-height:360px; width:100%;"></canvas>
+        <!-- Chart -->
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:10px;">
+            <canvas id="scholarChart" style="max-height:360px; width:100%;"></canvas>
+
+            <!-- Summary inside card -->
+            <div style="margin-top:12px; text-align:center; color:var(--muted); font-size:0.9rem; line-height:1.4;">
+                Academic Year: <strong>{{ $recentYear ?? '—' }}</strong><br>
+                Term: <strong>{{ $currentTerm ?? 'All' }}</strong><br>
+                Total Scholars: {{ $total }}<br>
+                Scholarships are distributed among {{ count($byScholarship) }} categories.<br>
+                Most common: <strong>{{ array_search(max($byScholarship), $byScholarship) }}</strong>.
+            </div>
         </div>
 
         <!-- Legend -->
         <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
             @foreach($byScholarship as $type => $count)
-                <div style="
-                    background:#fbfdff;
-                    padding:8px 10px;
-                    border-radius:10px;
-                    border:1px solid #eef6ff;
-                    font-weight:700;
-                    color:var(--nu-blue);
-                ">
+                <div style="background:#fbfdff; padding:8px 10px; border-radius:10px; border:1px solid #eef6ff; font-weight:700; color:var(--nu-blue);">
                     {{ strtoupper($type) }}: {{ $count }}
                 </div>
             @endforeach
@@ -147,28 +117,37 @@
 </div>
 
 
+
     <!-- CENTER: RETENTION BY TERM -->
-    <div class="col-4">
-<div class="card">
-<div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+<div class="col-4">
+    <div class="card" style="height:100%; display:flex; flex-direction:column;">
 
-    <span>Retention by Term</span>
+        <!-- Title + Filter -->
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Retention by Term</span>
+            <select id="retentionYearFilter" class="form-select" style="width:180px;">
+                @foreach($allAcademicYears as $year)
+                    <option value="{{ $year }}" {{ $year == $recentYear ? 'selected' : '' }}>A.Y {{ $year }}</option>
+                @endforeach
+            </select>
+        </div>         
 
-    <!-- NEW Academic Year Filter for Retention Chart -->
-    <select id="retentionYearFilter" class="form-select" style="width:180px;">
-        @foreach($allAcademicYears as $year)
-            <option value="{{ $year }}" {{ $year == $recentYear ? 'selected' : '' }}>
-                AY {{ $year }}
-            </option>
-        @endforeach
-    </select>
+        <!-- Chart -->
+        <div style="width:100%; padding-top:10px;">
+            <canvas id="retentionChart" style="height:300px;"></canvas>
 
-</div>         
-   <div style="width:100%; padding-top:10px;">
-                <canvas id="retentionChart" style="height:300px;"></canvas>
+            <!-- Summary inside card -->
+            <div style="margin-top:12px; text-align:center; color:var(--muted); font-size:0.9rem; line-height:1.4;">
+                Retention for {{ $recentYear ?? 'this academic year' }}:<br>
+                Term 1 – {{ $termStats['1']['eligible'] }} eligible, {{ $termStats['1']['probationary'] }} probationary, {{ $termStats['1']['revoked'] }} revoked.<br>
+                Term 2 – {{ $termStats['2']['eligible'] }} eligible, {{ $termStats['2']['probationary'] }} probationary, {{ $termStats['2']['revoked'] }} revoked.<br>
+                Term 3 – {{ $termStats['3']['eligible'] }} eligible, {{ $termStats['3']['probationary'] }} probationary, {{ $termStats['3']['revoked'] }} revoked.
             </div>
         </div>
+
     </div>
+</div>
+
 
 
 

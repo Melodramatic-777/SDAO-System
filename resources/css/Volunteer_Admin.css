@@ -115,6 +115,9 @@ body {
     width: auto;
 }
 
+
+
+
 .header-right-group {
     display: flex;
     align-items: center;
@@ -919,3 +922,18 @@ table thead tr:first-child {
 .center-cell {
     text-align: center !important;
 }
+
+
+.btn-approve {
+    background-color: #28a745 !important; /* Bootstrap green */
+    color: #fff !important;
+    border-color: #28a745 !important;
+}
+
+/* Make Return button permanently red */
+.btn-return {
+    background-color: #dc3545 !important; /* Bootstrap red */
+    color: #fff !important;
+    border-color: #dc3545 !important;
+}
+

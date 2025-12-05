@@ -107,25 +107,31 @@ class SubmitOpportunityController extends Controller
     // ---------------------------------------------------------------------
     // URGENT AUTO-DETECTION
     // ---------------------------------------------------------------------
-    $today = now()->startOfDay();
+// ---------------------------------------------------------------------
+// URGENT AUTO-DETECTION
+// ---------------------------------------------------------------------
+$today = now('Asia/Manila')->startOfDay();
 
-    if ($isIntermittent) {
-        $firstDate = collect($request->input('schedule', []))
-            ->pluck('date')
-            ->filter()
-            ->map(fn($d) => \Carbon\Carbon::parse($d))
-            ->sort()
-            ->first();
-    } else {
-        $firstDate = $validated['start_date']
-            ? \Carbon\Carbon::parse($validated['start_date'])
-            : null;
-    }
+if ($isIntermittent) {
+    $firstDate = collect($request->input('schedule', []))
+        ->pluck('date')
+        ->filter()
+        ->map(fn($d) => \Carbon\Carbon::parse($d, 'Asia/Manila'))
+        ->sort()
+        ->first();
+} else {
+    $firstDate = $validated['start_date']
+        ? \Carbon\Carbon::parse($validated['start_date'], 'Asia/Manila')
+        : null;
+}
 
+// Set is_urgent based on date difference
+if ($firstDate) {
+    $daysUntil = $today->diffInDays($firstDate, false); // negative if in the past
+    $isUrgent = ($daysUntil >= 0 && $daysUntil <= 3) ? 'yes' : 'no';
+} else {
     $isUrgent = 'no';
-    if ($firstDate && $firstDate->diffInDays($today) <= 3) {
-        $isUrgent = 'yes';
-    }
+}
 
     // ---------------------------------------------------------------------
     // ✨ NEW TASK SYSTEM

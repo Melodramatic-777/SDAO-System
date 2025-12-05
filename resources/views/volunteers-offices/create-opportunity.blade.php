@@ -2,8 +2,10 @@
 
 @section('content')
 
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <style>
     /* Make the overall form wider and centered */
@@ -276,13 +278,13 @@ body {
     <h3>Step 1: Activity Title & Location</h3>
 
     <!-- TITLE FIRST -->
-    <label>Title of activity</label>
+    <label>Title of activity<span class="text-danger">*</span></label>
     <input type="text" name="title" placeholder="Enter title proposal" required>
 
     <!-- GROUP LOCATION UI -->
     <div class="location-group">
 
-        <label>Location</label>
+        <label>Location<span class="text-danger">*</span></label>
 
         <!-- LEVEL -->
         <select id="level" required>
@@ -319,7 +321,7 @@ body {
     <h3>Step 2: Schedule Details</h3>
 
     <!-- Intermittent Option -->
-    <label>My event happens intermittently?</label>
+    <label>My event happens intermittently?<span class="text-danger">*</span></label>
     <div class="radio-group">
         <label><input type="radio" name="intermittent" value="0" checked> No</label>
         <label><input type="radio" name="intermittent" value="1"> Yes</label>
@@ -337,16 +339,16 @@ body {
                 <div id="fullcalendar"></div>
 
                 <div id="time-details" style="margin-top:10px;">
-                    <label>Start Time</label>
+                    <label>Start Time<span class="text-danger">*</span></label>
                     <input type="time" id="calendar-start-time">
 
-                    <label>End Time</label>
+                    <label>End Time<span class="text-danger">*</span></label>
                     <input type="time" id="calendar-end-time">
 
-                    <label>Volunteers Needed</label>
+                    <label>Volunteers Needed<span class="text-danger">*</span></label>
                     <input type="number" id="calendar-target-number" min="1">
 
-                    <label>Food Provided</label>
+                    <label>Food Provided<span class="text-danger">*</span></label>
                     <div class="radio-group" style="margin-top: 5px; margin-bottom: 10px;">
                         <label><input type="radio" name="food_provided" value="yes"> Yes</label>
                         <label><input type="radio" name="food_provided" value="no"> No</label>
@@ -369,25 +371,25 @@ body {
     <div id="regular-schedule">
         <div class="form-row">
             <div>
-                <label>Start Date</label>
+                <label>Start Date<span class="text-danger">*</span></label>
                 <input type="date" name="start_date">
             </div>
         </div>
 
-        <label>Time of activity</label>
+        <label>Time of activity<span class="text-danger">*</span></label>
         <div class="form-row time-row">
             <input type="time" name="schedule[0][start_time]">
             <span>to</span>
             <input type="time" name="schedule[0][end_time]">
         </div>
 
-        <label>Number of volunteers needed</label>
+        <label>Number of volunteers needed<span class="text-danger">*</span></label>
         <input type="number" name="schedule[0][target_number]" min="1">
     </div>
 
     <!-- Bottom Food Option (only for regular schedule) -->
     <div id="food-provided-bottom">
-        <label>Food Provided</label>
+        <label>Food Provided<span class="text-danger">*</span></label>
         <div class="radio-group">
             <label><input type="radio" name="food_provided" value="yes"> Yes</label>
             <label><input type="radio" name="food_provided" value="no"> No</label>
@@ -403,7 +405,7 @@ body {
         <!-- 🔵 STEP 3 — DESCRIPTION -->
         <!-- ---------------------------- -->
         <div class="form-step" id="step-3" style="display:none;">
-            <h3>Step 3: Description</h3>
+            <h3>Step 3: Description<span class="text-danger">*</span></h3>
 
             <label>Description</label>
             <textarea name="description" placeholder="Enter activity description..." required></textarea>
@@ -416,7 +418,7 @@ body {
         <!-- 🔵 STEP 4 — TASK SELECTION -->
         <!-- ----------------------------- -->
         <div class="form-step" id="step-4" style="display:none;">
-            <h3>Step 4: Task Details</h3>
+            <h3>Step 4: Task Details<span class="text-danger">*</span></h3>
 
 <table class="task-table"> <thead> <tr> <th>Select</th> <th>Task</th> <th>Skills Recommended</th> <th>Short Description</th> </tr> </thead> <tbody> <tr> <td><input type="checkbox" name="tasks[]" value="Marshalling"></td> <td>Marshalling</td> <td>Crowd management, clear communication, alert, patient</td> <td>Helps manage crowd flow, guide participants, and keep pathways clear.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Registration"></td> <td>Registration</td> <td>Organized, detail-oriented, friendly, basic data encoding</td> <td>Handles check-in, attendance lists, and assists participants.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Ushering"></td> <td>Ushering</td> <td>Approachable, good communication, presentable</td> <td>Guides attendees to seats and helps answer questions.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Photography"></td> <td>Photography</td> <td>Basic photography skills, attention to detail</td> <td>Takes photos of key moments and activities.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Videography"></td> <td>Videography</td> <td>Basic video recording, timing awareness</td> <td>Records event highlights and important segments.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Technical Support"></td> <td>Technical Support</td> <td>Basic IT skills, calm under pressure</td> <td>Helps manage audio, projector, and technical systems.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Creatives/Design"></td> <td>Creatives / Design</td> <td>Basic design sense, creativity</td> <td>Prepares visual materials, layouts, and social media assets.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Hosting"></td> <td>Hosting</td> <td>Confident speaker, energetic, good diction</td> <td>Leads the program, introduces speakers, engages the audience.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Logistics"></td> <td>Logistics</td> <td>Physically capable, organized</td> <td>Transfers equipment/materials and supports operations.</td> </tr> <tr> <td><input type="checkbox" name="tasks[]" value="Admin Support"></td> <td>Admin Support</td> <td>Detail-oriented, encoding, filing</td> <td>Prepares documents, attendance, certificates, encodes data.</td> </tr> <!-- Others row --> <tr> <td><input type="checkbox" name="tasks[]" value="Others"></td> <td>Others</td> <!-- Skills Recommended --> <td> <input type="text" name="task_other_skills" placeholder="Enter skills recommended…" style="width:100%;"> </td> <!-- Short Description --> <td> <input type="text" name="task_other_description" placeholder="Enter short description…" style="width:100%;"> </td> </tr> </tbody> </table>
 

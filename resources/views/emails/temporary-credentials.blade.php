@@ -6,7 +6,7 @@
 <body>
     <p>Hello {{ $name }},</p>
 
-    <p>Your temporary admin credentials for the NU Fairview SDAO IsKonnect are as follows:</p>
+    <p>Your temporary credentials for the NU Fairview SDAO IsKonnect are as follows:</p>
 
     <ul>
         <li>Email: {{ $email }}</li>

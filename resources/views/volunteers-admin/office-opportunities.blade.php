@@ -2,27 +2,7 @@
 
 @section('content')
 
-<header class="custom-header">
-    <div class="header-left">
 
-        <!-- SIDE BUTTON MOVED HERE -->
-<button type="submit" class="side-button header-btn">
-    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-</button>
-
-
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
-    </div>
-</header>
-
- 
 
   <main class="p-4 container-fluid">
 <a href="{{ route('volunteers-admin.history') }}" class="back-link text-decoration-none">

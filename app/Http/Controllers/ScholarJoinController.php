@@ -108,6 +108,45 @@ class ScholarJoinController extends Controller
         return response()->json(['message' => 'Joined successfully']);
     }
 
+    public function getIntermittentDates($id)
+{
+    $dates = $this->database
+        ->getReference("opportunities/$id/intermittent_schedule")
+        ->getValue();
+
+    return response()->json($dates ? array_values($dates) : []);
+}
+
+
+public function joinIntermittent(Request $request, $id)
+{
+    $dates = $request->input('dates');
+    $scholar = session('scholar_accounts');
+    if (!$scholar) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+    $scholarId   = $scholar['student_no'] ?? null;
+    $scholarName = trim(($scholar['first_name'] ?? '') . ' ' . ($scholar['last_name'] ?? ''));
+    if (!$scholarId) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+
+    if (!is_array($dates) || count($dates) === 0) {
+        return response()->json(['success' => false, 'message' => 'No dates selected.']);
+    }
+
+    $path = "joined_intermittent/$scholarId/$id";
+
+    $this->database->getReference($path)->set([
+        'scholar_id'     => $scholarId,
+        'scholar_name'   => $scholarName,
+        'selected_dates' => $dates,
+        'joined_at'      => Carbon::now()->toDateTimeString(),
+    ]);
+
+    return response()->json(['success' => true]);
+}
+
 public function scholarOpportunities()
 {
     $opportunities = $this->database->getReference('opportunities')->getValue() ?? [];

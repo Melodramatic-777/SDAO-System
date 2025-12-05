@@ -2,28 +2,6 @@
 
 @section('content')
 
-<header class="custom-header">
-    <div class="header-left">
-
-        <!-- SIDE BUTTON MOVED HERE -->
-<button type="submit" class="side-button header-btn">
-    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-</button>
-
-
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('scholars_admin.first_name') }}!</p>
-    </div>
-</header>
-
-  
-
 
 <!-- ✅ Scholars Section -->
 
@@ -33,23 +11,45 @@
 
   <!-- Left: Filter Dropdowns -->
   <div class="flex-wrap gap-2 d-flex align-items-center">
-    <select name="academic_year" class="form-select" style="width: 180px;">
-      <option value="">All Academic Years</option>
-      @foreach($academicYears as $year)
-        <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-          {{ $year }}
-        </option>
-      @endforeach
-    </select>
+<select name="academic_year" class="form-select" style="width: 180px;">
 
-    <select name="term" class="form-select" style="width: 150px;">
-      <option value="">All Terms</option>
-      @foreach($terms as $term)
-        <option value="{{ $term }}" {{ request('term') == $term ? 'selected' : '' }}>
-          {{ $term }} Term
-        </option>
-      @endforeach
-    </select>
+    <!-- Show CURRENT / LATEST A.Y. first -->
+    <option value="{{ $latestYear }}" 
+        {{ request('academic_year', $latestYear) == $latestYear ? 'selected' : '' }}>
+        {{ $latestYear }}
+    </option>
+
+    <!-- Show the rest EXCEPT the latest -->
+    @foreach($academicYears as $year)
+        @if($year !== $latestYear)
+            <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+                {{ $year }}
+            </option>
+        @endif
+    @endforeach
+
+</select>
+
+
+<select name="term" class="form-select" style="width: 150px;">
+
+    <!-- Latest Term First -->
+    <option value="{{ $latestTerm }}"
+        {{ request('term', $latestTerm) == $latestTerm ? 'selected' : '' }}>
+        {{ $latestTerm }}
+    </option>
+
+    <!-- Other Terms -->
+    @foreach($terms as $term)
+        @if($term !== $latestTerm)
+            <option value="{{ $term }}" {{ request('term') == $term ? 'selected' : '' }}>
+                {{ $term }}
+            </option>
+        @endif
+    @endforeach
+
+</select>
+
 
     <select name="scholarship_type" class="form-select" style="width: 200px;">
       <option value="">All Scholarship Types</option>
@@ -125,7 +125,7 @@
           <th>Birthday</th>
           <th>School</th>
           <th>Program</th>
-          <th>Scholarship Type</th>
+          <th>Type</th>
           <th>Status</th>
           <th>Created At</th>
         </tr>
@@ -152,17 +152,29 @@ $status = $year && isset($scholar['gwa_records'][$year]['status'])
 <td class="center-cell">
     {{ $scholar['scholarship_type'] ?? '' }}
 </td>
+@php
+    // Check if scholar has status in their GWA records for the current year
+    $year = $scholar['academic_year'] ?? null;
+    $statusFromGwa = $year && isset($scholar['gwa_records'][$year]['status'])
+        ? $scholar['gwa_records'][$year]['status']
+        : null;
+
+    // Use GWA status if exists, otherwise fallback to 'Eligible'
+    $displayStatus = $statusFromGwa ?? ($scholar['status'] ?? 'Eligible');
+@endphp
+
 <td class="status-cell">
-  @if(strtolower($status) === 'eligible')
-    <span class="status-eligible">Eligible</span>
-  @elseif(strtolower($status) === 'probationary')
-    <span class="status-probationary">Probationary</span>
-  @elseif(strtolower($status) === 'ineligible' || strtolower($status) === 'revoked')
-    <span class="status-revoked">Revoked</span>
+  @if(strtolower($displayStatus) === 'eligible')
+    <span id="status-{{ $scholar['student_no'] }}" class="status-eligible">Eligible</span>
+  @elseif(strtolower($displayStatus) === 'probationary')
+    <span id="status-{{ $scholar['student_no'] }}" class="status-probationary">Probationary</span>
+  @elseif(strtolower($displayStatus) === 'ineligible' || strtolower($displayStatus) === 'revoked')
+    <span id="status-{{ $scholar['student_no'] }}" class="status-revoked">Revoked</span>
   @else
-    <span class="status-na">{{ $status }}</span>
+    <span id="status-{{ $scholar['student_no'] }}" class="status-na">{{ $displayStatus }}</span>
   @endif
 </td>
+
 <td>
     {{ $scholar['created_at'] ? \Carbon\Carbon::parse($scholar['created_at'])->format('F d, Y g:i A') : 'N/A' }}
 </td>
@@ -181,6 +193,8 @@ $status = $year && isset($scholar['gwa_records'][$year]['status'])
   </div>
 </div>
 
+
+<!-- Modal -->
 <!-- Modal -->
 <div id="importScholarsModal" class="modal">
   <div class="p-4 rounded shadow-lg modal-content">
@@ -190,33 +204,49 @@ $status = $year && isset($scholar['gwa_records'][$year]['status'])
         onclick="document.getElementById('importScholarsModal').style.display='none'">&times;</span>
     </div>
 
-<form method="POST" action="{{ route('scholars-admin.import-scholars') }}" enctype="multipart/form-data">
-  @csrf
+    <!-- Download Template -->
+<div class="mb-3">
+    <span style="color: grey; font-style: italic;">Don't have a template yet? </span>
+    <a href="{{ url('scholars-admin/download-template') }}" 
+       class="text-primary text-decoration-underline">
+        <i class="bi bi-download me-1"></i> Download
+    </a>
+</div>
 
-  <div class="mb-3">
-    <label class="form-label fw-bold">Select CSV or Excel File</label>
-    <input type="file" name="scholars_file" class="form-control" accept=".csv, .xlsx" required>
-  </div>
 
-  <div class="mb-3">
-    <label class="form-label fw-bold">Academic Year</label>
-    <input type="text" name="academic_year" class="form-control" placeholder="e.g., 2024-2025" required>
-  </div>
 
-  <div class="mb-3">
-    <label class="form-label fw-bold">Term</label>
-    <select name="term" class="form-control" required>
-      <option value="" disabled selected>Select term</option>
-      <option value="1st">1st Term</option>
-      <option value="2nd">2nd Term</option>
-      <option value="3rd">3rd Term</option>
-    </select>
-  </div>
 
-  <button class="btn btn-success w-100" type="submit">Import</button>
-</form>
+
+    <form method="POST" action="{{ route('scholars-admin.import-scholars') }}" enctype="multipart/form-data">
+      @csrf
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Select CSV or Excel File</label>
+        <input type="file" name="scholars_file" class="form-control" accept=".csv, .xlsx" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Academic Year</label>
+        <input type="text" name="academic_year" class="form-control" placeholder="e.g., 2024-2025" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Term</label>
+        <select name="term" class="form-control" required>
+          <option value="" disabled selected>Select term</option>
+          <option value="1st">1st Term</option>
+          <option value="2nd">2nd Term</option>
+          <option value="3rd">3rd Term</option>
+        </select>
+      </div>
+
+<div class="text-center">
+  <button class="btn btn-success" type="submit">Import</button>
+</div>
+    </form>
   </div>
 </div>
+
 
 <!-- ✅ JS Logic -->
 <script>

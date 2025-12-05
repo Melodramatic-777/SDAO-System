@@ -2,27 +2,7 @@
 
 @section('content')
 
-<header class="custom-header">
-    <div class="header-left">
 
-        <!-- SIDE BUTTON MOVED HERE -->
-<button type="submit" class="side-button header-btn">
-    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-</button>
-
-
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('scholars_admin.first_name') }}!</p>
-    </div>
-</header>
-
-  
 
 @if(session('success'))
     <p style="color:green">{{ session('success') }}</p>
@@ -112,22 +92,22 @@
         <div class="modal-body">
 
           <div class="mb-3">
-            <label class="form-label">Scholarship Name</label>
+            <label class="form-label">Scholarship Name <span class="text-danger">*</span></label>
             <input type="text" name="scholarship_name" class="rounded form-control" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">GWA Requirement</label>
+            <label class="form-label">GWA Requirement <span class="text-danger">*</span></label>
             <input type="number" step="0.01" name="grade_requirement" class="rounded form-control" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Grade Cutoff</label>
+            <label class="form-label">Grade Cutoff <span class="text-danger">*</span></label>
             <input type="number" step="0.01" name="eligibility_cutoff" class="rounded form-control" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Scholarship PDF</label>
+            <label class="form-label">Scholarship PDF <span class="text-danger">*</span></label>
             <input type="file" name="requirements_pdf" accept="application/pdf" class="rounded form-control" required>
           </div>
 
@@ -143,7 +123,6 @@
     </div>
   </div>
 </div>
-
 
 
 <!-- ---------------------------------------- -->
@@ -163,45 +142,46 @@
         @method('PUT')
 
         <div class="modal-body">
-          <div class="row g-4">
+          <div class="flex-row flex-wrap d-flex g-4">
 
-            <!-- LEFT -->
-            <div class="col-md-6">
+      <!-- COLUMN 1: Input Fields -->
+<div class="flex-fill me-3" style="min-width: 300px; max-width: 600px;">
 
-              <div class="mb-3">
-                <label class="form-label">Scholarship Name</label>
-                <input type="text" id="edit_name" name="scholarship_name" class="rounded form-control" required>
-              </div>
+  <!-- Scholarship Name -->
+<div class="mb-3 d-flex align-items-center">
+  <label class="mb-0 me-2 form-label">Scholarship Name </label>
+  <input type="text" id="edit_name" name="scholarship_name" class="mt-1 rounded form-control" required style="width: 250px;">
+</div>
 
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">GWA Requirement</label>
-                  <input type="number" step="0.01" id="edit_grade" name="grade_requirement" class="rounded form-control" required>
-                </div>
 
-                <div class="col-md-6">
-                  <label class="form-label">Grade Cutoff</label>
-                  <input type="number" step="0.01" id="edit_cutoff" name="eligibility_cutoff" class="rounded form-control" required>
-                </div>
-              </div>
+  <!-- GWA Requirement & Grade Cutoff stacked -->
+  <div class="mb-3 d-flex flex-column">
+    <div class="mb-2 d-flex align-items-center">
+      <label class="mb-0 me-2 form-label">GWA Requirement </label>
+      <input type="number" step="0.01" id="edit_grade" name="grade_requirement" class="rounded form-control" required style="width: 120px;">
+    </div>
+    <div class="d-flex align-items-center">
+      <label class="mb-0 me-2 form-label">Grade Cutoff </label>
+      <input type="number" step="0.01" id="edit_cutoff" name="eligibility_cutoff" class="rounded form-control" required style="width: 120px;">
+    </div>
+  </div>
 
-            </div>
+  <!-- Update PDF below Grade Cutoff -->
+  <div class="mb-3 d-flex align-items-center">
+    <label class="mb-0 me-2 form-label">Update PDF (optional)</label>
+    <input type="file" name="requirements_pdf" accept="application/pdf" class="rounded form-control" style="flex:1;">
+  </div>
 
-            <!-- RIGHT -->
-            <div class="col-md-6">
+</div>
 
-              <p class="mb-1 fw-bold">Current PDF:</p>
+
+            <!-- COLUMN 2: Current PDF Preview -->
+            <div class="flex-fill" style="min-width: 300px;">
+              <p class="mb-2 fw-bold">Current PDF:</p>
               <a id="edit_pdf" href="#" target="_blank" class="mb-2 text-primary fw-semibold d-block"></a>
-
-              <div id="pdfPreview" class="border rounded d-none" style="height:350px;">
+              <div id="pdfPreview" class="border rounded" style="height: 400px;">
                 <iframe id="pdfFrame" src="" width="100%" height="100%" class="rounded"></iframe>
               </div>
-
-              <div class="mt-3">
-                <label class="form-label">Update PDF (optional)</label>
-                <input type="file" name="requirements_pdf" accept="application/pdf" class="rounded form-control">
-              </div>
-
             </div>
 
           </div>
@@ -209,14 +189,12 @@
 
         <div class="modal-footer d-flex justify-content-between">
           <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
-
-          <div>
-            <button type="submit" class="btn btn-primary">Update</button>
-          </div>
+          <button type="submit" class="btn btn-primary">Update</button>
         </div>
 
       </form>
 
+      <!-- Hidden Delete Form -->
       <form id="deleteForm" method="POST" class="d-none">
         @csrf
         @method('DELETE')
@@ -225,6 +203,7 @@
     </div>
   </div>
 </div>
+
 
 
 

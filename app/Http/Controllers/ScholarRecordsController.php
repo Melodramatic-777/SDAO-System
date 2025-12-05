@@ -109,18 +109,36 @@ class ScholarRecordsController extends Controller
 
 public function saveGwa(Request $request)
 {
-    $records = $request->records;
+    $records = $request->input('records', []);
+
+    if (empty($records)) {
+        return response()->json(['message' => 'No records received'], 400);
+    }
 
     foreach ($records as $rec) {
 
+        if (!isset(
+            $rec['firebase_id'],
+            $rec['academic_year'],
+            $rec['term'],
+            $rec['scholarship_type']
+        )) {
+            continue; // skip invalid rows
+        }
+
         $path = "scholars/{$rec['academic_year']}/{$rec['term']}/{$rec['scholarship_type']}/{$rec['firebase_id']}/gwa_records/{$rec['academic_year']}";
 
-        $this->database->getReference($path)->update([
-            'gwa_1st' => $rec['gwa_1st'],
-            'gwa_2nd' => $rec['gwa_2nd'],
-            'gwa_3rd' => $rec['gwa_3rd'],
-            'status'  => $rec['status']
-        ]);
+        // Build data array dynamically
+        $updateData = [];
+
+        if (isset($rec['gwa_1st'])) $updateData['gwa_1st'] = $rec['gwa_1st'];
+        if (isset($rec['gwa_2nd'])) $updateData['gwa_2nd'] = $rec['gwa_2nd'];
+        if (isset($rec['gwa_3rd'])) $updateData['gwa_3rd'] = $rec['gwa_3rd'];
+        if (isset($rec['status']))  $updateData['status']  = $rec['status'];
+
+        if (!empty($updateData)) {
+            $this->database->getReference($path)->update($updateData);
+        }
     }
 
     return response()->json(['message' => 'Saved']);

@@ -2,33 +2,12 @@
 
 @section('content')
 
-<header class="custom-header">
-    <div class="header-left">
-
-        <!-- SIDE BUTTON MOVED HERE -->
-<button type="submit" class="side-button header-btn">
-    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-</button>
-
-
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('scholars_admin.first_name') }}!</p>
-    </div>
-</header>
 
   
 
 <!-- ✅ Filter Controls -->
 <!-- ✅ Filter Controls -->
 <div class="flex-wrap p-3 mb-3 bg-white border rounded shadow-sm filter-bar d-flex align-items-center justify-content-between">
-  
-  <!-- Left Section: Filters -->
   <div class="flex-wrap gap-2 d-flex align-items-center">
     <select name="academic_year" class="form-select" style="width:180px;">
       <option value="">All Academic Years</option>
@@ -87,7 +66,7 @@
 
 <div id="Scholars" class="px-5 py-4 container-fluid">
     <!-- ✅ TABLE -->
-    <table>
+<table id="tableGWA">
         <thead>
 
       <tr class="table-title-row">
@@ -117,7 +96,7 @@
                 data-firebase="{{ $record['firebase_id'] }}"               
                 data-year="{{ $record['academic_year'] }}"
                 data-term="{{ $record['term'] }}"
-                data-type="{{ $record['scholarship_type'] }}"
+data-type="{{ $record['scholarship_type'] }}"
                 data-school="{{ $record['school'] }}"
                 data-program="{{ $record['program'] }}"
                 data-grade="{{ $record['grade_requirement'] }}"
@@ -139,9 +118,10 @@
 <td class="text-center">{{ $record['scholarship_type'] }}</td>
 
 
-                <td><input type="text" class="gwa-input" data-term="1st" value="{{ $record['gwa_1st'] }}"></td>
-                <td><input type="text"  class="gwa-input" data-term="2nd" value="{{ $record['gwa_2nd'] }}"></td>
-                <td><input type="text"  class="gwa-input" data-term="3rd" value="{{ $record['gwa_3rd'] }}"></td>
+<td class="gwa-col"><input type="text" class="gwa-input" data-term="1st" value="{{ $record['gwa_1st'] }}"></td>
+<td class="gwa-col"><input type="text" class="gwa-input" data-term="2nd" value="{{ $record['gwa_2nd'] }}"></td>
+<td class="gwa-col"><input type="text" class="gwa-input" data-term="3rd" value="{{ $record['gwa_3rd'] }}"></td>
+
 
 <td class="text-center status status-cell"></td>
             </tr>
@@ -284,39 +264,120 @@ function finalizeDecimal(input) {
     //---------------------------------------------------------
     //  SAVE ALL BUTTON
     //---------------------------------------------------------
-    document.getElementById('saveAllBtn').addEventListener('click', function () {
+document.getElementById('saveAllBtn').addEventListener('click', function () {
+    const rows = document.querySelectorAll('tbody tr');
+    const updates = [];
+    const errorRows = [];
 
-        let rows = document.querySelectorAll('tbody tr');
-        let updates = [];
+    // Determine which terms have at least one input filled
+    const terms = ['1st', '2nd', '3rd'];
+    const termFilled = { '1st': false, '2nd': false, '3rd': false };
 
-        rows.forEach(row => {
-            updates.push({
-                firebase_id: row.dataset.firebase,
-                academic_year: row.dataset.year,
-                term: row.dataset.term,
-                scholarship_type: row.dataset.type,
-                gwa_1st: row.querySelector('input[data-term="1st"]').value || null,
-                gwa_2nd: row.querySelector('input[data-term="2nd"]').value || null,
-                gwa_3rd: row.querySelector('input[data-term="3rd"]').value || null,
-                status: row.querySelector('.status').textContent
-            });
-        });
-
-        fetch("{{ route('scholars-admin.scholars.save') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ records: updates })
-        })
-        .then(res => res.json())
-        .then(data => alert("GWA Records saved successfully!"))
-        .catch(err => {
-            alert("Error saving GWA");
-            console.error(err);
+    rows.forEach(row => {
+        terms.forEach(term => {
+            const val = row.querySelector(`input[data-term="${term}"]`).value.trim();
+            if (val !== "") termFilled[term] = true;
         });
     });
+
+    rows.forEach(row => {
+        // Finalize decimals and update status
+        row.querySelectorAll('.gwa-input').forEach(finalizeDecimal);
+        evaluateRow(row);
+
+        const gwa1 = row.querySelector('input[data-term="1st"]').value.trim();
+        const gwa2 = row.querySelector('input[data-term="2nd"]').value.trim();
+        const gwa3 = row.querySelector('input[data-term="3rd"]').value.trim();
+
+        let hasError = false;
+
+        // 1️⃣ Sequential validation
+        if (gwa2 !== "" && gwa1 === "") hasError = true;
+        if (gwa3 !== "" && (gwa1 === "" || gwa2 === "")) hasError = true;
+
+        // 2️⃣ Blank check for partially filled row
+        if ((gwa1 === "" && (gwa2 !== "" || gwa3 !== "")) ||
+            (gwa2 === "" && gwa3 !== "")) {
+            hasError = true;
+        }
+
+        // 3️⃣ New validation: if a term is filled in ANY row, all rows must have a value
+        if ((termFilled['1st'] && gwa1 === "") ||
+            (termFilled['2nd'] && gwa2 === "") ||
+            (termFilled['3rd'] && gwa3 === "")) {
+            hasError = true;
+        }
+
+        if (hasError) {
+            row.style.backgroundColor = "#ffe5e5"; // Highlight error row
+            const studentNumber = row.querySelector('td:nth-child(2)').textContent.trim();
+            const studentName = row.querySelector('td:nth-child(3)').textContent.trim();
+            errorRows.push(`${studentNumber} - ${studentName}`);
+        } else {
+            row.style.backgroundColor = ""; // Clear previous highlight
+        }
+    });
+
+    if (errorRows.length > 0) {
+        alert(
+            "Save failed! Please complete all GWA fields for the following students:\n" +
+            errorRows.join("\n")
+        );
+        return; // Stop saving
+    }
+
+    // Prepare updates for server
+    rows.forEach(row => {
+        const gwa1 = row.querySelector('input[data-term="1st"]').value.trim();
+        const gwa2 = row.querySelector('input[data-term="2nd"]').value.trim();
+        const gwa3 = row.querySelector('input[data-term="3rd"]').value.trim();
+        const status = row.querySelector('.status .status-badge').textContent.trim();
+
+        // Skip rows with no data at all
+        if (gwa1 === "" && gwa2 === "" && gwa3 === "") return;
+
+        const updateObj = {
+            firebase_id: row.dataset.firebase,
+            academic_year: row.dataset.year,
+            term: row.dataset.term,
+            scholarship_type: row.dataset.type,
+            status: status
+        };
+
+        if (gwa1 !== "") updateObj.gwa_1st = gwa1;
+        if (gwa2 !== "") updateObj.gwa_2nd = gwa2;
+        if (gwa3 !== "") updateObj.gwa_3rd = gwa3;
+
+        updates.push(updateObj);
+    });
+
+    // Send updates to server
+    fetch("{{ route('scholars-admin.scholars.save') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ records: updates })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert("GWA Records saved successfully!");
+        rows.forEach(row => row.style.backgroundColor = "");
+    })
+    .catch(err => {
+        alert("Error saving GWA");
+        console.error(err);
+    });
+});
+
+
+
+
+
+
+
+
 
 });
 </script>

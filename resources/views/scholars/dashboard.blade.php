@@ -2,29 +2,8 @@
 
 @section('content')
 
-<header class="custom-header">
-    <div class="header-left">
-
-        <!-- SIDE BUTTON MOVED HERE -->
-<button type="submit" class="side-button header-btn">
-    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-</button>
 
 
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
-    </div>
-</header>
-
-
-
-<section class="px-5 mt-5 page-container container-fluid">
 
 
 <div class="flex-wrap mb-4 volunteer-progress-container d-flex justify-content-between align-items-stretch">
@@ -314,7 +293,6 @@
       {{ $pagination->links('pagination::bootstrap-5') }}
     </div>
   @endif
-</section>
 
 
 

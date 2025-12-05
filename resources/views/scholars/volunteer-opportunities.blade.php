@@ -2,26 +2,6 @@
 
 @section('content')
 
-<header class="custom-header">
-    <div class="header-left">
-
-        <!-- SIDE BUTTON MOVED HERE -->
-<button type="submit" class="side-button header-btn">
-    <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-</button>
-
-
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('scholar_accounts.first_name') }}!</p>
-    </div>
-</header>
-
 
 <!-- Filter controls -->
 <div class="flex-wrap p-3 mb-3 bg-white border rounded shadow-sm filter-bar d-flex align-items-center justify-content-between">
@@ -123,9 +103,21 @@
 <div class="mt-2 text-end">
   <small class="participant-count">
     <i class="bi bi-person-fill me-1"></i>
-    {{ count($op['participants'] ?? []) }}/{{ $op['schedule'][0]['target_number'] ?? '?' }}
+    @php
+        $participantsCount = count($op['participants'] ?? []);
+        $totalTarget = 0;
+        if (!empty($op['is_intermittent']) && (int)$op['is_intermittent'] === 1) {
+            foreach ($op['schedule'] ?? [] as $s) {
+                $totalTarget += $s['target_number'] ?? 0;
+            }
+        } else {
+            $totalTarget = $op['schedule'][0]['target_number'] ?? '?';
+        }
+    @endphp
+    {{ $participantsCount }}/{{ $totalTarget }}
   </small>
 </div>
+
 
         </div>
       </div>
@@ -221,6 +213,12 @@
   </div>
 </div>
 
+
+
+
+
+
+
 <script>
 
 
@@ -246,58 +244,30 @@ function showDetail(id) {
 
     const participants = op.participants || [];
     const acceptedVolunteers = participants.filter(p => p.status === "Accepted");
-
-    // FIX: use boolean for intermittent
     const isIntermittent = op.is_intermittent === true || op.is_intermittent === "true";
-
-    // FIX: tasks structure
     const tasks = op.tasks || [];
-
-    // FIX: skills gathered from tasks
     const skillsList = tasks.flatMap(t => (t.skills || "").split(",")).map(s => s.trim());
-
-    // FIX: For full/limit
     const target = op.schedule?.[0]?.target_number ?? null;
     const alreadyJoined = participants.some(p => p.scholar_id == scholarId);
     const isFull = target !== null && acceptedVolunteers.length >= target;
 
-    // ---------------------
-    // BUILD SCHEDULE TABLE
-    // ---------------------
+    // BUILD SCHEDULE HTML
     let scheduleContent = "";
-
     if (isIntermittent) {
-
-      const validDates = (op.schedule || [])
-  .map(s => s.date)
-  .filter(d => d && !isNaN(new Date(d)))
-  .map(d => new Date(d))
-  .sort((a, b) => a - b);
-
-
-        let dateRangeText = "N/A";
-        if (validDates.length > 0) {
-            const start = validDates[0];
-            const end = validDates[validDates.length - 1];
-            dateRangeText =
-                start.getTime() === end.getTime()
-                    ? formatDatePretty(start.toISOString())
-                    : `${formatDatePretty(start.toISOString())} – ${formatDatePretty(end.toISOString())}`;
-        }
-
+        const validDates = (op.schedule || []).map(s => s.date).filter(d => d && !isNaN(new Date(d))).map(d => new Date(d)).sort((a, b) => a - b);
+        const dateRangeText = validDates.length
+            ? validDates[0].getTime() === validDates[validDates.length - 1].getTime()
+                ? formatDatePretty(validDates[0].toISOString())
+                : `${formatDatePretty(validDates[0].toISOString())} – ${formatDatePretty(validDates[validDates.length - 1].toISOString())}`
+            : "N/A";
         scheduleContent = `
             <h6 class="mt-3 fw-bold">Schedule (Intermittent)</h6>
             <p><strong>Estimated Dates:</strong> ${dateRangeText}</p>
-
             <div class="table-responsive">
               <table class="table mt-2 text-center align-middle table-bordered">
                 <thead class="table-light">
                   <tr>
-                    <th>Date</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Volunteers Needed</th>
-                    <th>Food</th>
+                    <th>Date</th><th>Start</th><th>End</th><th>Volunteers Needed</th><th>Food</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -315,67 +285,64 @@ function showDetail(id) {
             </div>
         `;
     } else {
-
-        const s = op.schedule?.[0] ?? null;
-
+        const s = op.schedule?.[0] ?? {};
         scheduleContent = `
             <h6 class="mt-3 fw-bold">Schedule</h6>
             <table class="table text-center align-middle table-bordered">
                 <thead class="table-light">
                   <tr>
-                    <th>Date</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Volunteers Needed</th>
-                    <th>Food</th>
+                    <th>Date</th><th>Start</th><th>End</th><th>Volunteers Needed</th><th>Food</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>${formatDatePretty(s?.date)}</td>
-                    <td>${formatTime(s?.start_time)}</td>
-                    <td>${formatTime(s?.end_time)}</td>
-                    <td>${s?.target_number}</td>
-                    <td>${(s?.food_provided || "no").toLowerCase() === "yes" ? "Yes" : "No"}</td>
+                    <td>${formatDatePretty(s.date)}</td>
+                    <td>${formatTime(s.start_time)}</td>
+                    <td>${formatTime(s.end_time)}</td>
+                    <td>${s.target_number}</td>
+                    <td>${(s.food_provided || "no").toLowerCase() === "yes" ? "Yes" : "No"}</td>
                   </tr>
                 </tbody>
             </table>
         `;
     }
 
-    // ---------------------
-    // BUILD HTML (SAFE)
-    // ---------------------
     document.getElementById("opportunityDetail").innerHTML = `
         <h4><strong>${op.title}</strong></h4>
         <p><strong>Location:</strong> ${op.location}</p>
         <p><strong>Submitted by:</strong> ${op.submitted_by_name}</p>
-
         ${scheduleContent}
-
         ${alreadyJoined
             ? `<button class="mt-3 btn btn-secondary" disabled>Joined</button>`
-            : isFull
-                ? `<button class="mt-3 btn btn-dark" disabled>Full</button>`
-                : `<button id="joinBtn" class="mt-3 btn btn-primary" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
+            : isIntermittent
+                ? `<button class="mt-3 btn btn-outline-primary" onclick="openIntermittentModal('${op.opportunity_id}')">Join Intermittent Schedule</button>`
+                : isFull
+                    ? `<button class="mt-3 btn btn-dark" disabled>Full</button>`
+                    : `<button id="joinBtn" class="mt-3 btn btn-primary" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
         }
-
         <hr class="my-4">
-
+        <h5 class="fw-bold">Participants (${participants.length})</h5>
+        ${isIntermittent
+            ? op.schedule.map((s, idx) => {
+                const dateParticipants = (participants || []).filter(p => (p.schedule_indices || []).includes(idx));
+                return `<p><strong>${formatDatePretty(s.date)} (${dateParticipants.length} joined)</strong></p>
+                        <ul>${dateParticipants.length
+                            ? dateParticipants.map(p => `<li>${p.name} (Joined at: ${p.joined_at})</li>`).join('')
+                            : '<li class="text-muted">No participants yet</li>'
+                        }</ul>`;
+              }).join('')
+            : `<ul>${participants.length
+                ? participants.map(p => `<li>${p.name}</li>`).join('')
+                : '<li class="text-muted">No participants yet</li>'
+              }</ul>`
+        }
+        <hr class="my-4">
         <h5 class="fw-bold">Tasks</h5>
-        <ul>
-          ${tasks.map(t => `
-            <li><strong>${t.task}</strong> – ${t.description}</li>
-          `).join("")}
-        </ul>
-
+        <ul>${tasks.map(t => `<li><strong>${t.task}</strong> – ${t.description}</li>`).join("")}</ul>
         <h5 class="mt-4 fw-bold">Skills Needed</h5>
-        <ul>
-          ${skillsList.map(s => `<li>${s}</li>`).join("")}
-        </ul>
+        <ul>${skillsList.map(s => `<li>${s}</li>`).join("")}</ul>
     `;
 
-    // highlight selected
     document.querySelectorAll(".opportunity-card").forEach(c => c.classList.remove("selected"));
     document.querySelector(`.opportunity-card[data-id="${id}"]`)?.classList.add("selected");
 }
@@ -692,6 +659,98 @@ function openIntermittentModal(opportunityId) {
   `;
 }
 
+function openIntermittentModal(opportunityId) {
+    window.selectedOpportunity = opportunityId;
+
+    const op = opportunities.find(o => o.opportunity_id === opportunityId);
+    if (!op) return;
+
+    const isIntermittent = op.is_intermittent == 1 || op.is_intermittent === true;
+    const list = document.getElementById('intermittentScheduleList');
+
+    if (!list) return;
+
+    if (isIntermittent) {
+        // Intermittent → show checkboxes for all dates
+        const schedules = op.schedule || [];
+        if (!schedules.length) {
+            list.innerHTML = `<p class="text-muted">No schedules available.</p>`;
+        } else {
+            list.innerHTML = `
+                <div class="list-group">
+                    ${schedules.map((s, i) => `
+                        <label class="list-group-item d-flex align-items-center">
+                            <input class="form-check-input me-3" type="checkbox" value="${i}">
+                            <span>
+                                <strong>${formatDatePretty(s.date)}</strong><br>
+                                <small>${s.start_time || 'N/A'} - ${s.end_time || 'N/A'}</small>
+                            </span>
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+        }
+    } else {
+        // Regular → show single schedule as radio / info (existing behavior)
+        const s = op.schedule?.[0];
+        if (!s) {
+            list.innerHTML = `<p class="text-muted">No schedule available.</p>`;
+        } else {
+            list.innerHTML = `
+                <p><strong>Date:</strong> ${formatDatePretty(s.date)}</p>
+                <p><strong>Time:</strong> ${formatTime(s.start_time)} - ${formatTime(s.end_time)}</p>
+            `;
+        }
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById("intermittentJoinModal"));
+    modal.show();
+}
+
+function submitIntermittentJoin() {
+    const opportunityId = window.selectedOpportunity;
+    const op = opportunities.find(o => o.opportunity_id === opportunityId);
+    if (!op) return;
+
+    const isIntermittent = op.is_intermittent == 1 || op.is_intermittent === true;
+
+    if (isIntermittent) {
+        const checks = document.querySelectorAll("#intermittentScheduleList input[type='checkbox']:checked");
+        if (checks.length === 0) {
+            alert("Please select at least one date.");
+            return;
+        }
+        const selectedIndices = Array.from(checks).map(c => parseInt(c.value));
+
+        // POST to your intermittent join endpoint
+        fetch(`/scholars/opportunities/join/${opportunityId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken
+            },
+            body: JSON.stringify({ schedule_index: selectedIndices })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success || data.message === "Joined successfully") {
+                alert("Joined selected dates successfully!");
+                location.reload();
+            } else {
+                alert(data.error || data.message || "Failed to join.");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error joining opportunity.");
+        });
+    } else {
+        // Regular schedule → call existing join function
+        joinOpportunity(opportunityId);
+    }
+}
+
+
 async function joinIntermittent(opportunityId, index) {
   const btn = event.target;
   btn.disabled = true;
@@ -730,20 +789,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- INTERMITTENT JOIN MODAL -->
+<!-- Intermittent Join Modal -->
 <div class="modal fade" id="intermittentJoinModal" tabindex="-1" aria-labelledby="intermittentJoinLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="p-3 modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold">Join Schedule</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body">
-        <div id="intermittentScheduleList">Loading...</div>
+        <p>Select the dates you want to join:</p>
+        <div id="intermittentScheduleList" class="list-group">
+          <!-- Dates injected by JS -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary w-100" onclick="submitIntermittentJoin()">Submit Selected Dates</button>
       </div>
     </div>
   </div>
 </div>
+
+
+
 
 <!-- Pagination -->
 <div class="mt-4 d-flex justify-content-center">

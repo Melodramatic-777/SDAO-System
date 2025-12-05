@@ -363,9 +363,15 @@ public function store(Request $request)
         'location' => 'required|string',
         'start_date' => 'nullable|date',
 
-'tasks' => 'nullable|array',
-'task_other_skills' => 'nullable|string',
-'task_other_description' => 'nullable|string',
+        // ✨ NEW FIELDS FROM YOUR TASK SYSTEM
+        'tasks' => 'nullable|array',
+        'task_other_skills' => 'nullable|string',
+        'task_other_description' => 'nullable|string',
+
+        // Existing
+        'description' => 'required|string',
+        'task_details' => 'nullable|string', // no longer required since tasks list replaces it
+        'skills_needed' => 'nullable|string',
         'schedule' => 'nullable|array',
         'schedule.*.date' => 'nullable|date',
         'schedule.*.event_name' => 'nullable|string',
@@ -376,9 +382,12 @@ public function store(Request $request)
 
         'intermittent' => 'nullable|boolean',
         'intermittent_details' => 'nullable|string',
+        'food_provided' => 'required|in:yes,no',
     ]);
 
-    // Get current user session (admin or office)
+    // ---------------------------------------------------------------------
+    // USER FROM SESSION
+    // ---------------------------------------------------------------------
     $user = session('volunteers_office') ?? session('volunteers_admin') ?? [];
     $userEmail = $user['email'] ?? null;
 
@@ -386,131 +395,176 @@ public function store(Request $request)
         abort(403, 'No logged in user email found.');
     }
 
-    // If office, use office_name as role
     if (session()->has('volunteers_office')) {
         $userRole = $user['office_name'] ?? 'Office';
     } else {
         $userRole = $user['role'] ?? null;
     }
 
-    // Compose full name
+    // FULL NAME
     $firstName  = $user['first_name'] ?? '';
     $middleName = $user['middle_name'] ?? '';
     $lastName   = $user['last_name'] ?? '';
     $suffix     = $user['suffix'] ?? '';
     $fullName   = trim($firstName . ' ' . $middleName . ' ' . $lastName . ' ' . $suffix);
 
+    // ID + STATUS
     $opportunityId = Str::uuid();
     $status = (strcasecmp(trim($userRole), 'SDA Assistant') === 0) ? 'Approved' : 'Pending';
 
-    // FIXED: Correct intermittent boolean field
     $isIntermittent = $request->boolean('intermittent', false);
 
-    // Prepare schedule data depending on type
+    // ---------------------------------------------------------------------
+    // SCHEDULE HANDLING (KEEP EXISTING)
+    // ---------------------------------------------------------------------
     if ($isIntermittent) {
-        // Intermittent → multiple schedules
-        $scheduleData = $validated['schedule'] ?? [];
+        $scheduleData = collect($request->input('schedule', []))->map(function ($item) use ($validated) {
+            return [
+                'date'           => $item['date'] ?? null,
+                'start_time'     => $item['start_time'] ?? null,
+                'end_time'       => $item['end_time'] ?? null,
+                'target_number'  => $item['target_number'] ?? null,
+                'food_provided'  => $item['food_provided'] ?? $validated['food_provided'] ?? 'no',
+            ];
+        })->values()->toArray();
     } else {
-        // Regular → only one schedule entry
         $scheduleData = [[
-            'date'          => $request->input('start_date'),
-            'start_time'    => $request->input('schedule.0.start_time'),
-            'end_time'      => $request->input('schedule.0.end_time'),
-            'target_number' => $request->input('schedule.0.target_number'),
+            'date'           => $request->input('start_date'),
+            'start_time'     => $request->input('schedule.0.start_time'),
+            'end_time'       => $request->input('schedule.0.end_time'),
+            'target_number'  => $request->input('schedule.0.target_number'),
+            'food_provided'  => $validated['food_provided'],
         ]];
     }
 
+    // ---------------------------------------------------------------------
+    // URGENT AUTO-DETECTION
+    // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// URGENT AUTO-DETECTION
+// ---------------------------------------------------------------------
+$today = now('Asia/Manila')->startOfDay();
 
-    $selectedTasks = $request->input('tasks', []);  // array of checked tasks
-$taskList = [];
+if ($isIntermittent) {
+    $firstDate = collect($request->input('schedule', []))
+        ->pluck('date')
+        ->filter()
+        ->map(fn($d) => \Carbon\Carbon::parse($d, 'Asia/Manila'))
+        ->sort()
+        ->first();
+} else {
+    $firstDate = $validated['start_date']
+        ? \Carbon\Carbon::parse($validated['start_date'], 'Asia/Manila')
+        : null;
+}
 
-// Predefined task descriptions (same as table)
-$taskDefinitions = [
-    "Marshalling" => [
-        "skills" => "Crowd management, clear communication, alert, patient",
-        "description" => "Helps manage crowd flow, guide participants, and keep pathways clear."
-    ],
-    "Registration" => [
-        "skills" => "Organized, detail-oriented, friendly, basic data encoding",
-        "description" => "Handles check-in, attendance lists, and assists participants."
-    ],
-    "Ushering" => [
-        "skills" => "Approachable, good communication, presentable",
-        "description" => "Guides attendees to seats and helps answer questions."
-    ],
-    "Photography" => [
-        "skills" => "Basic photography skills, attention to detail",
-        "description" => "Takes photos of key moments and activities."
-    ],
-    "Videography" => [
-        "skills" => "Basic video recording, timing awareness",
-        "description" => "Records event highlights and important segments."
-    ],
-    "Technical Support" => [
-        "skills" => "Basic IT skills, calm under pressure",
-        "description" => "Helps manage audio, projector, and technical systems."
-    ],
-    "Creatives/Design" => [
-        "skills" => "Basic design sense, creativity",
-        "description" => "Prepares visual materials, layouts, and social media assets."
-    ],
-    "Hosting" => [
-        "skills" => "Confident speaker, energetic, good diction",
-        "description" => "Leads the program, introduces speakers, engages the audience."
-    ],
-    "Logistics" => [
-        "skills" => "Physically capable, organized",
-        "description" => "Transfers equipment/materials and supports operations."
-    ],
-    "Admin Support" => [
-        "skills" => "Detail-oriented, encoding, filing",
-        "description" => "Prepares documents and encodes data."
-    ]
-];
+// Set is_urgent based on date difference
+if ($firstDate) {
+    $daysUntil = $today->diffInDays($firstDate, false); // negative if in the past
+    $isUrgent = ($daysUntil >= 0 && $daysUntil <= 3) ? 'yes' : 'no';
+} else {
+    $isUrgent = 'no';
+}
 
-// Loop through checked tasks
-foreach ($selectedTasks as $taskName) {
-    if ($taskName === "Others") continue; // skip for now
 
-    if (isset($taskDefinitions[$taskName])) {
+    // ---------------------------------------------------------------------
+    // ✨ NEW TASK SYSTEM
+    // ---------------------------------------------------------------------
+    $selectedTasks = $request->input('tasks', []);
+    $taskList = [];
+
+    $taskDefinitions = [
+        "Marshalling" => [
+            "skills" => "Crowd management, clear communication, alert, patient",
+            "description" => "Helps manage crowd flow, guide participants, and keep pathways clear."
+        ],
+        "Registration" => [
+            "skills" => "Organized, detail-oriented, friendly, basic data encoding",
+            "description" => "Handles check-in, attendance lists, and assists participants."
+        ],
+        "Ushering" => [
+            "skills" => "Approachable, good communication, presentable",
+            "description" => "Guides attendees to seats and helps answer questions."
+        ],
+        "Photography" => [
+            "skills" => "Basic photography skills, attention to detail",
+            "description" => "Takes photos of key moments and activities."
+        ],
+        "Videography" => [
+            "skills" => "Basic video recording, timing awareness",
+            "description" => "Records event highlights and important segments."
+        ],
+        "Technical Support" => [
+            "skills" => "Basic IT skills, calm under pressure",
+            "description" => "Helps manage audio, projector, and technical systems."
+        ],
+        "Creatives/Design" => [
+            "skills" => "Basic design sense, creativity",
+            "description" => "Prepares visual materials, layouts, and social media assets."
+        ],
+        "Hosting" => [
+            "skills" => "Confident speaker, energetic, good diction",
+            "description" => "Leads the program, introduces speakers, engages the audience."
+        ],
+        "Logistics" => [
+            "skills" => "Physically capable, organized",
+            "description" => "Transfers equipment/materials and supports operations."
+        ],
+        "Admin Support" => [
+            "skills" => "Detail-oriented, encoding, filing",
+            "description" => "Prepares documents and encodes data."
+        ],
+    ];
+
+    foreach ($selectedTasks as $taskName) {
+        if ($taskName === "Others") continue;
+
+        if (isset($taskDefinitions[$taskName])) {
+            $taskList[] = [
+                "task" => $taskName,
+                "skills" => $taskDefinitions[$taskName]["skills"],
+                "description" => $taskDefinitions[$taskName]["description"]
+            ];
+        }
+    }
+
+    if (in_array("Others", $selectedTasks)) {
         $taskList[] = [
-            "task" => $taskName,
-            "skills" => $taskDefinitions[$taskName]["skills"],
-            "description" => $taskDefinitions[$taskName]["description"]
+            "task" => "Others",
+            "skills" => $request->input('task_other_skills'),
+            "description" => $request->input('task_other_description'),
         ];
     }
-}
 
-// Handle "Others"
-if (in_array("Others", $selectedTasks)) {
-    $taskList[] = [
-        "task" => "Others",
-        "skills" => $request->input('task_other_skills'),
-        "description" => $request->input('task_other_description'),
-    ];
-}
-
-
-
-    // Build opportunity data
+    // ---------------------------------------------------------------------
+    // FINAL DATA TO SAVE
+    // ---------------------------------------------------------------------
     $opportunityData = [
         'opportunity_id'       => $opportunityId,
         'submitted_by'         => $userEmail,
         'submitted_by_role'    => $userRole,
         'submitted_by_name'    => $fullName,
+
         'title'                => $validated['title'],
         'location'             => $validated['location'],
         'start_date'           => $validated['start_date'],
-'tasks' => $taskList,
+        'description'          => $validated['description'],
+
+        // ✨ NEW TASK SYSTEM SAVED HERE
+        'tasks'                => $taskList,
+
         'status'               => $status,
         'submitted_at'         => now()->toDateTimeString(),
         'schedule'             => $scheduleData,
         'is_intermittent'      => $isIntermittent,
         'intermittent_details' => $validated['intermittent_details'] ?? null,
-        'is_urgent'            => $request->input('is_urgent', 'no'),
+        'is_urgent'            => $isUrgent,
+        'food_provided'        => $validated['food_provided'],
     ];
 
-    // Approval chain logic
+    // ---------------------------------------------------------------------
+    // APPROVAL CHAIN
+    // ---------------------------------------------------------------------
     if ($status === 'Pending') {
         $approvalChain = [];
         $admins = $this->database->getReference('admins')->getValue();
@@ -529,15 +583,22 @@ if (in_array("Others", $selectedTasks)) {
         $opportunityData['approval_chain'] = $approvalChain;
     }
 
-    // Save to Firebase
-    $this->database->getReference('opportunities/' . $opportunityId)->set($opportunityData);
+    // ---------------------------------------------------------------------
+    // SAVE TO FIREBASE
+    // ---------------------------------------------------------------------
+    $this->database
+        ->getReference('opportunities/' . $opportunityId)
+        ->set($opportunityData);
 
+    // ---------------------------------------------------------------------
+    // REDIRECT RESPONSE
+    // ---------------------------------------------------------------------
     if ($status === 'Approved') {
         return redirect()->route('volunteers-admin.opportunities')
             ->with('success', 'Opportunity submitted and auto-approved!');
     }
 
-    return redirect()->route('volunteers-offices.home')
+    return redirect()->route('volunteers-offices.request-volunteer')
         ->with('success', 'Opportunity submitted! Pending approval by SDA Assistant.');
 }
 
@@ -824,7 +885,7 @@ public function respondToInvite(Request $request, $id)
 
 public function cancelOpportunity($id)
 {
-    // Get the opportunity
+    // Get the opportunity from Firebase
     $ref = $this->database->getReference('opportunities/' . $id);
     $opportunity = $ref->getValue();
 
@@ -837,7 +898,7 @@ public function cancelOpportunity($id)
     $opportunity['canceled_at'] = now()->toDateTimeString();
     $canceledRef->set($opportunity);
 
-    // ✅ If participants existed, remove "invited" tag in scholars path
+    // ✅ Remove "invited" tag for participants in scholars
     if (!empty($opportunity['participants']) && is_array($opportunity['participants'])) {
         $scholars = $this->database->getReference('scholars')->getValue() ?? [];
 
@@ -846,30 +907,30 @@ public function cancelOpportunity($id)
             if (!$scholarId) continue;
 
             // Loop through scholars to find match
-foreach ($scholars as $yearKey => $terms) {
-    foreach ($terms as $termKey => $types) {
-        foreach ($types as $typeKey => $students) {
-            foreach ($students as $scholarKey => $scholar) {
-                if (($scholar['student_no'] ?? '') === $scholarId) {
-                    if (($scholar['invited'] ?? null) === $id) {
-                        $this->database->getReference("scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}/invited")->remove();
+            foreach ($scholars as $yearKey => $terms) {
+                foreach ($terms as $termKey => $types) {
+                    foreach ($types as $typeKey => $students) {
+                        foreach ($students as $scholarKey => $scholar) {
+                            if (($scholar['student_no'] ?? '') === $scholarId) {
+                                if (($scholar['invited'] ?? null) === $id) {
+                                    $this->database
+                                        ->getReference("scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}/invited")
+                                        ->remove();
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
-}
 
-
-
-    // ✅ Delete from opportunities table
+    // ✅ Remove opportunity from main opportunities path
     $ref->remove();
 
-    return back()->with('success', 'Opportunity successfully canceled and moved to canceled records.');
+    return back()->with('success', 'Opportunity canceled successfully.');
 }
 
-}
-}
 
 public function history()
 {

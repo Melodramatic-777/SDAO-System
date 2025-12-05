@@ -168,6 +168,6 @@ if ($userType === 'scholars') {
             'volunteers_office',
         ]);
 
-        return redirect('/admin/login');
+        return redirect('/login');
     }
 }

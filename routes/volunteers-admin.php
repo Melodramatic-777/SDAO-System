@@ -10,6 +10,16 @@ use App\Http\Controllers\SubmitOpportunityController;
 
 Route::prefix('volunteers-admin')->group(function () {
 
+
+    
+Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
+    ->name('volunteers-admin.logout');
+
+Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create']);
+
+    
+
+
     Route::view('/dashboard', 'volunteers-admin.dashboard')->name('volunteers-admin.dashboard');
     Route::view('/leader-board', 'volunteers-admin.leader-board')->name('volunteers-admin.leader-board');
     Route::view('/inquiries', 'volunteers-admin.inquiries')->name('volunteers-admin.inquiries');

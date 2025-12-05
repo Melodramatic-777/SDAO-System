@@ -2,24 +2,6 @@
 
 @section('content')
 
-<header class="p-3 custom-header d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-        <!-- SIDE BUTTON -->
-        <button type="submit" class="side-button header-btn me-3">
-            <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-        </button>
-
-        <div class="logo d-flex align-items-center">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30" class="me-2">
-            <span>Student Developments and Activities Office</span>
-        </div>
-    </div>
-
-    <div class="header-right-group">
-        <p>Welcome, {{ session('volunteers_admin.first_name') }}!</p>
-    </div>
-</header>
-
 <div class="p-4 container-fluid">
     <!-- Back link -->
     <a href="{{ route('volunteers-admin.student-volunteers') }}" class="text-decoration-none">

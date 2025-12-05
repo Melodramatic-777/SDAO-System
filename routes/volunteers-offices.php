@@ -7,6 +7,14 @@ use App\Http\Controllers\OpportunitiesDisplayOfficeController;
 Route::prefix('volunteers-offices')->group(function () {
 
 
+       
+Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
+    ->name('volunteers-offices.logout');
+
+Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create']);
+
+    
+
     Route::controller(OpportunitiesDisplayOfficeController::class)->group(function () {
         Route::get('/volunteers-office/dashboard-office', 'dashboardOffice')
             ->name('volunteers-offices.dashboard-office');
