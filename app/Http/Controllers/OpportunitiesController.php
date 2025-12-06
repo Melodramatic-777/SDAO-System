@@ -26,45 +26,42 @@ class OpportunitiesController extends Controller
     }
 
 
-public function inviteScholar(Request $request)
+public function inviteScholar(Request $request) 
 {
     $validated = $request->validate([
-        'scholar_id'     => 'required|string',
-        'opportunity_id' => 'required|string',
+        'scholar_id'        => 'required|string',
+        'opportunity_id'    => 'required|string',
+        'schedule_indices'  => 'array',        // <- allow multiple dates
+        'schedule_indices.*'=> 'numeric',
     ]);
 
     $scholarId = $validated['scholar_id'];
     $opportunityId = $validated['opportunity_id'];
+    $selectedScheduleIndices = $validated['schedule_indices'] ?? [];
 
     // Fetch scholar info
     $scholars = $this->database->getReference('scholars')->getValue();
     $selectedScholar = null;
     $selectedKeys = [];
 
-if ($scholars) {
-    foreach ($scholars as $yearKey => $terms) {
-        foreach ($terms as $termKey => $scholarshipTypes) {
-            foreach ($scholarshipTypes as $typeKey => $students) {
-                foreach ($students as $scholarKey => $scholar) {
-                    if (($scholar['student_no'] ?? '') === $scholarId) {
-                        $selectedScholar = $scholar;
-                        $selectedKeys = [$yearKey, $termKey, $typeKey, $scholarKey];
-                        break 4;
+    if ($scholars) {
+        foreach ($scholars as $yearKey => $terms) {
+            foreach ($terms as $termKey => $scholarshipTypes) {
+                foreach ($scholarshipTypes as $typeKey => $students) {
+                    foreach ($students as $scholarKey => $scholar) {
+                        if (($scholar['student_no'] ?? '') === $scholarId) {
+                            $selectedScholar = $scholar;
+                            $selectedKeys = [$yearKey, $termKey, $typeKey, $scholarKey];
+                            break 4;
+                        }
                     }
                 }
             }
         }
     }
-}
-
 
     if (!$selectedScholar) {
         return back()->with('error', 'Scholar not found.');
-    }
-
-    // ✅ Error handling if already invited
-    if (isset($selectedScholar['invited']) && $selectedScholar['invited'] === $opportunityId) {
-        return back()->with('error', 'This scholar is already invited to this opportunity.');
     }
 
     // Fetch opportunity
@@ -75,45 +72,55 @@ if ($scholars) {
         return back()->with('error', 'Opportunity not found.');
     }
 
-    // Participants
     $participants = $opportunity['participants'] ?? [];
-    if (!is_array($participants)) {
-        $participants = [];
-    }
+    if (!is_array($participants)) $participants = [];
 
-    // Check duplicates in participants
+    // Check duplicate participant
     foreach ($participants as $p) {
         if (($p['scholar_id'] ?? null) === $scholarId) {
             return back()->with('warning', 'Scholar is already listed as a participant.');
         }
     }
 
-    // Capacity check
-    $target = $opportunity['schedule'][0]['target_number'] ?? null;
-    if ($target !== null && count($participants) >= (int) $target) {
-        return back()->with('error', 'Maximum capacity reached for this activity.');
+    // Capacity check (only for non-intermittent)
+    if (empty($selectedScheduleIndices)) {
+        $target = $opportunity['schedule'][0]['target_number'] ?? null;
+        if ($target !== null && count($participants) >= (int) $target) {
+            return back()->with('error', 'Maximum capacity reached for this activity.');
+        }
     }
 
-    // Add as volunteer participant
+    // 🌟 BUILD PARTICIPANT ENTRY
     $newParticipant = [
         'scholar_id' => $scholarId,
         'name'       => trim(($selectedScholar['first_name'] ?? '') . ' ' . ($selectedScholar['last_name'] ?? '')),
         'role'       => 'Volunteer',
+        'status'     => 'Pending Invite',
         'invited_at' => now()->toDateTimeString(),
     ];
+
+    // ⭐ If intermittent → SAVE all selected schedule indices
+    if (!empty($selectedScheduleIndices)) {
+        $newParticipant['schedule_indices'] = $selectedScheduleIndices;
+    }
 
     $participants[] = $newParticipant;
 
     try {
-        // ✅ Save updated participants list to Firebase
+        // Save participants
         $ref->update(['participants' => $participants]);
 
-        // ✅ Save invited info under scholar record
-[$yearKey, $termKey, $typeKey, $scholarKey] = $selectedKeys;
+        // Save invited record under scholar
+        [$yearKey, $termKey, $typeKey, $scholarKey] = $selectedKeys;
 
-$this->database
-    ->getReference("scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}/invited")
-    ->set($opportunityId);
+        $this->database
+            ->getReference("scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}/invited")
+            ->set([
+                'opportunity_id' => $opportunityId,
+                'status'         => 'Pending Invite',
+                'invited_at'     => now()->toDateTimeString(),
+                'schedule_indices' => $selectedScheduleIndices, // <- SAVE MULTIPLE DATES
+            ]);
 
         return back()->with('success', 'Scholar invited successfully!');
     } catch (\Exception $e) {
