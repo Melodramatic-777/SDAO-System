@@ -232,21 +232,32 @@
                         <div>{{ $opportunity['description'] ?? 'No description provided.' }}</div>
 
                         <hr>
+<h6 class="task-title"><strong>Tasks</strong></h6>
 
-                        <h6 class="task-title"><strong>Tasks</strong></h6>
-                        @if(!empty($opportunity['tasks']) && is_array($opportunity['tasks']))
-                            <ul class="task-list" style="list-style-type: disc; padding-left: 20px;">
-                                @foreach($opportunity['tasks'] as $taskItem)
-                                    <li class="mb-2">
-                                        <strong>{{ $taskItem['task'] ?? 'Unnamed Task' }}</strong><br>
-                                        <span><em>{{ $taskItem['description'] ?? 'No description provided.' }}</em></span><br>
-                                        <span>Skills: {{ $taskItem['skills'] ?? 'Not specified' }}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <ul><li>No tasks provided.</li></ul>
-                        @endif
+@if(!empty($opportunity['tasks']) && is_array($opportunity['tasks']))
+    <ul class="task-list" style="list-style-type: disc; padding-left: 20px;">
+        @foreach($opportunity['tasks'] as $taskItem)
+            <li class="mb-2">
+                <strong>{{ $taskItem['task'] ?? 'Unnamed Task' }}</strong><br>
+                <span><em>{{ $taskItem['description'] ?? 'No description provided.' }}</em></span>
+            </li>
+        @endforeach
+    </ul>
+
+    {{-- ✅ Skills placed BELOW the tasks list --}}
+    <div class="mt-2">
+        <strong>Skills Needed:</strong>
+        <ul style="list-style-type: circle; padding-left: 25px;">
+            @foreach($opportunity['tasks'] as $taskItem)
+                <li>{{ $taskItem['skills'] ?? 'Not specified' }}</li>
+            @endforeach
+        </ul>
+    </div>
+
+@else
+    <ul><li>No tasks provided.</li></ul>
+@endif
+
 
                         <hr>
 

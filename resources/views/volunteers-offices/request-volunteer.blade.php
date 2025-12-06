@@ -63,7 +63,7 @@ $waitingVolunteersCount = $allOpportunities->filter(function ($op) {
                     }
                 @endphp
 
-<div class="p-3 mb-3 border rounded status-card-container"
+<div class="p-3 mb-3 border rounded status-card-container" style="background-color: white;"
      data-status="{{ strtolower($opportunity['status'] ?? '') }}"
 data-participants="{{ is_array($opportunity['participants'] ?? null) ? count($opportunity['participants']) : 0 }}"
      data-target="{{ (int) ($opportunity['schedule'][0]['target_number'] ?? 0) }}">
@@ -100,90 +100,77 @@ data-participants="{{ is_array($opportunity['participants'] ?? null) ? count($op
 </div>
 
 {{-- ✅ MODAL --}}
-<div class="modal fade" id="opportunityModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
-<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content custom-modal-content">
+    <div class="modal fade" id="opportunityModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content custom-modal-content">
 
-      {{-- Header --}}
-      <div class="modal-header">
-        <h5 class="modal-title">{{ $opportunity['title'] ?? 'Untitled Opportunity' }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
 
-      {{-- Body --}}
-      <div class="modal-body custom-modal-body row g-4">
+             {{-- Header --}}
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ $opportunity['title'] ?? 'Untitled Opportunity' }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                {{-- Body --}}
+                <div class="modal-body custom-modal-body row g-4">
         {{-- 🔹 LEFT PANEL --}}
         <div class="col-md-6 left-panel">
-          <p><strong>Submitted By:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
-          <p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
+                        <p><strong>Submitted By:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
+                        <p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
 
-@php
-  $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
-@endphp
 
-@if($isIntermittent)
-  {{-- 🔸 Table for intermittent opportunities --}}
-  <div class="table-responsive">
-    <table class="table align-middle table-sm table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Volunteers Needed</th>
-          <th>Food Provided</th> {{-- ✅ New column --}}
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($opportunity['schedule'] ?? [] as $s)
-          <tr>
-            <td>{{ !empty($s['date']) ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }}</td>
-            <td>
-              @if(!empty($s['start_time']) && !empty($s['end_time']))
-                {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
-              @else
-                N/A
-              @endif
-            </td>
-            <td>{{ $s['target_number'] ?? 'N/A' }}</td>
-            <td>
-              @php
-                $food = strtolower($s['food_provided'] ?? 'no');
-              @endphp
-              {{ $food === 'yes' ? 'Yes' : 'No' }}
-            </td>
-          </tr>
-        @empty
-          <tr><td colspan="4" class="text-center text-muted">No schedule details provided</td></tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
-@else
-  {{-- 🔹 Simple details for non-intermittent --}}
-  @php
-    $firstSchedule = $opportunity['schedule'][0] ?? [];
-    $date = $firstSchedule['date']
-        ?? $firstSchedule['start_date']
-        ?? $opportunity['start_date']
-        ?? null;
-    $start = $firstSchedule['start_time'] ?? ($opportunity['start_time'] ?? null);
-    $end = $firstSchedule['end_time'] ?? ($opportunity['end_time'] ?? null);
-    $target = $firstSchedule['target_number'] ?? ($opportunity['target_number'] ?? 'N/A');
-  @endphp
+                        @php
+                            $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
+                        @endphp
 
-  <p><strong>Date:</strong>
-    {{ !empty($date) ? \Carbon\Carbon::parse($date)->format('F j, Y') : 'N/A' }}
-  </p>
-
-  <p><strong>Time:</strong>
-    @if(!empty($start) && !empty($end))
-      {{ \Carbon\Carbon::parse($start)->format('g:i A') }} – {{ \Carbon\Carbon::parse($end)->format('g:i A') }}
-    @else
-      N/A
-    @endif
-  </p>
-
-  @endif
+                        @if($isIntermittent)
+                            <div class="table-responsive">
+                                <table class="table align-middle table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Time</th>
+                                            <th>Volunteers Needed</th>
+                                            <th>Food Provided</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($opportunity['schedule'] ?? [] as $s)
+                                            <tr>
+                                                <td>{{ !empty($s['date']) ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }}</td>
+                                                <td>
+                                                    @if(!empty($s['start_time']) && !empty($s['end_time']))
+                                                        {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td>{{ $s['target_number'] ?? 'N/A' }}</td>
+                                                <td>{{ strtolower($s['food_provided'] ?? 'no') === 'yes' ? 'Yes' : 'No' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="4" class="text-center text-muted">No schedule details provided</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            @php
+                                $firstSchedule = $opportunity['schedule'][0] ?? [];
+                                $date = $firstSchedule['date'] ?? $firstSchedule['start_date'] ?? $opportunity['start_date'] ?? null;
+                                $start = $firstSchedule['start_time'] ?? ($opportunity['start_time'] ?? null);
+                                $end = $firstSchedule['end_time'] ?? ($opportunity['end_time'] ?? null);
+                                $target = $firstSchedule['target_number'] ?? ($opportunity['target_number'] ?? 'N/A');
+                            @endphp
+                            <p><strong>Date:</strong> {{ !empty($date) ? \Carbon\Carbon::parse($date)->format('F j, Y') : 'N/A' }}</p>
+                            <p><strong>Time:</strong>
+                                @if(!empty($start) && !empty($end))
+                                    {{ \Carbon\Carbon::parse($start)->format('g:i A') }} – {{ \Carbon\Carbon::parse($end)->format('g:i A') }}
+                                @else
+                                    N/A
+                                @endif
+                            </p>
+                        @endif
 
 
 
@@ -197,75 +184,59 @@ data-participants="{{ is_array($opportunity['participants'] ?? null) ? count($op
   
         </div>
 
-        {{-- 🔹 RIGHT PANEL --}}
-        <div class="col-md-6 right-panel">
+         {{-- RIGHT PANEL --}}
+                    <div class="col-md-6 right-panel">
+                        @if(!empty($opportunity['participants']) || !empty($opportunity['schedule']))
+                            @php
+                                $participantsCount = collect($opportunity['participants'] ?? [])
+                                    ->filter(fn($p) => strtolower($p['status'] ?? '') !== 'declined')
+                                    ->count();
+                                $schedule = collect($opportunity['schedule'] ?? []);
+                                $targetNumber = $schedule->isNotEmpty() && isset($schedule[0]['target_number']) ? $schedule->sum('target_number') : ($opportunity['target_number'] ?? 0);
+                            @endphp
 
-@if(!empty($opportunity['participants']) || !empty($opportunity['schedule']))
+                            <ul class="volunteers-list">
+                                @foreach($opportunity['participants'] ?? [] as $participant)
+                                    @php
+                                        $displayStatus = strtolower($participant['status'] ?? '') === 'declined' ? 'Invite Declined' : ($participant['status'] ?? 'Pending');
+                                    @endphp
+                                    <li>{{ $participant['name'] ?? 'Unnamed' }} - <span class="text-muted">{{ $displayStatus }}</span></li>
+                                @endforeach
+                            </ul>
+                        @endif
 
-    @php
-        // ✅ Count only NON-declined participants
-        $participantsCount = collect($opportunity['participants'] ?? [])
-            ->filter(fn($p) => strtolower($p['status'] ?? '') !== 'declined')
-            ->count();
+                        <h6><strong>Description</strong></h6>
+                        <div>{{ $opportunity['description'] ?? 'No description provided.' }}</div>
 
-        // ✅ Determine volunteers needed correctly for BOTH intermittent and regular schedules
-        $schedule = collect($opportunity['schedule'] ?? []);
+                        <hr>
 
-        if ($schedule->isNotEmpty() && isset($schedule[0]['target_number'])) {
-            // Intermittent or structured schedule → Sum all
-            $targetNumber = $schedule->sum('target_number');
-        } else {
-            // Regular schedule → Use main target number
-            $targetNumber = $opportunity['target_number'] ?? 0;
-        }
-    @endphp
+                       <h6 class="task-title"><strong>Tasks</strong></h6>
 
-    <ul class="volunteers-list">
-        @foreach($opportunity['participants'] ?? [] as $participant)
-            @php
-                $displayStatus = strtolower($participant['status'] ?? '') === 'declined'
-                    ? 'Invite Declined'
-                    : ($participant['status'] ?? 'Pending');
-            @endphp
-
-            <li>
-                {{ $participant['name'] ?? 'Unnamed' }} -
-                <span class="text-muted">{{ $displayStatus }}</span>
+@if(!empty($opportunity['tasks']) && is_array($opportunity['tasks']))
+    <ul class="task-list" style="list-style-type: disc; padding-left: 20px;">
+        @foreach($opportunity['tasks'] as $taskItem)
+            <li class="mb-2">
+                <strong>{{ $taskItem['task'] ?? 'Unnamed Task' }}</strong><br>
+                <span><em>{{ $taskItem['description'] ?? 'No description provided.' }}</em></span>
             </li>
         @endforeach
     </ul>
 
-@endif
+    {{-- ✅ Skills placed BELOW the tasks list --}}
+    <div class="mt-2">
+        <strong>Skills Needed:</strong>
+        <ul style="list-style-type: circle; padding-left: 25px;">
+            @foreach($opportunity['tasks'] as $taskItem)
+                <li>{{ $taskItem['skills'] ?? 'Not specified' }}</li>
+            @endforeach
+        </ul>
+    </div>
 
-
-
-<h6><strong>Description</strong></h6>
-<div></div>
-    {{ $opportunity['description'] ?? 'No description provided.' }}
-</div>
-
-          <hr>
-
-           
-<h6 class="task-title"><strong>Tasks</strong></h6>
-
-@if(!empty($opportunity['tasks']) && is_array($opportunity['tasks']))
-  <ul class="task-list" style="list-style-type: disc; padding-left: 20px;">
-    @foreach($opportunity['tasks'] as $taskItem)
-      <li class="mb-2">
-        <strong>{{ $taskItem['task'] ?? 'Unnamed Task' }}</strong><br>
-        <span><em>{{ $taskItem['description'] ?? 'No description provided.' }}</em></span><br>
-        <span>Skills: {{ $taskItem['skills'] ?? 'Not specified' }}</span>
-      </li>
-    @endforeach
-  </ul>
 @else
-  <ul>
-    <li>No tasks provided.</li>
-  </ul>
+    <ul><li>No tasks provided.</li></ul>
 @endif
 
-          <hr>
+
 
 {{-- ✅ CANCEL OPPORTUNITY (OFFICE SIDE) --}}
 @php
@@ -275,7 +246,7 @@ data-participants="{{ is_array($opportunity['participants'] ?? null) ? count($op
 @if(!in_array($statusLower, ['returned', 'cancelled', 'completed']))
 <form method="POST" action="{{ route('volunteers-admin.opportunities.cancel', $opportunity['opportunity_id']) }}" class="mt-3">
     @csrf
-    <button type="submit" class="btn btn-danger"
+    <button type="submit" class="btn btn-return ms-2"
         onclick="return confirm('Are you sure you want to cancel this opportunity? This will remove invitations and move the record to canceled opportunities.')">
         Cancel Opportunity
     </button>

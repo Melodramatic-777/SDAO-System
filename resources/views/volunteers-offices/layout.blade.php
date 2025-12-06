@@ -15,6 +15,14 @@
     @vite('resources/css/Volunteer_Office.css')
     @vite('resources/css/volunteers.css')
 
+    
+    @vite('resources/css/Volunteer_Admin.css')
+
+
+  @vite('resources/css/volunteers.css')
+
+  
+
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
