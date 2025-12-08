@@ -18,6 +18,8 @@ Route::prefix('scholars')->name('scholars.')->group(function () {
 
 
 
+Route::post('volunteer-opportunities/join-task', [ScholarJoinController::class, 'joinTask'])
+    ->name('joinTask'); 
 
 
     Route::controller(ScholarJoinController::class)->group(function () {

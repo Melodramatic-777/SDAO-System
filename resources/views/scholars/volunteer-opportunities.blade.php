@@ -100,24 +100,6 @@
 </small>
 
 
-<div class="mt-2 text-end">
-  <small class="participant-count">
-    <i class="bi bi-person-fill me-1"></i>
-    @php
-        $participantsCount = count($op['participants'] ?? []);
-        $totalTarget = 0;
-        if (!empty($op['is_intermittent']) && (int)$op['is_intermittent'] === 1) {
-            foreach ($op['schedule'] ?? [] as $s) {
-                $totalTarget += $s['target_number'] ?? 0;
-            }
-        } else {
-            $totalTarget = $op['schedule'][0]['target_number'] ?? '?';
-        }
-    @endphp
-    {{ $participantsCount }}/{{ $totalTarget }}
-  </small>
-</div>
-
 
         </div>
       </div>
@@ -217,24 +199,16 @@
 
 
 
-
-
 <script>
-
-
-
-
-
-
 const allOpportunities = @json($allOpportunities);
 const opportunities = allOpportunities;
 const scholarId = "{{ session('scholar_accounts.student_no') }}";
 const scholarName = "{{ session('scholar_accounts.first_name') }} {{ session('scholar_accounts.last_name') }}";
 const csrfToken = "{{ csrf_token() }}";
 
-
-
 let currentSelectedId = null;
+
+// ---------- SHOW DETAILS ----------
 // ---------- SHOW DETAILS ----------
 // ---------- SHOW DETAILS ----------
 function showDetail(id) {
@@ -242,112 +216,204 @@ function showDetail(id) {
     const op = opportunities.find(o => o.opportunity_id === id);
     if (!op) return;
 
-    const participants = op.participants || [];
-    const acceptedVolunteers = participants.filter(p => p.status === "Accepted");
-    const isIntermittent = op.is_intermittent === true || op.is_intermittent === "true";
-    const tasks = op.tasks || [];
-    const skillsList = tasks.flatMap(t => (t.skills || "").split(",")).map(s => s.trim());
-    const target = op.schedule?.[0]?.target_number ?? null;
-    const alreadyJoined = participants.some(p => p.scholar_id == scholarId);
-    const isFull = target !== null && acceptedVolunteers.length >= target;
+    const isIntermittent = op.is_intermittent == 1 || op.is_intermittent === true;
+    const tasksByDate = op.intermittent_tasks_by_date || {};
 
-    // BUILD SCHEDULE HTML
-    let scheduleContent = "";
-    if (isIntermittent) {
-        const validDates = (op.schedule || []).map(s => s.date).filter(d => d && !isNaN(new Date(d))).map(d => new Date(d)).sort((a, b) => a - b);
-        const dateRangeText = validDates.length
-            ? validDates[0].getTime() === validDates[validDates.length - 1].getTime()
-                ? formatDatePretty(validDates[0].toISOString())
-                : `${formatDatePretty(validDates[0].toISOString())} – ${formatDatePretty(validDates[validDates.length - 1].toISOString())}`
-            : "N/A";
-        scheduleContent = `
-            <h6 class="mt-3 fw-bold">Schedule (Intermittent)</h6>
-            <p><strong>Estimated Dates:</strong> ${dateRangeText}</p>
-            <div class="table-responsive">
-              <table class="table mt-2 text-center align-middle table-bordered">
-                <thead class="table-light">
-                  <tr>
-                    <th>Date</th><th>Start</th><th>End</th><th>Volunteers Needed</th><th>Food</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${op.schedule.map(s => `
-                    <tr>
-                      <td>${formatDatePretty(s.date)}</td>
-                      <td>${formatTime(s.start_time)}</td>
-                      <td>${formatTime(s.end_time)}</td>
-                      <td>${s.target_number}</td>
-                      <td>${(s.food_provided || "no").toLowerCase() === "yes" ? "Yes" : "No"}</td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            </div>
-        `;
-    } else {
-        const s = op.schedule?.[0] ?? {};
-        scheduleContent = `
-            <h6 class="mt-3 fw-bold">Schedule</h6>
-            <table class="table text-center align-middle table-bordered">
-                <thead class="table-light">
-                  <tr>
-                    <th>Date</th><th>Start</th><th>End</th><th>Volunteers Needed</th><th>Food</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>${formatDatePretty(s.date)}</td>
-                    <td>${formatTime(s.start_time)}</td>
-                    <td>${formatTime(s.end_time)}</td>
-                    <td>${s.target_number}</td>
-                    <td>${(s.food_provided || "no").toLowerCase() === "yes" ? "Yes" : "No"}</td>
-                  </tr>
-                </tbody>
-            </table>
-        `;
-    }
-
-    document.getElementById("opportunityDetail").innerHTML = `
-        <h4><strong>${op.title}</strong></h4>
-        <p><strong>Location:</strong> ${op.location}</p>
-        <p><strong>Submitted by:</strong> ${op.submitted_by_name}</p>
-        ${scheduleContent}
-        ${alreadyJoined
-            ? `<button class="mt-3 btn btn-secondary" disabled>Joined</button>`
-            : isIntermittent
-                ? `<button class="mt-3 btn btn-outline-primary" onclick="openIntermittentModal('${op.opportunity_id}')">Join Intermittent Schedule</button>`
-                : isFull
-                    ? `<button class="mt-3 btn btn-dark" disabled>Full</button>`
-                    : `<button id="joinBtn" class="mt-3 btn btn-primary" onclick="joinOpportunity('${op.opportunity_id}')">Join</button>`
-        }
-        <hr class="my-4">
-        <h5 class="fw-bold">Participants (${participants.length})</h5>
-        ${isIntermittent
-            ? op.schedule.map((s, idx) => {
-                const dateParticipants = (participants || []).filter(p => (p.schedule_indices || []).includes(idx));
-                return `<p><strong>${formatDatePretty(s.date)} (${dateParticipants.length} joined)</strong></p>
-                        <ul>${dateParticipants.length
-                            ? dateParticipants.map(p => `<li>${p.name} (Joined at: ${p.joined_at})</li>`).join('')
-                            : '<li class="text-muted">No participants yet</li>'
-                        }</ul>`;
-              }).join('')
-            : `<ul>${participants.length
-                ? participants.map(p => `<li>${p.name}</li>`).join('')
-                : '<li class="text-muted">No participants yet</li>'
-              }</ul>`
-        }
-        <hr class="my-4">
-        <h5 class="fw-bold">Tasks</h5>
-        <ul>${tasks.map(t => `<li><strong>${t.task}</strong> – ${t.description}</li>`).join("")}</ul>
-        <h5 class="mt-4 fw-bold">Skills Needed</h5>
-        <ul>${skillsList.map(s => `<li>${s}</li>`).join("")}</ul>
+    // LEFT column: Description + Participants
+    const leftColumn = `
+        <div class="col-md-6">
+            <h6><strong>Description</strong></h6>
+            <div class="mb-3">${op.description || 'No description provided.'}</div>
+            <h6><strong>Participants</strong></h6>
+            <div>${renderParticipants(op)}</div>
+        </div>
     `;
 
-    document.querySelectorAll(".opportunity-card").forEach(c => c.classList.remove("selected"));
-    document.querySelector(`.opportunity-card[data-id="${id}"]`)?.classList.add("selected");
+    // RIGHT column: Tasks
+    let rightColumnContent = '';
+Object.entries(tasksByDate).forEach(([date, tasksObj]) => {
+    const tasks = Object.values(tasksObj);
+    const collapseId = `tasksCollapse_${id}_${date.replace(/\s+/g,'')}`;
+
+   
+   if (isIntermittent) {
+    const formattedDate = new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+    // Pick only the first task's start and end time to avoid duplicates
+    let timeStr = 'N/A';
+    const firstTask = tasks[0];
+    if (firstTask && firstTask.start_time && firstTask.end_time) {
+        timeStr = `${formatTime(firstTask.start_time)} – ${formatTime(firstTask.end_time)}`;
+    }
+
+    rightColumnContent += `
+    <div class="mb-3">
+        <button class="btn w-100 text-start toggle-collapse-btn" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#${collapseId}"
+                aria-expanded="false"
+                aria-controls="${collapseId}"
+                style="background-color: #cce7ff; color: #000; border: 1px solid #99d1ff;">
+            <strong>${formattedDate} | ${timeStr}</strong>
+        </button>
+
+        <div class="mt-2 collapse" id="${collapseId}">
+            <div class="p-3 border rounded bg-light">
+                ${tasks.map(t => `
+                    <div class="pb-2 mb-3 border-bottom">
+                        <p class="mb-1"><strong>${t.task}</strong></p>
+                        ${t.description ? `<p class="mb-1 text-muted" style="margin-left:12px;">${t.description}</p>` : ''}
+                        ${t.skills ? `<p class="mb-1" style="margin-left:12px;"><strong class="text-primary">Skills:</strong> ${t.skills}</p>` : ''}
+                        <p class="mb-0" style="margin-left:12px;"><strong class="text-dark">Volunteers Needed:</strong> ${t.needed}</p>
+                        <button 
+                            class="mt-2 btn btn-primary btn-sm"
+                            onclick="event.stopPropagation(); joinTask('${id}', '${date}', '${t.task_id || ''}', '${t.task.replace(/'/g, "\\'")}')">
+                            Join Task
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>
+    `;
 }
 
 
+
+else {
+            // Regular: do not display date above tasks
+            rightColumnContent += `
+                <div class="mb-3">
+                    <div class="p-3 border rounded bg-light">
+                        ${tasks.map(t => `
+                            <div class="pb-2 mb-3 border-bottom">
+                                <p class="mb-1"><strong>${t.task}</strong></p>
+                                ${t.description ? `<p class="mb-1 text-muted" style="margin-left:12px;">${t.description}</p>` : ''}
+                                ${t.skills ? `<p class="mb-1" style="margin-left:12px;"><strong class="text-primary">Skills:</strong> ${t.skills}</p>` : ''}
+                                ${t.needed ? `<p class="mb-0" style="margin-left:12px;"><strong class="text-dark">Volunteers Needed:</strong> ${t.needed}</p>` : ''}
+                                <button 
+                                    class="mt-2 btn btn-primary btn-sm"
+                                    onclick="event.stopPropagation(); joinTask('${id}', '${date}', '${t.task_id || ''}', '${t.task.replace(/'/g, "\\'")}')">
+                                    Join Task
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    const rightColumn = `<div class="col-md-6">${rightColumnContent || '<p>No tasks available.</p>'}</div>`;
+
+    // Render the panel
+    document.getElementById('opportunityDetail').innerHTML = `
+    <div class="container-fluid">
+        <!-- Row 1: Office -->
+        <div class="mb-2 row">
+            <div class="col"><strong>Office:</strong> ${op.submitted_by_role || 'N/A'}</div>
+        </div>
+        <!-- Row 2: Submitted By -->
+        <div class="mb-2 row">
+            <div class="col"><strong>Submitted By:</strong> ${op.submitted_by_name || 'N/A'}</div>
+        </div>
+        <!-- Row 3: Location -->
+        <div class="mb-2 row">
+            <div class="col"><strong>Location:</strong> ${op.location || 'N/A'}</div>
+        </div>
+        <!-- Row 4: Date (Regular schedules only) -->
+        ${!isIntermittent && op.schedule && op.schedule[0] ? `
+        <div class="mb-2 row">
+            <div class="col"><strong>Date:</strong> ${formatDatePretty(op.schedule[0].date)}</div>
+        </div>` : ''}
+        <!-- Row 5: Time (Regular schedules only) -->
+        ${!isIntermittent && op.schedule && op.schedule[0] ? `
+        <div class="mb-3 row">
+            <div class="col"><strong>Time:</strong> ${formatTime(op.schedule[0].start_time)} – ${formatTime(op.schedule[0].end_time)}</div>
+        </div>` : ''}
+        <!-- Row 6: Two columns -->
+        <hr>
+        <div class="row">
+            ${leftColumn}
+            ${rightColumn}
+        </div>
+    </div>
+`;
+
+
+
+    document.querySelectorAll('.opportunity-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`.opportunity-card[data-id="${id}"]`)?.classList.add('selected');
+}
+
+
+
+
+// ---------- RENDER PARTICIPANTS FUNCTION ----------
+function renderParticipants(op) {
+    if (!op.participants || !op.participants.length) {
+        return '<p style="font-style: italic;">No participants yet.</p>';
+    }
+
+    // Collect participants grouped by date
+    const participantsByDate = {};
+
+    op.participants.forEach(p => {
+        if (p.tasks && Object.keys(p.tasks).length) {
+            Object.entries(p.tasks).forEach(([date, taskNames]) => {
+                if (!participantsByDate[date]) participantsByDate[date] = [];
+                // Check if participant already added for this date
+                let existing = participantsByDate[date].find(x => x.name === p.name);
+                if (existing) {
+                    // Merge tasks without duplicates
+                    existing.tasks = [...new Set([...existing.tasks, ...taskNames])];
+                } else {
+                    participantsByDate[date].push({
+                        name: p.name,
+                        status: p.status || 'N/A',
+                        tasks: taskNames
+                    });
+                }
+            });
+        } else {
+            // If no tasks, group under 'No Date'
+            const noDateKey = 'No Date';
+            if (!participantsByDate[noDateKey]) participantsByDate[noDateKey] = [];
+            participantsByDate[noDateKey].push({ name: p.name, status: p.status || 'N/A', tasks: [] });
+        }
+    });
+
+    // Sort dates
+    const sortedDates = Object.keys(participantsByDate).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        return new Date(a) - new Date(b);
+    });
+
+    // Build HTML
+    let html = '';
+    sortedDates.forEach(date => {
+        const formattedDate = date === 'No Date' ? date : new Date(date).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        html += `<strong style="color:#004aad;">${formattedDate}</strong><ul class="mb-2 list-unstyled ms-3">`;
+        participantsByDate[date].forEach(p => {
+            const tasksStr = p.tasks.length ? ` - ${p.tasks.join(', ')}` : '';
+            html += `<li>${p.name} (${p.status})${tasksStr}</li>`;
+        });
+        html += `</ul>`;
+    });
+
+    return html;
+}
+
+
+
+
+// ---------- FORMAT FUNCTIONS ----------
 function formatTime(time) {
   if (!time) return "N/A";
   const [hour, minute] = time.split(":").map(Number);
@@ -358,24 +424,8 @@ function formatTime(time) {
 
 function formatDatePretty(dateString) {
   if (!dateString) return "N/A";
-
   const date = new Date(dateString);
-
-  // If Firebase sends "YYYY/MM/DD" convert it first
-  if (isNaN(date)) {
-    // Try replacing / with -
-    const cleaned = dateString.replace(/\//g, "-");
-    const tryAgain = new Date(cleaned);
-    if (!isNaN(tryAgain)) {
-      return tryAgain.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
-    }
-    return "N/A"; // invalid date completely
-  }
-
+  if (isNaN(date)) return "N/A";
   return date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -383,410 +433,195 @@ function formatDatePretty(dateString) {
   });
 }
 
-
-// ---------- JOIN OPPORTUNITY ----------
-async function joinOpportunity(id) {
-  const btn = document.getElementById("joinBtn");
-  if (btn) {
-    btn.disabled = true;
-    btn.innerText = "Joining...";
-  }
-
-  try {
-    const response = await fetch(`{{ url('/scholars/opportunities/join') }}/${id}`, {
-      method: "POST",
-      headers: {
-        "X-CSRF-TOKEN": csrfToken,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({})
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      alert("Joined successfully!");
-      location.reload();
-    } else {
-      alert(data.error || data.message || "Failed to join.");
-      if (btn) {
-        btn.disabled = false;
-        btn.innerText = "Join";
-      }
+// ---------- JOIN TASK ----------
+async function joinTask(opportunityId, date, taskId, taskName) {
+    if (!scholarId || !scholarName || !taskName) {
+        alert("Missing required info.");
+        return;
     }
 
-  } catch (err) {
-    console.error(err);
-    alert("Error connecting to server.");
-    if (btn) {
-      btn.disabled = false;
-      btn.innerText = "Join";
+    try {
+        const response = await fetch("{{ route('scholars.joinTask') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken
+            },
+            body: JSON.stringify({
+                opportunity_id: opportunityId,
+                date: date,
+                task_name: taskName,
+                scholar_id: scholarId,
+                name: scholarName
+            })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert("You have successfully joined this task!");
+            location.reload();
+        } else {
+            alert(data.message || "Failed to join task.");
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("Server error — could not join task.");
     }
-  }
 }
 
-
-document.getElementById("otherReasonCheck").addEventListener("change", function () {
-  document.getElementById("otherReasonInput").disabled = !this.checked;
-});
-
-
+// ---------- FILTERS ----------
 const oppList = document.getElementById("opportunityList");
 const filterSearch = document.getElementById("filter-search");
 const filterOffice = document.getElementById("filter-office");
 const filterStatus = document.getElementById("filter-status");
 const sortBy = document.getElementById("sort-by");
 
-// === Apply Filters & Re-render List ===
 function applyFilters() {
-  let filtered = [...allOpportunities]; 
+    let filtered = [...allOpportunities];
 
-  // 🔍 Apply search filter
-  const searchVal = filterSearch.value.toLowerCase();
-  if (searchVal) {
-    filtered = filtered.filter(op =>
-      op.title.toLowerCase().includes(searchVal) ||
-      (op.location ?? "").toLowerCase().includes(searchVal)
-    );
-  }
+    const searchVal = filterSearch.value.toLowerCase();
+    if (searchVal) {
+        filtered = filtered.filter(op =>
+            op.title.toLowerCase().includes(searchVal) ||
+            (op.location ?? "").toLowerCase().includes(searchVal)
+        );
+    }
 
-  // 🏢 Apply office filter
-  const officeVal = filterOffice.value;
-  if (officeVal) {
-    filtered = filtered.filter(op => {
-      let submittedOffice = op.submitted_by_role ?? "Unknown";
-      if (submittedOffice === "SDA Assistant") submittedOffice = "SDA Office";
-      return submittedOffice === officeVal;
-    });
-  }
+    const officeVal = filterOffice.value;
+    if (officeVal) {
+        filtered = filtered.filter(op => {
+            let submittedOffice = op.submitted_by_role ?? "Unknown";
+            if (submittedOffice === "SDA Assistant") submittedOffice = "SDA Office";
+            return submittedOffice === officeVal;
+        });
+    }
 
-  // ⚙️ Apply status filter
-  const statusVal = filterStatus.value;
-  if (statusVal) {
-    filtered = filtered.filter(op => {
-      const participants = op.participants || [];
-      const target = op.schedule?.[0]?.target_number ?? null;
-      const accepted = participants.filter(p => p.status === "Accepted").length;
-      const isFull = target !== null && accepted >= target;
+    const statusVal = filterStatus.value;
+    if (statusVal) {
+        filtered = filtered.filter(op => {
+            const participants = op.participants || [];
+            const target = op.schedule?.[0]?.target_number ?? null;
+            const accepted = participants.filter(p => p.status === "Accepted").length;
+            const isFull = target !== null && accepted >= target;
 
-      if (statusVal === "Urgent") return op.is_urgent === "yes";
-      if (statusVal === "Full") return isFull;
-      return true;
-    });
-  }
+            if (statusVal === "Urgent") return op.is_urgent === "yes";
+            if (statusVal === "Full") return isFull;
+            return true;
+        });
+    }
 
-  // 🔽 Apply sort selection
-  switch (sortBy.value) {
-    case "recent":
-      filtered.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
-      break;
-    case "upcoming":
-      filtered.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
-      break;
-  }
+    switch (sortBy.value) {
+        case "recent":
+            filtered.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+            break;
+        case "upcoming":
+            filtered.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+            break;
+    }
 
-  // 🚨 Always prioritize urgent opportunities on top
-  filtered.sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
+    filtered.sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
 
-  renderOpportunities(filtered);
+    renderOpportunities(filtered);
 
-  // If the selected opportunity no longer exists after filtering, clear detail
-  if (currentSelectedId && !filtered.some(op => op.opportunity_id === currentSelectedId)) {
-    clearDetailPanel();
-  }
+    if (currentSelectedId && !filtered.some(op => op.opportunity_id === currentSelectedId)) {
+        clearDetailPanel();
+    }
 }
-
 
 function clearDetailPanel() {
-  currentSelectedId = null;
-
-  document.getElementById('opportunityDetail').innerHTML = `
-    <h4>
-      <span style="font-weight: normal; margin-right: 6px;">←</span>
-      <strong>Select an opportunity</strong>
-    </h4>
-    <p class="detail-placeholder">Display details here</p>
-  `;
-
-  document.querySelectorAll('.opportunity-card').forEach(c => c.classList.remove('selected'));
+    currentSelectedId = null;
+    document.getElementById('opportunityDetail').innerHTML = `
+        <h4><strong>Select an opportunity</strong></h4>
+        <p class="detail-placeholder">Display details here</p>
+    `;
+    document.querySelectorAll('.opportunity-card').forEach(c => c.classList.remove('selected'));
 }
 
-function getStatusBadge(status) {
-  switch ((status || "").toLowerCase()) {
-    case "approved":
-      return `<span class="status-card approved">Approved</span>`;
-    case "waiting":
-      return `<span class="status-card waiting">Waiting</span>`;
-    case "returned":
-      return `<span class="status-card returned">Returned</span>`;
-    case "completed":
-      return `<span class="status-card volunteers">Completed</span>`;
-    default:
-      return `<span class="status-card waiting">Pending</span>`;
-  }
-}
-
+// ---------- RENDER OPPORTUNITIES ----------
 function renderOpportunities(list) {
-  list.sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
+    list.sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
+    document.getElementById("oppCount").textContent = list.length;
 
-  document.getElementById("oppCount").textContent = list.length;
+    if (!list.length) {
+        oppList.innerHTML = `<p class="mt-3">No opportunities found.</p>`;
+        return;
+    }
 
-  if (!list.length) {
-    oppList.innerHTML = `<p class="mt-3">No opportunities found.</p>`;
-    return;
-  }
-
-  oppList.innerHTML = list.map(op => {
+   oppList.innerHTML = list.map(op => {
     const isIntermittent = op.is_intermittent == 1 || op.intermittent == 1;
+    const s = op.schedule?.[0] ?? null;
     let scheduleContent = "";
 
     if (isIntermittent) {
-      // ✅ Compute date range for intermittent schedules
-    const validDates = (op.schedule || [])
-  .map(s => s.date)
-  .filter(d => d && !isNaN(new Date(d)))
-  .map(d => new Date(d))
-  .sort((a, b) => a - b);
-
-
-      let dateRangeText = "N/A";
-      if (validDates.length > 0) {
-        const start = validDates[0];
-        const end = validDates[validDates.length - 1];
-        if (start.getTime() === end.getTime()) {
-          dateRangeText = formatDatePretty(start.toISOString());
+        const validDates = (op.schedule || []).map(d => new Date(d.date)).sort((a, b) => a - b);
+        if (validDates.length === 0) {
+            scheduleContent = "N/A";
         } else {
-dateRangeText = `${formatDatePretty(start.toISOString())} – ${formatDatePretty(end.toISOString())}`;
-
+            const start = validDates[0];
+            const end = validDates[validDates.length - 1];
+            scheduleContent = start.getTime() === end.getTime() 
+                ? formatDatePretty(start.toISOString())
+                : `${formatDatePretty(start.toISOString())} – ${formatDatePretty(end.toISOString())}`;
         }
-      }
-
-      scheduleContent = `
-        <strong>Schedule:</strong><br>
-        ${dateRangeText}
-      `;
     } else {
-      const s = op.schedule?.[0] ?? null;
-      scheduleContent = `
-        <strong>Date:</strong> ${s?.date ? formatDatePretty(s.date) : "N/A"}<br>
-        <strong>Time:</strong> ${
-          s && s.start_time && s.end_time
-            ? `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`
-            : "N/A"
-        }
-      `;
+        scheduleContent = s 
+            ? `${formatDatePretty(s.date)}`
+            : "N/A";
     }
 
-    const taskList = (op.task_details || "").split("\n").map(t => `<li>${t}</li>`).join('');
-    const count = (op.participants ?? []).length;
-    const target = op.schedule?.[0]?.target_number ?? "?";
     const submittedOffice = (op.submitted_by_role === "SDA Assistant") ? "SDA Office" : (op.submitted_by_role ?? "Unknown");
+    const participantsCount = op.participants?.length ?? 0;
+
+    // For intermittent, sum all volunteers needed; else use target_number
+// For intermittent, sum all volunteers needed; else sum all target_number in schedule
+let totalNeeded = 0;
+
+if (isIntermittent && op.intermittent_tasks_by_date) {
+    totalNeeded = Object.values(op.intermittent_tasks_by_date) // per date
+        .flatMap(t => Object.values(t))                        // per task
+        .reduce((sum, t) => sum + (t.needed || 0), 0);        // sum needed
+} else if (op.schedule && op.schedule.length) {
+    // sum all target_number in schedule for regular opportunities
+    totalNeeded = op.schedule.reduce((sum, sc) => sum + (sc.target_number || 0), 0);
+} else {
+    totalNeeded = '?';
+}
+
+
 
     return `
-      <div class="card opportunity-card" data-id="${op.opportunity_id}" onclick="showDetail('${op.opportunity_id}')">
-        <div class="card-body">
-          ${op.is_urgent === "yes" ? `<span class="badge-urgent">Urgent</span>` : ``}
-          <h5 class="card-title">${op.title}</h5>
-          <p class="mb-1">Office: ${submittedOffice}</p>
-          <p class="mb-1">Location: ${op.location}</p>
-          <small>${scheduleContent}</small>
-<div class="mt-2 text-end">
-  <small class="participant-count">
-    <i class="bi bi-person-fill me-1"></i>
-    {{ count($op['participants'] ?? []) }}/{{ $op['schedule'][0]['target_number'] ?? '?' }}
-  </small>
+        <div class="card opportunity-card" data-id="${op.opportunity_id}" onclick="showDetail('${op.opportunity_id}')">
+            <div class="card-body">
+                ${op.is_urgent === "yes" ? `<span class="badge-urgent">Urgent</span>` : ``}
+                <h5 class="card-title">${op.title}</h5>
+                <p class="mb-1">Office: ${submittedOffice}</p>
+                <p class="mb-1">Location: ${op.location}</p>
+                <small>${scheduleContent}</small>
+              <div class="mt-2 text-end">
+    <small class="participant-count">
+        <i class="bi bi-person-fill me-1"></i>${participantsCount} / ${totalNeeded}
+    </small>
 </div>
+
+            </div>
         </div>
-      </div>
     `;
-  }).join('');
+}).join('');
+
 }
 
-// === Event Listeners ===
-filterSearch.addEventListener("input", applyFilters);
-filterOffice.addEventListener("change", applyFilters);
-filterStatus.addEventListener("change", applyFilters);
-sortBy.addEventListener("change", applyFilters);
-
-
-
-function openIntermittentModal(opportunityId) {
-  const op = opportunities.find(o => o.opportunity_id === opportunityId);
-  if (!op) return;
-
-  const list = document.getElementById('intermittentScheduleList');
-  const schedules = op.schedule || [];
-
-  if (!schedules.length) {
-    list.innerHTML = `<p class="text-muted">No schedules available.</p>`;
-    return;
-  }
-
-  list.innerHTML = `
-    <div class="table-responsive">
-      <table class="table text-center align-middle table-bordered">
-        <thead class="table-light">
-          <tr>
-            <th>Date</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Volunteers Needed</th>
-            <th>Join</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${schedules.map((s, i) => {
-            const date = s.date ? formatDatePretty(s.date) : "N/A";
-            const start = s.start_time ? formatTime(s.start_time) : "N/A";
-            const end = s.end_time ? formatTime(s.end_time) : "N/A";
-            const targetNum = s.target_number ?? "N/A";
-            return `
-              <tr>
-                <td>${date}</td>
-                <td>${start}</td>
-                <td>${end}</td>
-                <td>${targetNum}</td>
-                <td>
-                  <button class="btn btn-sm btn-primary" onclick="joinIntermittent('${opportunityId}', ${i})">Join</button>
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function openIntermittentModal(opportunityId) {
-    window.selectedOpportunity = opportunityId;
-
-    const op = opportunities.find(o => o.opportunity_id === opportunityId);
-    if (!op) return;
-
-    const isIntermittent = op.is_intermittent == 1 || op.is_intermittent === true;
-    const list = document.getElementById('intermittentScheduleList');
-
-    if (!list) return;
-
-    if (isIntermittent) {
-        // Intermittent → show checkboxes for all dates
-        const schedules = op.schedule || [];
-        if (!schedules.length) {
-            list.innerHTML = `<p class="text-muted">No schedules available.</p>`;
-        } else {
-            list.innerHTML = `
-                <div class="list-group">
-                    ${schedules.map((s, i) => `
-                        <label class="list-group-item d-flex align-items-center">
-                            <input class="form-check-input me-3" type="checkbox" value="${i}">
-                            <span>
-                                <strong>${formatDatePretty(s.date)}</strong><br>
-                                <small>${s.start_time || 'N/A'} - ${s.end_time || 'N/A'}</small>
-                            </span>
-                        </label>
-                    `).join('')}
-                </div>
-            `;
-        }
-    } else {
-        // Regular → show single schedule as radio / info (existing behavior)
-        const s = op.schedule?.[0];
-        if (!s) {
-            list.innerHTML = `<p class="text-muted">No schedule available.</p>`;
-        } else {
-            list.innerHTML = `
-                <p><strong>Date:</strong> ${formatDatePretty(s.date)}</p>
-                <p><strong>Time:</strong> ${formatTime(s.start_time)} - ${formatTime(s.end_time)}</p>
-            `;
-        }
-    }
-
-    const modal = new bootstrap.Modal(document.getElementById("intermittentJoinModal"));
-    modal.show();
-}
-
-function submitIntermittentJoin() {
-    const opportunityId = window.selectedOpportunity;
-    const op = opportunities.find(o => o.opportunity_id === opportunityId);
-    if (!op) return;
-
-    const isIntermittent = op.is_intermittent == 1 || op.is_intermittent === true;
-
-    if (isIntermittent) {
-        const checks = document.querySelectorAll("#intermittentScheduleList input[type='checkbox']:checked");
-        if (checks.length === 0) {
-            alert("Please select at least one date.");
-            return;
-        }
-        const selectedIndices = Array.from(checks).map(c => parseInt(c.value));
-
-        // POST to your intermittent join endpoint
-        fetch(`/scholars/opportunities/join/${opportunityId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken
-            },
-            body: JSON.stringify({ schedule_index: selectedIndices })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success || data.message === "Joined successfully") {
-                alert("Joined selected dates successfully!");
-                location.reload();
-            } else {
-                alert(data.error || data.message || "Failed to join.");
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error joining opportunity.");
-        });
-    } else {
-        // Regular schedule → call existing join function
-        joinOpportunity(opportunityId);
-    }
-}
-
-
-async function joinIntermittent(opportunityId, index) {
-  const btn = event.target;
-  btn.disabled = true;
-  btn.innerText = "Joining...";
-
-  try {
-    const response = await fetch(`/scholars/opportunities/join/${opportunityId}`, {
-      method: "POST",
-      headers: {
-        "X-CSRF-TOKEN": csrfToken,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({ schedule_index: index })
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      alert("Joined successfully!");
-      location.reload();
-    } else {
-      alert(data.error || data.message || "Failed to join.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Error joining opportunity.");
-  }
-}
-
+// ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", () => {
-  const sorted = [...opportunities].sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
-  renderOpportunities(sorted);
+    const sorted = [...opportunities].sort((a, b) => (b.is_urgent === "yes") - (a.is_urgent === "yes"));
+    renderOpportunities(sorted);
+
+    filterSearch.addEventListener("input", applyFilters);
+    filterOffice.addEventListener("change", applyFilters);
+    filterStatus.addEventListener("change", applyFilters);
+    sortBy.addEventListener("change", applyFilters);
 });
-
 </script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Intermittent Join Modal -->

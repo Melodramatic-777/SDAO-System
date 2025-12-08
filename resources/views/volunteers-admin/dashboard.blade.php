@@ -3,6 +3,7 @@
 @section('content')
 
 
+<div class="dashboard-wrapper">   <!-- NEW flex wrapper -->
 
 
     <!-- Main Content -->
@@ -88,11 +89,62 @@
 
     <!-- Right Panel -->
     <aside class="otsv-panel">
-      <h3>On the Spot Volunteers</h3>
-      <ul class="otsv-list"></ul>
+        <h3><strong> On the Spot Volunteers</strong></h3>
+
+        <ul class="otsv-list">
+            @forelse ($otsvList as $v)
+<li class="otsv-item">
+    <strong>{{ $v['student_name'] }}</strong><br>
+
+   <small>
+    Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }} <br>
+    Available Time: 
+        {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
+        -
+        {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }} <br>
+
+    {{-- Reason Section --}}
+    @php
+        $reasons = $v['reasons'] ?? [];
+        $other = $v['other_reason'] ?? null;
+    @endphp
+
+    @if (!empty($reasons) || $other)
+        <span class="reason-label"><strong>Reason:</strong></span><br>
+
+        {{-- List multiple selected reasons --}}
+        @foreach ($reasons as $reason)
+            • {{ $reason }} <br>
+        @endforeach
+
+        {{-- Show "Other reason" if present --}}
+        @if ($other)
+            • {{ $other }}
+        @endif
+    @endif
+</small>
+
+
+    <div class="otsv-actions">
+        <form action="{{ route('volunteers-admin.otsv.accept', $v['id']) }}" method="POST" style="display:inline;">
+            @csrf
+            <button class="btn-accept">Accept</button>
+        </form>
+
+        <form action="{{ route('volunteers-admin.otsv.decline', $v['id']) }}" method="POST" style="display:inline;">
+            @csrf
+            <button class="btn-decline">Decline</button>
+        </form>
+    </div>
+</li>
+
+            @empty
+                <li>No on-the-spot volunteers yet.</li>
+            @endforelse
+        </ul>
     </aside>
 
-  </div> <!-- End Wrapper -->
 
+  </div> <!-- End Wrapper -->
 
 @endsection

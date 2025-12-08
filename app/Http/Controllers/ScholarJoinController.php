@@ -117,34 +117,104 @@ class ScholarJoinController extends Controller
     return response()->json($dates ? array_values($dates) : []);
 }
 
-
-public function joinIntermittent(Request $request, $id)
+public function joinTask(Request $request)
 {
-    $dates = $request->input('dates');
     $scholar = session('scholar_accounts');
     if (!$scholar) {
-        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
+
     $scholarId   = $scholar['student_no'] ?? null;
     $scholarName = trim(($scholar['first_name'] ?? '') . ' ' . ($scholar['last_name'] ?? ''));
     if (!$scholarId) {
-        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    if (!is_array($dates) || count($dates) === 0) {
-        return response()->json(['success' => false, 'message' => 'No dates selected.']);
+    $opportunityId = $request->input('opportunity_id');
+    $taskDate      = $request->input('date');
+    $taskName      = $request->input('task_name') ?? $request->input('task'); // support both keys
+    $scheduleIndex = $request->input('schedule_index', null); // for intermittent schedules
+
+    if (!$opportunityId || !$taskDate || !$taskName) {
+        return response()->json(['message' => 'Missing required fields'], 400);
     }
 
-    $path = "joined_intermittent/$scholarId/$id";
+    $ref = $this->database->getReference('opportunities/' . $opportunityId);
+    $opportunity = $ref->getValue();
 
-    $this->database->getReference($path)->set([
-        'scholar_id'     => $scholarId,
-        'scholar_name'   => $scholarName,
-        'selected_dates' => $dates,
-        'joined_at'      => Carbon::now()->toDateTimeString(),
-    ]);
+    if (!$opportunity) {
+        return response()->json(['message' => 'Opportunity not found'], 404);
+    }
 
-    return response()->json(['success' => true]);
+    $isIntermittent = isset($opportunity['is_intermittent']) && $opportunity['is_intermittent'] == 1;
+
+    $participants = $opportunity['participants'] ?? [];
+    if (!is_array($participants)) $participants = [];
+
+    // Check if scholar already exists in participants
+    $existingIndex = null;
+    foreach ($participants as $i => $p) {
+        if (($p['scholar_id'] ?? '') === $scholarId) {
+            $existingIndex = $i;
+            break;
+        }
+    }
+
+    $now = Carbon::now()->toDateTimeString();
+
+    if ($existingIndex !== null) {
+        // Scholar exists → add task
+        $tasks = $participants[$existingIndex]['tasks'] ?? [];
+
+        // Initialize for this date if missing
+        if (!isset($tasks[$taskDate])) {
+            $tasks[$taskDate] = [];
+        }
+
+        // LIMIT: Only 1 task per date
+        if (count($tasks[$taskDate]) >= 1) {
+            return response()->json([
+                'message' => 'You can only join 1 task per date.'
+            ], 400);
+        }
+
+        // Add task
+        $tasks[$taskDate][] = $taskName;
+
+        $participants[$existingIndex]['tasks']     = $tasks;
+        $participants[$existingIndex]['joined_at'] = $now;
+        $participants[$existingIndex]['status']    = 'Joined';
+
+        // Handle intermittent schedules
+        if ($isIntermittent && $scheduleIndex !== null) {
+            $joinedSchedules = $participants[$existingIndex]['schedule_indices'] ?? [];
+            if (!in_array($scheduleIndex, $joinedSchedules)) {
+                $joinedSchedules[] = $scheduleIndex;
+                $participants[$existingIndex]['schedule_indices'] = $joinedSchedules;
+            }
+        }
+
+    } else {
+        // New participant
+        $participants[] = [
+            'joined_at'  => $now,
+            'name'       => $scholarName,
+            'role'       => 'Volunteer',
+            'scholar_id' => $scholarId,
+            'status'     => 'Joined',
+            'tasks'      => [
+                $taskDate => [$taskName] // Only 1 task per date
+            ],
+            'schedule_indices' => $isIntermittent && $scheduleIndex !== null ? [$scheduleIndex] : []
+        ];
+    }
+
+    try {
+        $ref->update(['participants' => $participants]);
+        return response()->json(['message' => 'Successfully joined task']);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Failed to join task: ' . $e->getMessage()], 500);
+    }
 }
 
 public function scholarOpportunities()

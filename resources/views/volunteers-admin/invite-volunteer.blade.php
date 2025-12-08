@@ -68,6 +68,7 @@
 </div>
 
 <!-- Invite Modal -->
+<!-- Invite Modal -->
 <div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -94,19 +95,19 @@
                             @foreach($opportunities as $opportunity)
                                 <option value="{{ $opportunity['opportunity_id'] ?? '' }}"
                                         data-intermittent="{{ $opportunity['is_intermittent'] ?? 0 }}"
-                                        data-schedule='@json($opportunity['schedule'] ?? [])'>
+                                        data-tasks='@json($opportunity['tasks'] ?? [])'
+                                        data-intermittent-tasks='@json($opportunity['intermittent_tasks_by_date'] ?? [])'>
                                     {{ $opportunity['title'] ?? 'Untitled' }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Intermittent Schedule -->
-                    <div id="intermittentDatesContainer" class="mt-3 d-none">
-                        <p>Select dates for intermittent schedule:</p>
-                        <div id="intermittentDatesList" class="list-group"></div>
+                    <!-- Tasks by date -->
+                    <div id="tasksContainer" class="mt-3 d-none">
+                        <p><strong>Tasks:</strong></p>
+                        <div id="tasksList"></div>
                     </div>
-
                 </div>
 
                 <div class="modal-footer">
@@ -124,10 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const scholarHoursEl = document.getElementById("scholarHours");
     const scholarIdEl = document.getElementById("scholarId");
     const activitySelect = document.getElementById("activitySelect");
-    const intermittentContainer = document.getElementById("intermittentDatesContainer");
-    const intermittentList = document.getElementById("intermittentDatesList");
+    const tasksContainer = document.getElementById("tasksContainer");
+    const tasksList = document.getElementById("tasksList");
 
-    // Bind Invite buttons
     document.querySelectorAll(".inviteBtn").forEach(btn => {
         btn.addEventListener("click", () => {
             scholarNameEl.textContent = btn.dataset.name;
@@ -136,28 +136,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Reset modal
             activitySelect.value = "";
-            intermittentContainer.classList.add("d-none");
-            intermittentList.innerHTML = "";
+            tasksContainer.classList.add("d-none");
+            tasksList.innerHTML = "";
         });
     });
 
-    // When an opportunity is selected
     activitySelect.addEventListener("change", function() {
         const option = this.selectedOptions[0];
         const isIntermittent = parseInt(option.dataset.intermittent) === 1;
-        const schedule = JSON.parse(option.dataset.schedule || "[]");
+        const tasks = JSON.parse(option.dataset.tasks || "[]");
+        const intermittentTasks = JSON.parse(option.dataset.intermittentTasks || "{}");
 
-        if(isIntermittent && schedule.length > 0){
-            intermittentContainer.classList.remove("d-none");
-            intermittentList.innerHTML = schedule.map((s, i) => `
-                <label class="list-group-item d-flex align-items-center">
-                    <input class="form-check-input me-3" type="checkbox" name="schedule_indices[]" value="${i}">
-                    <span><strong>${formatDate(s.date)}</strong> ${s.start_time || 'N/A'} - ${s.end_time || 'N/A'}</span>
-                </label>
-            `).join('');
+        tasksList.innerHTML = "";
+
+        if (isIntermittent && Object.keys(intermittentTasks).length > 0) {
+            tasksContainer.classList.remove("d-none");
+            for (const [date, taskObj] of Object.entries(intermittentTasks)) {
+                const dateFormatted = formatDate(date);
+                let taskHtml = `<p class="mb-1 fw-bold">${dateFormatted}</p><ul class="mb-2 list-group">`;
+                for (const taskKey in taskObj) {
+                    const task = taskObj[taskKey];
+                    taskHtml += `
+                        <li class="list-group-item d-flex align-items-center">
+                            <input type="checkbox" class="form-check-input me-2" 
+                                   name="tasks[${date}][]" value="${task.task}">
+                            <span>${task.task}</span>
+                        </li>`;
+                }
+                taskHtml += "</ul>";
+                tasksList.innerHTML += taskHtml;
+            }
+        } else if (tasks.length > 0) {
+            tasksContainer.classList.remove("d-none");
+            tasksList.innerHTML = `<ul class="list-group">${tasks.map(t => `
+                <li class="list-group-item d-flex align-items-center">
+                    <input type="checkbox" class="form-check-input me-2" name="tasks[regular][]" value="${t.task}">
+                    <span>${t.task}</span>
+                </li>`).join('')}</ul>`;
         } else {
-            intermittentContainer.classList.add("d-none");
-            intermittentList.innerHTML = "";
+            tasksContainer.classList.add("d-none");
         }
     });
 
@@ -168,4 +185,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 </script>
+
 @endsection

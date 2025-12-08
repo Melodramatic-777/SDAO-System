@@ -51,6 +51,44 @@ public function onTheSpotVolunteer(Request $request) {
     return redirect()->back()->with('success', 'You are now marked as available for on-the-spot volunteering.');
 }
 
+public function fetchOTSV()
+{
+    $data = $this->database->getReference('on_the_spot_volunteers')->getValue();
+
+    // Convert Firebase associative array into indexed array
+    $list = [];
+    if ($data) {
+        foreach ($data as $id => $item) {
+            $list[] = array_merge($item, ['id' => $id]);
+        }
+    }
+
+    return $list;
+}
+
+public function acceptOTSV($id)
+{
+    $this->database
+        ->getReference("on_the_spot_volunteers/$id")
+        ->update([
+            'status' => 'accepted',
+            'reviewed_at' => now()->toDateTimeString()
+        ]);
+
+    return redirect()->back()->with('success', 'Volunteer accepted.');
+}
+
+public function declineOTSV($id)
+{
+    $this->database
+        ->getReference("on_the_spot_volunteers/$id")
+        ->update([
+            'status' => 'declined',
+            'reviewed_at' => now()->toDateTimeString()
+        ]);
+
+    return redirect()->back()->with('success', 'Volunteer declined.');
+}
 
 
 

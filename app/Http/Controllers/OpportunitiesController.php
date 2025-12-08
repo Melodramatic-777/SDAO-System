@@ -90,19 +90,22 @@ public function inviteScholar(Request $request)
         }
     }
 
+    $selectedTasks = $request->input('tasks', []); // tasks[date] = array of selected tasks
+
     // 🌟 BUILD PARTICIPANT ENTRY
-    $newParticipant = [
-        'scholar_id' => $scholarId,
-        'name'       => trim(($selectedScholar['first_name'] ?? '') . ' ' . ($selectedScholar['last_name'] ?? '')),
-        'role'       => 'Volunteer',
-        'status'     => 'Pending Invite',
-        'invited_at' => now()->toDateTimeString(),
-    ];
+$newParticipant = [
+    'scholar_id' => $scholarId,
+    'name'       => trim(($selectedScholar['first_name'] ?? '') . ' ' . ($selectedScholar['last_name'] ?? '')),
+    'role'       => 'Volunteer',
+    'status'     => 'Pending Invite',
+    'invited_at' => now()->toDateTimeString(),
+    'tasks'      => $selectedTasks, // SAVE selected tasks per date
+];
 
     // ⭐ If intermittent → SAVE all selected schedule indices
-    if (!empty($selectedScheduleIndices)) {
-        $newParticipant['schedule_indices'] = $selectedScheduleIndices;
-    }
+if (!empty($selectedScheduleIndices)) {
+    $newParticipant['schedule_indices'] = $selectedScheduleIndices;
+}
 
     $participants[] = $newParticipant;
 
