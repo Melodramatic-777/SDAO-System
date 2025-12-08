@@ -1,19 +1,27 @@
 <?php
 
+use App\Http\Controllers\AccountsOfficesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+
 
 Route::get('/superadmin/admins', [AdminController::class, 'listAdmins'])->name('superadmin.admins.list');
 Route::get('/superadmin/admins/create', [AdminController::class, 'createAdminForm'])->name('superadmin.admins.create');
 Route::post('/superadmin/admins/create', [AdminController::class, 'storeAdmin'])->name('superadmin.admins.store');
 
 
+    
+Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
+    ->name('superadmin.logout');
 
-    Route::post('/offices/create', [AdminController::class, 'createOffice'])
+Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create']);
+
+
+    Route::post('/offices/create', [AccountsOfficesController::class, 'storeOffice'])
         ->name('superadmin.create-office');
 
 
-    Route::post('/office-accounts/create', [AdminController::class, 'createOfficeAccount'])
+    Route::post('/office-accounts/create', [AccountsOfficesController::class, 'storeOfficeAccount'])
         ->name('superadmin.create-office-account');
 
 // Admins

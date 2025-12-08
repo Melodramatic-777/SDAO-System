@@ -79,7 +79,7 @@
                         List of Student Volunteers A.Y. {{ $latestYear }}
                     </th>
                 </tr>
-                <tr>
+                <tr style="background-color: #FFD700; color: #000;">
                     <th>#</th>
                     <th>Student No.</th>
                     <th>Email</th>

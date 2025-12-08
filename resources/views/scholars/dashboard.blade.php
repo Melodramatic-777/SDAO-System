@@ -277,29 +277,38 @@
 
     <h3><strong>My On the Spot Volunteers</strong></h3>
 
-    <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
-        @forelse ($otsvList as $v)
-            <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
-                <strong>{{ $v['student_name'] }}</strong><br>
-                <small>
-                    Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
-                    Available Time: {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
-                    – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
-                    @php
-                        $reasons = $v['reasons'] ?? [];
-                        $other = $v['other_reason'] ?? null;
-                    @endphp
-                    @if(!empty($reasons) || $other)
-                        <strong>Reason:</strong><br>
-                        @foreach($reasons as $reason)
-                            • {{ $reason }}<br>
-                        @endforeach
-                        @if($other)
-                            • {{ $other }}
-                        @endif
+  <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
+    @forelse ($otsvList as $v)
+        <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
+            <strong>{{ $v['student_name'] }}</strong><br>
+            <small>
+                Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
+                Available Time: {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
+                – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
+                @php
+                    $reasons = $v['reasons'] ?? [];
+                    $other = $v['other_reason'] ?? null;
+                @endphp
+                @if(!empty($reasons) || $other)
+                    <strong>Reason:</strong><br>
+                    @foreach($reasons as $reason)
+                        • {{ $reason }}<br>
+                    @endforeach
+                    @if($other)
+                        • {{ $other }}
                     @endif
-                </small>
+                @endif
+            </small>
 
+            {{-- Accepted Badge --}}
+            @if(isset($v['status']) && $v['status'] === 'accepted')
+                <div class="mb-2">
+                    <span class="text-white otsv-accepted badge bg-success">
+                        <i class="bi bi-check-circle-fill me-1"></i> Accepted
+                    </span>
+                </div>
+            @else
+                {{-- Cancel Button --}}
                 @if(($v['student_id'] ?? null) === session('scholar_accounts.student_no'))
                     <button type="button" class="text-white btn btn-sm w-100" 
                             style="background-color: #dc3545; border-color: #dc3545;"
@@ -307,15 +316,15 @@
                             data-bs-target="#cancelModal{{ $v['id'] }}">
                         Cancel
                     </button>
-
-               
                 @endif
+            @endif
+        </li>
+    @empty
+        <li>No on-the-spot volunteers.</li>
+    @endforelse
+</ul>
 
-            </li>
-        @empty
-            <li>No on-the-spot volunteers.</li>
-        @endforelse
-    </ul>
+
 </aside>
 
 

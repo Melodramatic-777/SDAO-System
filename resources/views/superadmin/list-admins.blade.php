@@ -1,113 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dashboard - NU Fairview SDAO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  @vite('resources/css/volunteers.css')
-<style>
-#tableAdmins {
-  border-radius: 10px;
-  overflow: hidden;
-}
+@extends('superadmin.layout')
 
-#tableAdmins th {
-  background-color: #003DA5;
-  color: white;
-}
+@section('content')
 
-#tableAdmins td {
-  padding: 10px;
-}
-
-
-#tableOffices {
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-#tableOffices th {
-  background-color: #003DA5;
-  color: white;
-}
-
-#tableOffices td {
-  padding: 10px;
-}
-
-
-#tableOfficeUsers {
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-#tableOfficeUsers th {
-  background-color: #003DA5;
-  color: white;
-}
-
-#tableOfficeUsers td {
-  padding: 10px;
-}
-
-
-/* Remove Bootstrap table borders */
-#tableAdmins,
-#tableOffices,
-#tableOfficeUsers {
-  border: 1px solid #ccc; /* light gray instead of blue */
-  border-collapse: collapse;
-}
-
-/* Remove Bootstrap blue border on table cells */
-#tableAdmins th,
-#tableAdmins td,
-#tableOffices th,
-#tableOffices td,
-#tableOfficeUsers th,
-#tableOfficeUsers td {
-  border: 1px solid #ccc; /* same light gray */
-}
-
-/* Optional: remove any hover effect */
-#tableAdmins tr:hover,
-#tableOffices tr:hover,
-#tableOfficeUsers tr:hover {
-  background-color: #f8f9fa; /* light gray instead of blue */
-}
-
-
-#tableAdmins td:last-child,
-#tableOfficeUsers td:last-child {
-  text-align: center;
-}
-
-
-    </style>
-</head>
-<body>
-
-<header class="custom-header">
-    <div class="header-left">
-        <div class="logo">
-            <img src="{{ asset('images/NU_Logo.png') }}" alt="NU Logo" height="30">
-            <span>Student Developments and Activities Office - SDA Assistant</span>
-        </div>
-    </div>
-    <div class="header-right-group">
-        <p>Welcome, {{ session('admin.first_name') }}!</p>
-        <form method="POST" action="{{ route('admin.logout') }}">
-            @csrf
-            <button type="submit" class="side-button">
-                <img src="{{ asset('images/Side.png') }}" alt="Side" height="30">
-            </button>
-        </form>
-    </div>
-</header>
 
 
 <div class="container">
@@ -432,5 +326,5 @@ function closeRevokeModal() {
 
 </script>
 
-</body>
-</html>
+@endsection
+

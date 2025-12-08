@@ -64,6 +64,8 @@ class Kernel extends HttpKernel
 
         'activitiesAdminAuth' => \App\Http\Middleware\ActivitiesAdminAuth::class,
         'volunteersAdminAuth' => \App\Http\Middleware\ActivitiesAdminAuth::class,
+            'superadmin.auth' => \App\Http\Middleware\SuperAdminAuth::class,
+
 
     ];
 

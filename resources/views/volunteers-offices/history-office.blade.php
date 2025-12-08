@@ -82,7 +82,6 @@
             <th>Date</th>
             <th>Start Time</th>
             <th>End Time</th>
-            <th>Volunteers Needed</th>
             <th>Food Provided</th>
         </tr>
     </thead>
@@ -115,8 +114,7 @@
                 @endif
             </td>
 
-            {{-- TARGET NUMBER --}}
-            <td>{{ $s['target_number'] ?? 'N/A' }}</td>
+ 
 
             {{-- FOOD --}}
             <td>
@@ -130,31 +128,17 @@
 
             </div>
 
-            {{-- Task Details --}}
-            <div class="col-md-4">
-              <h6 class="fw-bold">Task Details</h6>
-              <ul>
-                @foreach(explode("\n", $opportunity['task_details'] ?? '') as $task)
-                  @if(trim($task) != '')
-                    <li>{{ trim($task) }}</li>
-                  @endif
-                @endforeach
-              </ul>
-            </div>
 
-            {{-- Skills Needed --}}
+   {{-- Skills Needed --}}
             <div class="col-md-4">
-              <h6 class="fw-bold">Skills Needed</h6>
-              <ul>
-                @foreach(explode("\n", $opportunity['skills_needed'] ?? '') as $skill)
-                  @if(trim($skill) != '')
-                    <li>{{ trim($skill) }}</li>
-                  @endif
-                @endforeach
-              </ul>
+        <h6 class="fw-bold">Description</h6>
+        <p>{{ $opportunity['description'] ?? 'No description provided.' }}</p>
             </div>
           </div>
 
+         
+
+         
           <hr>
 
           {{-- Student Volunteers --}}

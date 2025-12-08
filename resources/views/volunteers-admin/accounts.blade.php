@@ -59,13 +59,14 @@
     </button>
 
     <!-- DELETE FORM (POST + hidden by default) -->
-    <form method="POST" action="{{ route('volunteers-admin.archive-aspiring-scholar') }}"
-          id="deleteForm" class="d-inline" style="display: none;">
-        @csrf
-        <button type="submit" class="gap-1 btn btn-danger d-flex align-items-center">
-            <i class="bi bi-trash"></i> Delete Selected
-        </button>
-    </form>
+  <form method="POST" action="{{ route('volunteers-admin.archive-aspiring-scholar') }}"
+      id="deleteForm" class="d-none">
+    @csrf
+    <button type="submit" class="gap-1 btn delete-btn d-flex align-items-center">
+        <i class="bi bi-trash"></i> Delete Selected
+    </button>
+</form>
+
 
 </div>
     
@@ -103,9 +104,8 @@
   </thead>
 
   <tbody>
- @foreach ($aspiringScholars as $index => $scholar)
+@forelse ($aspiringScholars as $index => $scholar)
 <tr>
-
   <!-- Manage column checkbox -->
   <td class="manage-col" style="display:none;">
     <input type="checkbox" name="selected_accounts[]" 
@@ -128,9 +128,13 @@
   <td>{{ $scholar['created_at'] }}</td>
 
 </tr>
-@endforeach
+@empty
+<tr>
+  <td colspan="11" class="text-center text-muted">No aspiring scholars</td>
+</tr>
+@endforelse
+</tbody>
 
-  </tbody>
 
 </table>
 </div>
@@ -216,34 +220,33 @@ document.getElementById('schoolDropdown').addEventListener('change', function ()
   const selectAll = document.querySelector('#selectAll');
   let manageMode = false;
 
-  manageBtn.addEventListener('click', () => {
+ manageBtn.addEventListener('click', () => {
     manageMode = !manageMode;
 
     // Toggle Manage columns visibility
     manageCols.forEach(col => {
-      col.style.display = manageMode ? '' : 'none';
+        col.style.display = manageMode ? '' : 'none';
     });
 
     // Toggle Delete Selected button
-    deleteForm.style.display = manageMode ? 'inline-block' : 'none';
+    if (manageMode) {
+        deleteForm.classList.remove('d-none');
+        deleteForm.classList.add('d-inline-block');
+    } else {
+        deleteForm.classList.add('d-none');
+        deleteForm.classList.remove('d-inline-block');
+    }
 
     // Toggle button label
-    manageBtn.textContent = manageMode ? 'Cancel' : 'Manage';
+    manageBtn.innerHTML = manageMode ? '<i class="bi bi-x-circle"></i> Cancel' : '<i class="bi bi-gear"></i> Manage';
 
     // Reset all checkboxes when exiting manage mode
     if (!manageMode) {
-      selectAll.checked = false;
-      document.querySelectorAll('input[name="selected_accounts[]"]').forEach(cb => cb.checked = false);
+        selectAll.checked = false;
+        document.querySelectorAll('input[name="selected_accounts[]"]').forEach(cb => cb.checked = false);
     }
-  });
+});
 
-  // ✅ SELECT ALL CHECKBOX FUNCTIONALITY
-  selectAll.addEventListener('change', function() {
-    const checked = this.checked;
-    document.querySelectorAll('input[name="selected_accounts[]"]').forEach(cb => {
-      cb.checked = checked;
-    });
-  });
 
 
 </script>

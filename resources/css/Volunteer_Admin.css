@@ -395,6 +395,22 @@ table thead {
                 /* black text */
 }
 
+  #apiringScholarsTable thead tr {
+      background-color: #FFD700 !important; /* Gold */
+      color: #000 !important;               /* Black text */
+  }
+
+  /* Optional: make checkbox cell match the color */
+  #apiringScholarsTable thead tr th input {
+      background-color: #FFD700 !important;
+  }
+
+
+    #tableScholars thead tr:nth-child(2) {
+      background-color: #FFD700 !important; /* Gold / yellow */
+      color: #000 !important;               /* Black text */
+  }
+
 table th, 
 table td {
   border: 1px solid #ddd;
@@ -1004,4 +1020,16 @@ table thead tr:first-child {
 .reason-label {
     margin-top: 6px;
     display: inline-block;
+}
+
+    table.table td,
+    table.table th {
+        vertical-align: middle; /* aligns content vertically */
+        text-align: center;     /* aligns content horizontally */
+    }
+
+.delete-btn {
+    background-color: #dc3545 !important; /* Bootstrap red */
+    border-color: #dc3545 !important;
+    color: #fff !important;
 }

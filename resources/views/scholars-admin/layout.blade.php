@@ -10,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Vite CSS -->
     @vite('resources/css/Scholar_Admin.css')
@@ -159,9 +160,10 @@
 </a>
 
 <a href="{{ route('scholars-admin.scholars') }}"
-   class="{{ Request::is('scholars-admin/scholars') ? 'active' : '' }}">
+   class="{{ Request::routeIs('scholars-admin.scholars') ? 'active' : '' }}">
    Scholars
 </a>
+
 
 <a href="{{ route('scholars-admin.scholarships') }}"
    class="{{ Request::is('scholars-admin/scholarships') ? 'active' : '' }}">

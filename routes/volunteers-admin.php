@@ -59,6 +59,9 @@ Route::get('/dashboard', [\App\Http\Controllers\VolunteersAdminDashboardControll
         Route::post('/invite-scholar', 'inviteScholar')->name('volunteers-admin.inviteScholar');
     });
 
+
+
+    
     Route::post('/store-opportunity', [SubmitOpportunityController::class, 'store'])
         ->name('volunteers-admin.store-opportunity');
 });

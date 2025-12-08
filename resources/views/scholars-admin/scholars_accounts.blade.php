@@ -113,7 +113,7 @@
     <table id="tableScholars">
 <thead>
       <tr class="table-title-row">
-        <th colspan="10" class="py-3 text-center fw-bold fs-5">
+        <th colspan="13" class="py-3 text-center fw-bold fs-5">
           Scholars A.Y. {{ request('academic_year') ?? $latestYear }} — {{ request('term') ?? $latestTerm }} Term
         </th>
       </tr>
@@ -121,7 +121,10 @@
           <th>#</th>
           <th>Student No.</th>
           <th>Email</th>
-          <th>Full Name</th>
+<th>First Name</th>
+<th>Middle Name</th>
+<th>Last Name</th>
+<th>Suffix</th>
           <th>Birthday</th>
           <th>School</th>
           <th>Program</th>
@@ -142,10 +145,21 @@ $status = $year && isset($scholar['gwa_records'][$year]['status'])
           <td>{{ $loop->iteration + ($scholars->currentPage() - 1) * $scholars->perPage() }}</td>
           <td>{{ $scholar['student_no'] }}</td>
           <td>{{ $scholar['email'] ?? 'N/A' }}</td>
-          <td>{{ $scholar['last_name'] }}, {{ $scholar['first_name'] }} {{ $scholar['middle_name'] ?? '' }} {{ $scholar['suffix'] ?? '' }}</td>
+<td>{{ $scholar['first_name'] ?? 'N/A' }}</td>
+<td>{{ $scholar['middle_name'] ?? 'N/A' }}</td>
+<td>{{ $scholar['last_name'] ?? 'N/A' }}</td>
+<td>{{ $scholar['suffix'] ?? '' }}</td>
 <td>
-    {{ $scholar['birthday'] ? \Carbon\Carbon::parse($scholar['birthday'])->format('F d, Y') : 'N/A' }}
-</td>          <td>{{ $scholar['school'] ?? 'N/A' }}</td>
+@php
+try {
+    $birthday = $scholar['birthday'] ? \Carbon\Carbon::parse($scholar['birthday'])->format('F d, Y') : 'N/A';
+} catch (\Exception $e) {
+    $birthday = 'N/A';
+}
+@endphp
+{{ $birthday }}
+</td>
+       <td>{{ $scholar['school'] ?? 'N/A' }}</td>
 <td class="center-cell">
     {{ $scholar['program'] ?? '' }}
 </td>
@@ -176,8 +190,16 @@ $status = $year && isset($scholar['gwa_records'][$year]['status'])
 </td>
 
 <td>
-    {{ $scholar['created_at'] ? \Carbon\Carbon::parse($scholar['created_at'])->format('F d, Y g:i A') : 'N/A' }}
+@php
+try {
+    $createdAt = $scholar['created_at'] ? \Carbon\Carbon::parse($scholar['created_at'])->format('F d, Y g:i A') : 'N/A';
+} catch (\Exception $e) {
+    $createdAt = 'N/A';
+}
+@endphp
+{{ $createdAt }}
 </td>
+
         </tr>
       @empty
         <tr>
@@ -240,9 +262,10 @@ $status = $year && isset($scholar['gwa_records'][$year]['status'])
         </select>
       </div>
 
-<div class="text-center">
+<div class="mb-3 d-flex justify-content-end">
   <button class="btn btn-success" type="submit">Import</button>
 </div>
+
     </form>
   </div>
 </div>

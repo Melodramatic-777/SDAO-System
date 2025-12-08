@@ -670,18 +670,24 @@ public function updateStatus(Request $request, $id)
 {
     $validated = $request->validate([
         'status'  => 'required|string|in:Approved,Returned',
+        'reason'  => 'nullable|string|max:255', // <-- Added reason
         'comment' => 'nullable|string|max:1000',
     ]);
 
-    // Corrected reference
+    // Reference to Firebase
     $reference = $this->database->getReference('opportunities/' . $id);
 
     $data = [
         'status' => $validated['status'],
     ];
 
-    if ($validated['status'] === 'Returned' && !empty($validated['comment'])) {
-        $data['return_comment'] = $validated['comment'];
+    if ($validated['status'] === 'Returned') {
+        if (!empty($validated['reason'])) {
+            $data['return_reason'] = $validated['reason'];
+        }
+        if (!empty($validated['comment'])) {
+            $data['return_comment'] = $validated['comment'];
+        }
         $data['returned_at'] = now()->toDateTimeString();
     }
 

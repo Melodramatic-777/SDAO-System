@@ -526,7 +526,7 @@
 
             <label>Does your event happen intermittently?<span class="text-danger">*</span></label>
             <div class="radio-group">
-                <label><input type="radio" name="intermittent" value="0" checked> No, continuous period</label>
+                <label><input type="radio" name="intermittent" value="0" checked> No</label>
                 <label><input type="radio" name="intermittent" value="1"> Yes, multiple dates</label>
             </div>
 

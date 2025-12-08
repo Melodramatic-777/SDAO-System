@@ -125,17 +125,28 @@
 </small>
 
 
-    <div class="otsv-actions">
+<div class="otsv-actions">
+    @if(isset($v['status']) && $v['status'] === 'accepted')
+        <span class="text-white otsv-accepted badge bg-success">
+            <i class="bi bi-check-circle-fill me-1"></i> Accepted
+        </span>
+    @else
         <form action="{{ route('volunteers-admin.otsv.accept', $v['id']) }}" method="POST" style="display:inline;">
             @csrf
-            <button class="btn-accept">Accept</button>
+            <button class="btn btn-success btn-sm me-1">
+                <i class="bi bi-check-circle me-1"></i> Accept
+            </button>
         </form>
 
         <form action="{{ route('volunteers-admin.otsv.decline', $v['id']) }}" method="POST" style="display:inline;">
             @csrf
-            <button class="btn-decline">Decline</button>
+            <button class="btn btn-danger btn-sm">
+                <i class="bi bi-x-circle me-1"></i> Decline
+            </button>
         </form>
-    </div>
+    @endif
+</div>
+
 </li>
 
             @empty

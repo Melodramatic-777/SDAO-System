@@ -23,18 +23,20 @@ $waitingVolunteersCount = collect($opportunities)->filter(function($op) {
     $returnedCount = collect($opportunities)->filter(fn($op) => in_array(strtolower($op['status'] ?? ''), ['returned','returned to sdao']))->count();
 
     // Sort opportunities
-    $filteredOpportunities = collect($opportunities)->sortByDesc(function($opportunity) {
-        $status = strtolower($opportunity['status'] ?? '');
-        $participants = count($opportunity['participants'] ?? []);
-        $target = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
-        $isUrgent = !empty($opportunity['is_urgent']) && ($opportunity['is_urgent'] === true || $opportunity['is_urgent'] === 'yes');
+// Sort opportunities
+$filteredOpportunities = collect($opportunities)->sortByDesc(function($opportunity) {
+    $isUrgent = !empty($opportunity['is_urgent']) && ($opportunity['is_urgent'] === true || $opportunity['is_urgent'] === 'yes');
+    $status = strtolower($opportunity['status'] ?? '');
+    $participants = count($opportunity['participants'] ?? []);
+    $target = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
 
-        if (in_array($status, ['pending','waiting','waiting for approval'])) return 4;
-        if ($isUrgent) return 3;
-        if ($status === 'approved' && $participants < $target) return 2;
-        if (in_array($status, ['returned','returned to sdao'])) return 1;
-        return 0;
-    });
+    if ($isUrgent) return 5; // <- Urgent goes to the top
+    if (in_array($status, ['pending','waiting','waiting for approval'])) return 4;
+    if ($status === 'approved' && $participants < $target) return 3;
+    if (in_array($status, ['returned','returned to sdao'])) return 2;
+    return 0;
+});
+
 @endphp
 
 <div class="gap-4 mb-4 status-filter d-flex">
@@ -65,25 +67,39 @@ $waitingVolunteersCount = collect($opportunities)->filter(function($op) {
 <div id="opportunitiesContainer">
 
 @foreach($filteredOpportunities as $opportunity)
-    @php
+@php
+   $badgeStyle = ''; // reset for each loop
    $status = strtolower($opportunity['status'] ?? 'waiting');
    $submittedByRole = strtolower($opportunity['submitted_by_role'] ?? '');
    $participantsCount = count($opportunity['participants'] ?? []);
    $targetNumber = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
 
-   // If submitted by SDA Assistant OR approved but still needs volunteers
-   if ($submittedByRole === 'sda assistant' || ($status === 'approved' && $participantsCount < $targetNumber)) {
-       $status = 'waiting for volunteers';
-       $badgeClass = 'badge bg-primary';
-   } elseif (in_array($status, ['returned','returned to sdao'])) {
-       $badgeClass = 'badge bg-danger';
-       $status = 'Returned';
+   // Display logic with correct colors
+   if ($status === 'approved' && $participantsCount < $targetNumber) {
+       $displayStatus = 'waiting for volunteers';
+       $badgeClass = 'badge bg-primary text-white'; // white text
    } elseif ($status === 'approved') {
-       $badgeClass = 'badge bg-success';
+       $displayStatus = 'waiting for volunteers';
+       $badgeClass = 'badge bg-primary text-white'; // white text
+   } elseif ($submittedByRole === 'sda assistant') {
+       $displayStatus = 'waiting for volunteers';
+       $badgeClass = 'badge bg-primary text-white'; // white text
+   } elseif (in_array($status, ['returned','returned to sdao'])) {
+       $displayStatus = 'returned';
+       $badgeClass = 'badge';
+       $badgeStyle = 'background-color: #fd7e14; color: white;'; // orange with white text
+   } elseif (in_array($status, ['pending','waiting','waiting for approval'])) {
+       $displayStatus = 'waiting for approval';
+       $badgeClass = 'badge bg-warning text-dark'; // yellow
    } else {
+       $displayStatus = $status;
        $badgeClass = 'badge bg-secondary';
    }
 @endphp
+
+
+
+
 
 
 <div class="p-3 mb-3 bg-white border rounded status-card-container"
@@ -104,13 +120,11 @@ data-target="{{ $targetNumber }}">
     <div class="mb-1 d-flex justify-content-between align-items-center">
         <strong>{{ $opportunity['title'] ?? 'No Title' }}</strong>
         <div>
-            @if($status === 'waiting for volunteers')
-                <span class="badge bg-primary">Waiting for Volunteers</span>
-            @elseif($status === 'returned')
-                <span class="badge bg-danger">Returned</span>
-            @elseif($status === 'approved')
-                <span class="badge bg-success">Approved</span>
-            @endif
+<span class="{{ $badgeClass }}" @isset($badgeStyle) style="{{ $badgeStyle }}" @endisset>
+    {{ ucfirst($displayStatus) }}
+</span>
+
+
         </div>
     </div>
 
@@ -140,14 +154,31 @@ data-target="{{ $targetNumber }}">
                {{-- Left Panel --}}
 <div class="col-md-6 left-panel">
     <p><strong>Office:</strong> {{ $opportunity['submitted_by_role'] ?? 'N/A' }}</p>
-    <hr>
     <p><strong>Submitted By:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
-    <hr>
-    <p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
-    <hr>
-    <h6><strong>Description</strong></h6>
-    <div>{{ $opportunity['description'] ?? 'No description provided.' }}</div>
-    <hr>
+<p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
+
+{{-- Display Date and Time separately only if NOT intermittent --}}
+@php
+    $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
+@endphp
+
+@if(!$isIntermittent && !empty($opportunity['schedule']))
+    @foreach($opportunity['schedule'] as $s)
+        @if(!empty($s['date']))
+            <p><strong>Date:</strong> {{ \Carbon\Carbon::parse($s['date'])->format('F j, Y') }}</p>
+        @endif
+        @if(!empty($s['start_time']) && !empty($s['end_time']))
+            <p><strong>Time:</strong> {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}</p>
+        @endif
+        <hr>
+    @endforeach
+@endif
+
+
+<h6><strong>Description</strong></h6>
+<div>{{ $opportunity['description'] ?? 'No description provided.' }}</div>
+<hr>
+
 
     {{-- Intermittent Table --}}
     @php
@@ -155,7 +186,7 @@ data-target="{{ $targetNumber }}">
     @endphp
 
     @if($isIntermittent)
-        <h6 class="mb-3 fw-bold">Intermittent Schedule</h6>
+        <h6 class="mb-3 fw-bold">Schedule</h6>
         <div class="table-responsive">
             <table class="table align-middle shadow-sm table-sm table-bordered">
                 <thead class="table-light">
@@ -317,12 +348,12 @@ data-target="{{ $targetNumber }}">
 
             </div>
 
-            {{-- Approve / Return Buttons --}}
 {{-- Approve / Return Buttons --}}
-<div class="modal-footer d-flex justify-content-start">
+<div class="modal-footer d-flex justify-content-end">
     @if(in_array(strtolower($opportunity['status'] ?? ''), ['pending', 'waiting for approval', 'returned to sdao']))
         <form method="POST" action="{{ route('volunteers-admin.opportunity.update-status', $opportunity['opportunity_id']) }}" class="d-inline me-2">
-            @csrf @method('PATCH')
+            @csrf
+            @method('PATCH')
             <input type="hidden" name="status" value="Approved">
             <button type="submit" class="btn btn-approve">Approve</button>
         </form>
@@ -334,6 +365,7 @@ data-target="{{ $targetNumber }}">
         <span class="text-success fw-bold">This opportunity is already approved.</span>
     @endif
 </div>
+
 
 
             {{-- Cancel Opportunity --}}
@@ -358,6 +390,53 @@ data-target="{{ $targetNumber }}">
 </div>
 {{-- End Modal --}}
 
+
+{{-- Return Modal --}}
+{{-- Return Modal --}}
+<div class="modal fade" id="returnModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Return Opportunity: {{ $opportunity['title'] }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="POST" action="{{ route('volunteers-admin.opportunity.update-status', $opportunity['opportunity_id']) }}">
+                @csrf
+                @method('PATCH')
+
+                <input type="hidden" name="status" value="Returned">
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="return_reason_{{ $opportunity['opportunity_id'] }}" class="form-label">Select a Reason for Return</label>
+                        <select class="form-select" id="return_reason_{{ $opportunity['opportunity_id'] }}" name="reason" required>
+                            <option value="" selected disabled>-- Select Reason --</option>
+                            <option value="Change date/time">Change date/time</option>
+                            <option value="Overlapping event times / conflict with another activity">Overlapping event times / conflict with another activity</option>
+                            <option value="Duplicate or conflicting task entries">Duplicate or conflicting task entries</option>
+                            <option value="Incomplete location details (missing floor/room)">Incomplete location details (missing floor/room)</option>
+                            <option value="Request needs rescheduling due to time sensitivity">Request needs rescheduling due to time sensitivity</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="return_comment_{{ $opportunity['opportunity_id'] }}" class="form-label">Additional Comments (optional)</label>
+                        <textarea class="form-control" id="return_comment_{{ $opportunity['opportunity_id'] }}" name="comment" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Submit Return</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 @endforeach
 
 </div>
@@ -366,6 +445,8 @@ data-target="{{ $targetNumber }}">
     {{ $pagination->links('pagination::bootstrap-5') }}
 </div>
 @endif
+
+
 
 </main>
 
@@ -417,5 +498,9 @@ document.getElementById('filterUrgent').addEventListener('click', () => {
     });
 });
 </script>
+
+
+
+
 
 @endsection

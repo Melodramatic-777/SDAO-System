@@ -63,7 +63,7 @@
 <!-- ✅ Moved all modals outside the table to fix the overlay issue -->
 @foreach ($invites as $invite)
 <div class="modal fade" id="detailsModal{{ $invite['opportunity_id'] }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content custom-modal-content">
 
             <div class="modal-header">
