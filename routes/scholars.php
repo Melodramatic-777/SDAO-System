@@ -5,6 +5,7 @@ use App\Http\Controllers\OpportunitiesController;
 use App\Http\Controllers\AccountsScholarsController;
 use App\Http\Controllers\ScholarJoinController;
 use App\Http\Controllers\OnTheSpotVolunteerController;
+use App\Http\Controllers\ScholarDashboardController;
 
 
 Route::prefix('scholars')->name('scholars.')->group(function () {
@@ -35,10 +36,20 @@ Route::post('volunteer-opportunities/join-task', [ScholarJoinController::class, 
             ->name('opportunities.join-intermittent');
     });
 
-    Route::controller(OpportunitiesController::class)->group(function () {
-        Route::get('invites', 'scholarInvites')->name('invites');
-        Route::post('invites/respond/{id}', 'respondToInvite')->name('invites.respond');
-    });
+Route::controller(OpportunitiesController::class)->group(function () {
+
+    // View invites
+    Route::get('invites', 'scholarInvites')->name('invites');
+
+    // Old respond route
+    Route::post('invites/respond/{id}', 'respondToInvite')->name('invites.respond');
+
+    // NEW: Accept invite
+    Route::post('invites/accept', 'acceptInvite')->name('invites.accept');
+
+    // NEW: Decline invite
+    Route::post('invites/decline', 'declineInvite')->name('invites.decline');
+});
 
     Route::controller(AccountsScholarsController::class)->group(function () {
         Route::get('profile', 'scholarProfile')->name('profile');
@@ -46,5 +57,7 @@ Route::post('volunteer-opportunities/join-task', [ScholarJoinController::class, 
 
     Route::controller(OnTheSpotVolunteerController::class)->group(function () {
         Route::post('on-the-spot', 'onTheSpotVolunteer')->name('ontheSpotVolunteer');
+            Route::post('on-the-spot/cancel/{id}', 'cancelOTSV')->name('ontheSpotVolunteer.cancel'); // <--- new
+
     });
 });

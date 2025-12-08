@@ -137,17 +137,35 @@
           <p>By submitting, you will be added to the pool of available on-the-spot volunteers. Offices will be able to select you if they need help.</p>
 
           <!-- Office Selection -->
-          <label class="form-label">Office</label>
-          <select name="office" class="form-select" required>
-            <option value="">Choose office</option>
-            @foreach($offices as $office)
-              <option value="{{ $office['name'] }}">{{ $office['name'] }}</option>
-            @endforeach
-          </select>
+<!-- Office Selection -->
+<label class="form-label">Office</label>
+<select name="office" class="form-select" required>
+  <option value="">Choose office</option>
+  @foreach($offices as $office)
+    <option value="{{ $office['name'] }}">{{ $office['name'] }}</option>
+  @endforeach
+</select>
 
-          <small class="mb-2 text-muted d-block">
-  If your chosen office does not select you, you will be transfered to other offices.
-</small>
+<!-- Transfer Willingness -->
+<div class="mt-3">
+    <label class="form-label">If your chosen office does not select you, are you willing to be transferred?</label>
+
+    <div class="mt-2 form-check">
+        <input class="form-check-input" type="radio" name="willing_to_transfer" id="transferYes" value="yes" required>
+        <label class="form-check-label" for="transferYes">
+            Yes, I am willing to transfer to other offices
+        </label>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="willing_to_transfer" id="transferNo" value="no" required>
+        <label class="form-check-label" for="transferNo">
+            No, just make me available for my chosen office
+        </label>
+    </div>
+</div>
+
+
 
           <!-- Availability Date -->
           <label class="mt-2 form-label">Available Date</label>

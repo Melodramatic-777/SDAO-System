@@ -195,6 +195,40 @@
         </div>
     </div>
 
+
+
+         <@if(isset($v))
+    <!-- Modal -->
+    <div class="modal fade" id="cancelModal{{ $v['id'] }}" tabindex="-1" 
+         aria-hidden="true" 
+         data-bs-backdrop="false"
+         data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-xl"> 
+            <div class="border-0 modal-content">
+                <div class="text-white modal-header bg-danger">
+                    <h5 class="text-white modal-title">Confirm Cancellation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to cancel your on-the-spot volunteer entry?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" 
+                            style="background-color: #6c757d; border-color: #6c757d;" 
+                            data-bs-dismiss="modal">No</button>
+                    <form action="{{ route('scholars.ontheSpotVolunteer.cancel', $v['id']) }}" method="POST" class="p-0 m-0">
+                        @csrf
+                        <button type="submit" class="btn" 
+                                style="background-color: #dc3545; border-color: #dc3545; color: #fff;">Yes, Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+
+                    
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

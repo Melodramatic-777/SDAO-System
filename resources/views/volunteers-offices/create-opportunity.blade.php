@@ -463,12 +463,6 @@
         </div>
         <div class="step-line"></div>
     </div>
-    <div class="step-item">
-        <div class="step-content">
-            <div id="stepIndicator4" class="step-indicator">4</div>
-            <div class="step-label">Summary</div>
-        </div>
-    </div>
 </div>
 
 

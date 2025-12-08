@@ -66,24 +66,25 @@ $waitingVolunteersCount = collect($opportunities)->filter(function($op) {
 
 @foreach($filteredOpportunities as $opportunity)
     @php
-       $status = strtolower($opportunity['status'] ?? 'waiting');
-       $submittedByRole = strtolower($opportunity['submitted_by_role'] ?? '');
+   $status = strtolower($opportunity['status'] ?? 'waiting');
+   $submittedByRole = strtolower($opportunity['submitted_by_role'] ?? '');
+   $participantsCount = count($opportunity['participants'] ?? []);
+   $targetNumber = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
 
-       if ($submittedByRole === 'sda assistant') {
-           $status = 'waiting for volunteers';
-           $badgeClass = 'badge bg-primary';
-       } elseif ($status === 'approved') {
-           $badgeClass = 'badge bg-success';
-       } elseif (in_array($status, ['returned','returned to sdao'])) {
-           $badgeClass = 'badge bg-danger';
-           $status = 'Returned';
-       } else {
-           $badgeClass = 'badge bg-secondary';
-       }
+   // If submitted by SDA Assistant OR approved but still needs volunteers
+   if ($submittedByRole === 'sda assistant' || ($status === 'approved' && $participantsCount < $targetNumber)) {
+       $status = 'waiting for volunteers';
+       $badgeClass = 'badge bg-primary';
+   } elseif (in_array($status, ['returned','returned to sdao'])) {
+       $badgeClass = 'badge bg-danger';
+       $status = 'Returned';
+   } elseif ($status === 'approved') {
+       $badgeClass = 'badge bg-success';
+   } else {
+       $badgeClass = 'badge bg-secondary';
+   }
+@endphp
 
-       $participantsCount = count($opportunity['participants'] ?? []);
-       $targetNumber = (int) ($opportunity['schedule'][0]['target_number'] ?? 0);
-    @endphp
 
 <div class="p-3 mb-3 bg-white border rounded status-card-container"
 data-status="{{ $status }}"

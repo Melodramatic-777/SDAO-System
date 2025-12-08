@@ -99,80 +99,75 @@ data-participants="{{ is_array($opportunity['participants'] ?? null) ? count($op
     </div>
 </div>
 
-{{-- ✅ MODAL --}}
-    <div class="modal fade" id="opportunityModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content custom-modal-content">
+{{-- Modal --}}
+{{-- Modal --}}
+<div class="modal fade" id="opportunityModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content custom-modal-content">
 
+            <div class="modal-header">
+                <h5 class="modal-title">{{ $opportunity['title'] ?? 'Untitled Opportunity' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
 
-             {{-- Header --}}
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ $opportunity['title'] ?? 'Untitled Opportunity' }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+            <div class="modal-body custom-modal-body row g-4">
 
-                {{-- Body --}}
-                <div class="modal-body custom-modal-body row g-4">
-        {{-- 🔹 LEFT PANEL --}}
-        <div class="col-md-6 left-panel">
-                        <p><strong>Submitted By:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
-                        <p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
+                {{-- Left Panel --}}
+               {{-- Left Panel --}}
+<div class="col-md-6 left-panel">
+    <p><strong>Office:</strong> {{ $opportunity['submitted_by_role'] ?? 'N/A' }}</p>
+    <hr>
+    <p><strong>Submitted By:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
+    <hr>
+    <p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
+    <hr>
+    <h6><strong>Description</strong></h6>
+    <div>{{ $opportunity['description'] ?? 'No description provided.' }}</div>
+    <hr>
 
+    {{-- Intermittent Table --}}
+    @php
+        $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
+    @endphp
 
-                        @php
-                            $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
-                        @endphp
-
-                        @if($isIntermittent)
-                            <div class="table-responsive">
-                                <table class="table align-middle table-sm table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Time</th>
-                                            <th>Volunteers Needed</th>
-                                            <th>Food Provided</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($opportunity['schedule'] ?? [] as $s)
-                                            <tr>
-                                                <td>{{ !empty($s['date']) ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }}</td>
-                                                <td>
-                                                    @if(!empty($s['start_time']) && !empty($s['end_time']))
-                                                        {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
-                                                    @else
-                                                        N/A
-                                                    @endif
-                                                </td>
-                                                <td>{{ $s['target_number'] ?? 'N/A' }}</td>
-                                                <td>{{ strtolower($s['food_provided'] ?? 'no') === 'yes' ? 'Yes' : 'No' }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr><td colspan="4" class="text-center text-muted">No schedule details provided</td></tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            @php
-                                $firstSchedule = $opportunity['schedule'][0] ?? [];
-                                $date = $firstSchedule['date'] ?? $firstSchedule['start_date'] ?? $opportunity['start_date'] ?? null;
-                                $start = $firstSchedule['start_time'] ?? ($opportunity['start_time'] ?? null);
-                                $end = $firstSchedule['end_time'] ?? ($opportunity['end_time'] ?? null);
-                                $target = $firstSchedule['target_number'] ?? ($opportunity['target_number'] ?? 'N/A');
-                            @endphp
-                            <p><strong>Date:</strong> {{ !empty($date) ? \Carbon\Carbon::parse($date)->format('F j, Y') : 'N/A' }}</p>
-                            <p><strong>Time:</strong>
-                                @if(!empty($start) && !empty($end))
-                                    {{ \Carbon\Carbon::parse($start)->format('g:i A') }} – {{ \Carbon\Carbon::parse($end)->format('g:i A') }}
+    @if($isIntermittent)
+        <h6 class="mb-3 fw-bold">Intermittent Schedule</h6>
+        <div class="table-responsive">
+            <table class="table align-middle shadow-sm table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center">Date</th>
+                        <th class="text-center">Time</th>
+                        <th class="text-center">Food Provided</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($opportunity['schedule'] ?? [] as $s)
+                        <tr>
+                            <td class="text-center">
+                                {{ !empty($s['date']) ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }}
+                            </td>
+                            <td class="text-center">
+                                @if(!empty($s['start_time']) && !empty($s['end_time']))
+                                    {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }}
+                                    – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
                                 @else
                                     N/A
                                 @endif
-                            </p>
-                        @endif
-
-
+                            </td>
+                            <td class="text-center">
+                                {{ strtolower($s['food_provided'] ?? 'no') === 'yes' ? 'Yes' : 'No' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No schedule details provided</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    @endif
 
 
           @if(!empty($opportunity['return_comment']) && strtolower($opportunity['status']) === 'returned')
@@ -181,7 +176,23 @@ data-participants="{{ is_array($opportunity['participants'] ?? null) ? count($op
             </div>
           @endif
 
-  
+     {{-- Participants List --}}
+    @if(!empty($opportunity['participants']))
+        <hr>
+        <h6><strong>Participants</strong></h6>
+        <ul class="list-group list-group-flush">
+            @foreach($opportunity['participants'] as $participant)
+                @php
+                    $displayStatus = strtolower($participant['status'] ?? '') === 'declined' ? 'Invite Declined' : ($participant['status'] ?? 'Pending');
+                @endphp
+                <li class="px-0 list-group-item">
+                    {{ $participant['name'] ?? 'Unnamed' }} 
+                    <span class="text-muted">({{ $displayStatus }})</span>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
         </div>
 
          {{-- RIGHT PANEL --}}
@@ -322,6 +333,54 @@ document.getElementById('filterReturned').addEventListener('click', () => {
 document.getElementById('filterAll').click();
   </script>
 
+<script>
+const cards = document.querySelectorAll('.status-card-container');
+
+function setActive(tab) {
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+}
+
+document.getElementById('filterAll').addEventListener('click', () => {
+    setActive(filterAll);
+    cards.forEach(card => card.style.display = "block");
+});
+
+document.getElementById('filterWaitingApproval').addEventListener('click', () => {
+    setActive(filterWaitingApproval);
+    cards.forEach(card => {
+        const status = card.dataset.status;
+        card.style.display = ['pending', 'waiting', 'waiting for approval', 'returned to sdao'].includes(status) ? "block" : "none";
+    });
+});
+
+document.getElementById('filterWaitingVolunteers').addEventListener('click', () => {
+    setActive(filterWaitingVolunteers);
+    cards.forEach(card => {
+        const status = card.dataset.status;
+        const participants = parseInt(card.dataset.participants);
+        const target = parseInt(card.dataset.target);
+        card.style.display = (status === 'waiting for volunteers' || (status === 'approved' && participants < target)) ? "block" : "none";
+    });
+});
+
+document.getElementById('filterReturned').addEventListener('click', () => {
+    setActive(filterReturned);
+    cards.forEach(card => {
+        const status = card.dataset.status;
+        card.style.display = ['returned', 'returned to sdao'].includes(status) ? "block" : "none";
+    });
+});
+
+
+document.getElementById('filterUrgent').addEventListener('click', () => {
+    setActive(filterUrgent);
+    cards.forEach(card => {
+        const isUrgent = card.querySelector('.badge.bg-danger')?.textContent.trim() === 'Urgent';
+        card.style.display = isUrgent ? "block" : "none";
+    });
+});
+</script>
 
 
 

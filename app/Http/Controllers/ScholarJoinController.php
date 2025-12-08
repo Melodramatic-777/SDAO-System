@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Kreait\Firebase\Factory;
 use Carbon\Carbon;
+use App\Http\Controllers\OnTheSpotVolunteerController;
 
 class ScholarJoinController extends Controller
 {
@@ -273,6 +274,7 @@ public function scholarOpportunities()
     ]);
 }
 
+
 public function joinedOpportunities()
 {
     $scholar = session('scholar_accounts');
@@ -285,15 +287,12 @@ public function joinedOpportunities()
         return redirect()->route('login');
     }
 
-    // 🔹 Fetch all opportunities
+    // Fetch joined opportunities
     $opportunities = $this->database->getReference('opportunities')->getValue() ?? [];
-
-    // 🔹 Filter only those the scholar joined
     $joined = [];
     foreach ($opportunities as $key => $opportunity) {
         $participants = $opportunity['participants'] ?? [];
         if (!is_array($participants)) continue;
-
         foreach ($participants as $participant) {
             if (($participant['scholar_id'] ?? '') === $scholarId) {
                 $opportunity['id'] = $key;
@@ -303,7 +302,6 @@ public function joinedOpportunities()
         }
     }
 
-    // 🔹 Paginate (5 per page)
     $perPage = 5;
     $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
     $items = collect($joined);
@@ -317,9 +315,14 @@ public function joinedOpportunities()
         ['path' => request()->url(), 'query' => request()->query()]
     );
 
+    // 🔹 Fetch On-the-Spot Volunteers
+    $otsvController = new OnTheSpotVolunteerController();
+    $otsvList = $otsvController->fetchOTSV(); // get all OTSV entries
+
     return view('scholars.dashboard', [
         'joinedOpportunities' => $pagedItems,
         'pagination' => $pagination,
+        'otsvList' => $otsvList, // ✅ pass it here
     ]);
 }
 

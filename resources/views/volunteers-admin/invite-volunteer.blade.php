@@ -141,42 +141,45 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    activitySelect.addEventListener("change", function() {
-        const option = this.selectedOptions[0];
-        const isIntermittent = parseInt(option.dataset.intermittent) === 1;
-        const tasks = JSON.parse(option.dataset.tasks || "[]");
-        const intermittentTasks = JSON.parse(option.dataset.intermittentTasks || "{}");
+   activitySelect.addEventListener("change", function() {
+    const option = this.selectedOptions[0];
+    const isIntermittent = parseInt(option.dataset.intermittent) === 1;
+    const tasks = JSON.parse(option.dataset.tasks || "[]");
+    const intermittentTasks = JSON.parse(option.dataset.intermittentTasks || "{}");
 
-        tasksList.innerHTML = "";
+    tasksList.innerHTML = "";
 
-        if (isIntermittent && Object.keys(intermittentTasks).length > 0) {
-            tasksContainer.classList.remove("d-none");
-            for (const [date, taskObj] of Object.entries(intermittentTasks)) {
-                const dateFormatted = formatDate(date);
-                let taskHtml = `<p class="mb-1 fw-bold">${dateFormatted}</p><ul class="mb-2 list-group">`;
-                for (const taskKey in taskObj) {
-                    const task = taskObj[taskKey];
-                    taskHtml += `
-                        <li class="list-group-item d-flex align-items-center">
-                            <input type="checkbox" class="form-check-input me-2" 
-                                   name="tasks[${date}][]" value="${task.task}">
-                            <span>${task.task}</span>
-                        </li>`;
-                }
-                taskHtml += "</ul>";
-                tasksList.innerHTML += taskHtml;
+    if (isIntermittent && Object.keys(intermittentTasks).length > 0) {
+        tasksContainer.classList.remove("d-none");
+        for (const [date, taskObj] of Object.entries(intermittentTasks)) {
+            const dateFormatted = formatDate(date);
+            let taskHtml = `<p class="mb-1 fw-bold">${dateFormatted}</p><ul class="mb-2 list-group">`;
+            for (const taskKey in taskObj) {
+                const task = taskObj[taskKey];
+                // Use radio buttons for intermittent/multiple schedule (1 per date)
+                taskHtml += `
+                    <li class="list-group-item d-flex align-items-center">
+                        <input type="radio" class="form-check-input me-2" 
+                               name="tasks[${date}][]" value="${task.task}">
+                        <span>${task.task}</span>
+                    </li>`;
             }
-        } else if (tasks.length > 0) {
-            tasksContainer.classList.remove("d-none");
-            tasksList.innerHTML = `<ul class="list-group">${tasks.map(t => `
-                <li class="list-group-item d-flex align-items-center">
-                    <input type="checkbox" class="form-check-input me-2" name="tasks[regular][]" value="${t.task}">
-                    <span>${t.task}</span>
-                </li>`).join('')}</ul>`;
-        } else {
-            tasksContainer.classList.add("d-none");
+            taskHtml += "</ul>";
+            tasksList.innerHTML += taskHtml;
         }
-    });
+    } else if (tasks.length > 0) {
+        tasksContainer.classList.remove("d-none");
+        // Regular tasks can still be multiple checkboxes
+        tasksList.innerHTML = `<ul class="list-group">${tasks.map(t => `
+            <li class="list-group-item d-flex align-items-center">
+                <input type="checkbox" class="form-check-input me-2" name="tasks[regular][]" value="${t.task}">
+                <span>${t.task}</span>
+            </li>`).join('')}</ul>`;
+    } else {
+        tasksContainer.classList.add("d-none");
+    }
+});
+
 
     function formatDate(dateStr){
         const d = new Date(dateStr);

@@ -807,90 +807,85 @@ public function join($id)
 
     return response()->json(['message' => 'Joined successfully'], 200);
 }
-
-
-public function scholarInvites()
+public function scholarInvites(Request $request)
 {
-    $scholar = session('scholar_accounts');
+    $scholarId = session('scholar_accounts.student_no');
 
-    if (!$scholar) {
-        abort(403, 'Unauthorized');
+    if (!$scholarId) {
+        return redirect()->route('scholars.login')->with('error', 'You must log in first.');
     }
 
-    $scholarId = $scholar['student_no'] ?? null;
-
-    // Fetch all opportunities
     $opportunities = $this->database->getReference('opportunities')->getValue() ?? [];
+    $finalInvites = [];
 
-    $invites = [];
+    foreach ($opportunities as $oppId => $opp) {
 
-    foreach ($opportunities as $op) {
-        if (!empty($op['participants']) && is_array($op['participants'])) {
-            foreach ($op['participants'] as $participant) {
-                // ✅ Only show participants with "invited_at" (not "joined_at")
-                if (
-                    ($participant['scholar_id'] ?? '') === $scholarId &&
-                    isset($participant['invited_at']) &&
-                    !isset($participant['joined_at'])
-                ) {
-                    $invites[] = [
-                        'opportunity_id' => $op['opportunity_id'] ?? '',
-                        'office'         => $op['submitted_by_role'] ?? 'N/A',
-                        'title'          => $op['title'] ?? 'Untitled',
-                        'invited_at'     => $participant['invited_at'] ?? 'N/A',
-                        'status'         => $participant['status'] ?? 'Pending',
-                    ];
-                }
+        if (!isset($opp['participants']) || !is_array($opp['participants'])) {
+            continue;
+        }
+
+        foreach ($opp['participants'] as $pKey => $p) {
+
+            // Accept all possible ID formats
+            $participantScholarId =
+                $p['scholar_id']
+                ?? $p['id']
+                ?? $p['scholarID']
+                ?? null;
+
+            if ($participantScholarId !== $scholarId) {
+                continue;
             }
+
+            // Only show pending invites
+            if (!isset($p['status']) || $p['status'] !== 'Pending Invite') {
+                continue;
+            }
+
+            // Extract tasks
+            $tasks = $p['tasks'] ?? [];
+
+            $finalInvites[] = [
+                'participant_key' => $pKey,  // 🔥 needed for update
+                'opportunity_id'  => $oppId,
+                'title'           => $opp['title'] ?? 'Unknown Title',
+                'office'          => $opp['office'] ?? 'Unknown Office',
+                'invited_at'      => $p['invited_at'] ?? '',
+                'status'          => $p['status'],
+                'tasks'           => $tasks,
+                'is_intermittent' => $opp['is_intermittent'] ?? false,
+            ];
         }
     }
 
-    return view('scholars.invites', [
-        'invites' => $invites,
-    ]);
+    return view('scholars.invites', ['invites' => $finalInvites]);
 }
-
-public function respondToInvite(Request $request, $id)
+public function acceptInvite(Request $request)
 {
-    $validated = $request->validate([
-        'response' => 'required|in:Accepted,Declined',
+    $request->validate([
+        'opportunity_id' => 'required',
+        'participant_key' => 'required',
     ]);
 
-    $scholar = session('scholar_accounts');
+    $oppId = $request->opportunity_id;
+    $pKey = $request->participant_key;
 
-    if (!$scholar) {
-        abort(403, 'Unauthorized');
+    $ref = "opportunities/{$oppId}/participants/{$pKey}";
+
+    // If intermittent, check selected dates
+    if ($request->has('selected_dates')) {
+
+        // Store only the dates the scholar accepted
+        $this->database->getReference("$ref/selected_dates")
+            ->set($request->selected_dates);
     }
 
-    $scholarId = $scholar['student_no'] ?? null;
+    // Update status
+    $this->database->getReference("$ref/status")
+        ->set('Joined');
 
-    // Get the opportunity
-    $ref = $this->database->getReference('opportunities/' . $id);
-    $opportunity = $ref->getValue();
-
-    if (!$opportunity) {
-        return back()->with('error', 'Opportunity not found.');
-    }
-
-    $participants = $opportunity['participants'] ?? [];
-
-    // Find participant and update status
-    foreach ($participants as &$p) {
-        if (($p['scholar_id'] ?? '') === $scholarId) {
-            $p['status'] = $validated['response'];
-            $p['responded_at'] = now()->toDateTimeString();
-            break;
-        }
-    }
-
-    unset($p);
-
-    // Save updated list
-    $ref->update(['participants' => $participants]);
-
-    return back()->with('success', 'You have ' . strtolower($validated['response']) . ' the invite.');
+    return back()->with('success', 'Invite accepted successfully!');
 }
-
 
 
 public function cancelOpportunity($id)

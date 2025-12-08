@@ -151,6 +151,24 @@
   }
 }
 
+ .icon-btn {
+      background: none;
+      border: none;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 0;
+    }
+
+    .icon-btn:hover {
+      color: #0056b3;
+      transform: scale(1.1);
+      transition: 0.2s;
+    }
+
 
 .status-tab {
   padding-bottom: 4px;
@@ -275,4 +293,42 @@
       max-width: 2000px !important;
   }
 
-  
+  .otsv-panel {
+    width: 320px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 16px;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+.otsv-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.otsv-item {
+    background: #f6f8ff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.btn-accept {
+    background: #4CAF50;
+    color: #fff;
+}
+
+.btn-decline {
+    background: #e63946;
+    color: #fff;
+}
+
+.reason-label {
+    margin-top: 6px;
+    display: inline-block;
+}

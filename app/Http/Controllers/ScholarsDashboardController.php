@@ -18,19 +18,37 @@ class ScholarsDashboardController extends Controller
         $this->database = $factory->createDatabase();
     }
 
+    /* ============================================================
+     *  ADMIN DASHBOARD (scholars-admin.dashboard)
+     * ============================================================ */
     public function dashboard()
     {
+        /* -------------------------------------------
+         * FETCH SCHOLARS COLLECTION
+         * ------------------------------------------- */
         $ref = $this->database->getReference('scholars');
-        $scholars = $ref->getValue();
+        $scholars = $ref->getValue() ?? [];
 
+        /* -------------------------------------------
+         * FETCH OTSV LIST FOR SIDE PANEL
+         * ------------------------------------------- */
+        $otsvList = $this->database->getReference('on_the_spot_volunteers')->getValue() ?? [];
+
+        // Convert Firebase associative array → indexed
+        $otsvList = $otsvList ? array_map(function ($id, $item) {
+            $item['id'] = $id;
+            return $item;
+        }, array_keys($otsvList), $otsvList) : [];
+
+        /* -------------------------------------------
+         * SCHOLAR STATISTICS
+         * ------------------------------------------- */
         $total = 0;
         $eligible = 0;
         $probationary = 0;
         $revoked = 0;
-
         $byScholarship = [];
 
-        // Retention per term
         $termStats = [
             "1" => ["eligible" => 0, "probationary" => 0, "revoked" => 0],
             "2" => ["eligible" => 0, "probationary" => 0, "revoked" => 0],
@@ -41,26 +59,22 @@ class ScholarsDashboardController extends Controller
         $currentTerm = null;
         $recentYearTotal = 0;
         $recentYearRevoked = 0;
+
         $allAcademicYears = [];
         $termsByYear = [];
 
         if ($scholars) {
 
-            // Collect academic years
             $allAcademicYears = array_keys($scholars);
             sort($allAcademicYears);
-
-            // Most recent academic year
             $recentYear = end($allAcademicYears);
 
-            // Build list of terms per academic year
             foreach ($scholars as $year => $terms) {
                 $termsByYear[$year] = array_keys($terms);
             }
 
             foreach ($scholars as $academicYear => $terms) {
                 foreach ($terms as $term => $types) {
-
                     foreach ($types as $scholarshipType => $students) {
                         foreach ($students as $studentId => $studentData) {
 
@@ -77,24 +91,18 @@ class ScholarsDashboardController extends Controller
                             if ($status === 'probationary') $probationary++;
                             if ($status === 'revoked') $revoked++;
 
-                            // Normalize "1st" → "1"
-                            $normalizedTerm = str_replace(['st','nd','rd'], '', $term);
+                            $normalizedTerm = preg_replace('/(st|nd|rd|th)/', '', $term);
 
-                            // Count retention for recent year only
                             if ($academicYear == $recentYear && isset($termStats[$normalizedTerm])) {
-                                if ($status === 'eligible') $termStats[$normalizedTerm]['eligible']++;
-                                if ($status === 'probationary') $termStats[$normalizedTerm]['probationary']++;
-                                if ($status === 'revoked') $termStats[$normalizedTerm]['revoked']++;
+                                $termStats[$normalizedTerm][$status] = ($termStats[$normalizedTerm][$status] ?? 0) + 1;
                             }
 
-                            // Determine current term (last term in recent year)
                             if ($recentYear && isset($scholars[$recentYear])) {
                                 $yrTerms = array_keys($scholars[$recentYear]);
                                 sort($yrTerms);
-                                $currentTerm = end($yrTerms); 
+                                $currentTerm = end($yrTerms);
                             }
 
-                            // Retention rate calculation input
                             if ($academicYear == $recentYear) {
                                 $recentYearTotal++;
                                 if ($status === 'revoked') $recentYearRevoked++;
@@ -105,40 +113,30 @@ class ScholarsDashboardController extends Controller
             }
         }
 
-        // Compute retention rate
-        $retentionRate = 0;
-        if ($recentYearTotal > 0) {
-            $retentionRate = round((($recentYearTotal - $recentYearRevoked) / $recentYearTotal) * 100, 2);
-        }
+        $retentionRate = $recentYearTotal > 0
+            ? round((($recentYearTotal - $recentYearRevoked) / $recentYearTotal) * 100, 2)
+            : 0;
 
-        // Count scholarship distribution per term
         $scholarshipByTerm = [
-            "1" => [],
-            "2" => [],
-            "3" => []
+            "1" => [], "2" => [], "3" => []
         ];
 
         if ($scholars) {
             foreach ($scholars as $academicYear => $terms) {
                 foreach ($terms as $term => $types) {
 
-                    $normalizedTerm = str_replace(['st','nd','rd'], '', $term);
-
-                    if (!isset($scholarshipByTerm[$normalizedTerm])) continue;
+                    $normalizedTerm = preg_replace('/(st|nd|rd|th)/', '', $term);
 
                     foreach ($types as $scholarshipType => $students) {
-
                         if (!isset($scholarshipByTerm[$normalizedTerm][$scholarshipType])) {
                             $scholarshipByTerm[$normalizedTerm][$scholarshipType] = 0;
                         }
-
                         $scholarshipByTerm[$normalizedTerm][$scholarshipType] += count($students);
                     }
                 }
             }
         }
 
-        // Return to view
         return view('scholars-admin.dashboard', [
             'total'             => $total,
             'eligible'          => $eligible,
@@ -151,7 +149,40 @@ class ScholarsDashboardController extends Controller
             'currentTerm'       => $currentTerm,
             'scholarshipByTerm' => $scholarshipByTerm,
             'allAcademicYears'  => $allAcademicYears,
-            'termsByYear'       => $termsByYear
+            'termsByYear'       => $termsByYear,
+            'otsvList'          => $otsvList,
+        ]);
+    }
+
+    /* ============================================================
+     *  SCHOLAR PERSONAL DASHBOARD (scholars.dashboard)
+     * ============================================================ */
+    public function joinedOpportunities()
+    {
+        $studentId = session('scholar_accounts.student_no');
+
+        /* -------------------------------------------
+         * FETCH SCHOLARS LIST (for left panel widgets)
+         * ------------------------------------------- */
+        $scholars = $this->database->getReference('scholars')->getValue() ?? [];
+
+        /* -------------------------------------------
+         * FETCH OTSV LIST (only available)
+         * ------------------------------------------- */
+        $otsvList = $this->database
+            ->getReference('on_the_spot_volunteers')
+            ->orderByChild('status')
+            ->equalTo('available')
+            ->getValue();
+
+        $otsvList = $otsvList ? array_map(function ($id, $item) {
+            $item['id'] = $id;
+            return $item;
+        }, array_keys($otsvList), $otsvList) : [];
+
+        return view('scholars.dashboard', [
+            'scholars' => $scholars,
+            'otsvList' => $otsvList,
         ]);
     }
 }
