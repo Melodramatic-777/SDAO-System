@@ -279,46 +279,67 @@
 
   <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
     @forelse ($otsvList as $v)
-        <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
-            <strong>{{ $v['student_name'] }}</strong><br>
-            <small>
-                Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
-                Available Time: {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
-                – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
-                @php
-                    $reasons = $v['reasons'] ?? [];
-                    $other = $v['other_reason'] ?? null;
-                @endphp
-                @if(!empty($reasons) || $other)
-                    <strong>Reason:</strong><br>
-                    @foreach($reasons as $reason)
-                        • {{ $reason }}<br>
-                    @endforeach
-                    @if($other)
-                        • {{ $other }}
-                    @endif
-                @endif
-            </small>
+       <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
 
-            {{-- Accepted Badge --}}
-            @if(isset($v['status']) && $v['status'] === 'accepted')
-                <div class="mb-2">
-                    <span class="text-white otsv-accepted badge bg-success">
-                        <i class="bi bi-check-circle-fill me-1"></i> Accepted
-                    </span>
-                </div>
-            @else
-                {{-- Cancel Button --}}
-                @if(($v['student_id'] ?? null) === session('scholar_accounts.student_no'))
-                    <button type="button" class="text-white btn btn-sm w-100" 
-                            style="background-color: #dc3545; border-color: #dc3545;"
-                            data-bs-toggle="modal" 
-                            data-bs-target="#cancelModal{{ $v['id'] }}">
-                        Cancel
-                    </button>
-                @endif
+    {{-- Accepted Badge (TOP) --}}
+    @if(isset($v['status']) && $v['status'] === 'accepted')
+        <div class="mb-2 text-end">
+            <span class="text-white badge bg-success">
+                <i class="bi bi-check-circle-fill me-1"></i> Accepted
+            </span>
+        </div>
+    @endif
+
+    <strong>{{ $v['student_name'] }}</strong><br>
+
+    <small>
+        Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
+        Available Time:
+        {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
+        – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
+
+        @php
+            $reasons = $v['reasons'] ?? [];
+            $other = $v['other_reason'] ?? null;
+        @endphp
+
+        @if(!empty($reasons) || $other)
+            <strong>Reason:</strong><br>
+            @foreach($reasons as $reason)
+                • {{ $reason }}<br>
+            @endforeach
+            @if($other)
+                • {{ $other }}
             @endif
-        </li>
+        @endif
+    </small>
+
+    {{-- Accepted By --}}
+    @if(isset($v['status']) && $v['status'] === 'accepted' && isset($v['action_by']))
+        <small class="mt-2 text-muted d-block">
+            <strong>Accepted by:</strong>
+            {{ $v['action_by']['name'] ?? 'N/A' }}<br>
+            <em>
+                {{ $v['action_by']['role'] ?? '' }}
+                @if(!empty($v['action_by']['office']))
+                    – {{ $v['action_by']['office'] }}
+                @endif
+            </em>
+        </small>
+    @else
+        {{-- Cancel Button --}}
+        @if(($v['student_id'] ?? null) === session('scholar_accounts.student_no'))
+            <button type="button" class="mt-2 text-white btn btn-sm w-100"
+                    style="background-color: #dc3545; border-color: #dc3545;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#cancelModal{{ $v['id'] }}">
+                Cancel
+            </button>
+        @endif
+    @endif
+
+</li>
+
     @empty
         <li>No on-the-spot volunteers.</li>
     @endforelse

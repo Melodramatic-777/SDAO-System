@@ -1,4 +1,4 @@
-@extends('superadmin.layout')
+@extends('volunteers-offices.layout')
 
 @section('content')
 
@@ -51,10 +51,10 @@
         <td>{{ $admin['role'] }}</td>
         <td>{{ $admin['created_at'] }}</td>
         <td>
-          <form method="POST" action="{{ route('superadmin.admins.revoke', $admin['email']) }}" style="display:inline;">
+          <form method="POST" action="{{ route('volunteers-offices.revoke-office-user', $admin['email']) }}" style="display:inline;">
             @csrf
             @method('DELETE')
-<button type="button" class="btn btn-sm btn-danger" onclick="confirmRevoke('{{ route('superadmin.admins.revoke', $admin['email']) }}')">Revoke</button>
+<button type="button" class="btn btn-sm btn-danger" onclick="confirmRevoke('{{ route('volunteers-offices.revoke-office-user', $admin['email']) }}')">Revoke</button>
           </form>
         </td>
       </tr>
@@ -71,7 +71,7 @@
       <h3>Add New Admin</h3>
       <span class="close" onclick="document.getElementById('addAdminModal').style.display='none'">&times;</span>
     </div>
-    <form method="POST" action="{{ route('superadmin.admins.store') }}">
+    <form method="POST" action="{{ route('volunteers-offices.store-admin') }}">
       @csrf
       <div class="mb-2">
         <label>First Name</label>
@@ -195,10 +195,10 @@
         <td>{{ $user['email'] }}</td>
         <td>{{ $user['created_at'] ?? 'N/A' }}</td>
         <td>
-          <form method="POST" action="{{ route('superadmin.office-users.revoke', $user['email']) }}" style="display:inline;">
+          <form method="POST" action="{{ route('volunteers-offices.revoke-office-user', $user['email']) }}" style="display:inline;">
             @csrf
             @method('DELETE')
-<button type="button" class="btn btn-sm btn-danger" onclick="confirmRevoke('{{ route('superadmin.office-users.revoke', $user['email']) }}')">Revoke</button>
+<button type="button" class="btn btn-sm btn-danger" onclick="confirmRevoke('{{ route('volunteers-offices.revoke-office-user', $user['email']) }}')">Revoke</button>
           </form>
         </td>
       </tr>
@@ -219,7 +219,7 @@
       <h3>Add Office</h3>
       <span class="close" onclick="document.getElementById('addOfficeModal').style.display='none'">&times;</span>
     </div>
-    <form method="POST" action="{{ route('superadmin.create-office') }}">
+    <form method="POST" action="{{ route('volunteers-offices.create-office') }}">
       @csrf
       <label>Office Name</label>
       <input type="text" name="office_name" class="form-control" required />
@@ -235,7 +235,7 @@
       <h3>Add Office User</h3>
       <span class="close" onclick="document.getElementById('addOfficeUserModal').style.display='none'">&times;</span>
     </div>
-    <form method="POST" action="{{ route('superadmin.create-office-account') }}">
+    <form method="POST" action="{{ route('volunteers-offices.create-office-account') }}">
       @csrf
       <label>Office</label>
       <select name="office_id" class="form-control" required>

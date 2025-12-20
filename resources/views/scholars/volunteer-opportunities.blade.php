@@ -141,10 +141,15 @@
 <label class="form-label">Office</label>
 <select name="office" class="form-select" required>
   <option value="">Choose office</option>
+
+  <!-- Add SDA Office first -->
+  <option value="SDA Office">SDA Office</option>
+
   @foreach($offices as $office)
     <option value="{{ $office['name'] }}">{{ $office['name'] }}</option>
   @endforeach
 </select>
+
 
 <!-- Transfer Willingness -->
 <div class="mt-3">

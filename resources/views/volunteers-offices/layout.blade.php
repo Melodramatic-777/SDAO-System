@@ -152,7 +152,6 @@
         <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
             <div class="assistant-container">
-                <span class="assistant-text">Office</span>
                 <button class="assistant-btn">
                     <img src="{{ asset('images/Side.png') }}" height="30">
                 </button>
@@ -164,6 +163,10 @@
                class="{{ request()->routeIs('volunteers-offices.request-volunteer') ? 'active' : '' }}">Volunteer Requests</a>
             <a href="{{ route('volunteers-offices.history-office') }}"
                class="{{ request()->routeIs('volunteers-offices.history-office') ? 'active' : '' }}">History</a>
+               @if(session('volunteers_office.office_name') === 'IT Systems Office')
+    <a href="{{ route('volunteers-offices.list-admins') }}"
+       class="{{ request()->routeIs('volunteers-offices.list-admins') ? 'active' : '' }}">List Admins</a>
+@endif
 
             <div class="logout-container">
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="logout-btn">
@@ -188,8 +191,10 @@
                     </div>
                 </div>
                 <div class="header-right-group">
-                    <p>Welcome, {{ session('volunteers_office.first_name') }}!</p>
-                </div>
+    <p>
+        Welcome, {{ session('volunteers_office.first_name') }}! 
+        {{ session('volunteers_office.office_name') ? ' ' . session('volunteers_office.office_name') : '' }}
+    </p>                </div>
             </header>
 
             <main class="page-container">

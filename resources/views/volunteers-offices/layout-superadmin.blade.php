@@ -143,7 +143,6 @@
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
         <div class="assistant-container">
-            <span class="assistant-text">Super Admin</span>
             <button class="assistant-btn">
                 <img src="{{ asset('images/Side.png') }}" height="30">
             </button>
@@ -152,7 +151,7 @@
          <a href="{{ route('volunteers-offices.dashboard-office') }}"class="{{ request()->routeIs('volunteers-offices.dashboard-office') ? 'active' : '' }}">Dashboard</a>
             <a href="{{ route('volunteers-offices.request-volunteer') }}"class="{{ request()->routeIs('volunteers-offices.request-volunteer') ? 'active' : '' }}">Volunteer Requests</a>
             <a href="{{ route('volunteers-offices.history-office') }}"class="{{ request()->routeIs('volunteers-offices.history-office') ? 'active' : '' }}">History</a>
-            <a href="{{ route('superadmin.admins.list') }}"class="{{ request()->routeIs('superadmin.admins.list') ? 'active' : '' }}">Manage</a>
+            <a href="{{ route('volunteers-offices.list') }}"class="{{ request()->routeIs('volunteers-offices.list') ? 'active' : '' }}">Manage</a>
 
                
         <div class="logout-container">

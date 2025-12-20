@@ -317,7 +317,7 @@ public function joinedOpportunities()
 
     // 🔹 Fetch On-the-Spot Volunteers
     $otsvController = new OnTheSpotVolunteerController();
-    $otsvList = $otsvController->fetchOTSV(); // get all OTSV entries
+    $otsvList = $otsvController->fetchOTSVForOffice(); // get all OTSV entries
 
     return view('scholars.dashboard', [
         'joinedOpportunities' => $pagedItems,

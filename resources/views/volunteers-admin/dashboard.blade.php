@@ -15,7 +15,7 @@
         <div class="action-buttons">
           <a href="{{ route('volunteers-admin.create-opportunity') }}" class="action-card">
             <div class="card-icon">📝</div>
-            <h3>Submit a Volunteer Opportunity</h3>
+            <h3>Submit a Opportunity Request</h3>
             <p>Propose a new volunteer activity for approval.</p>
           </a>
 
@@ -88,72 +88,90 @@
     </div> <!-- End Main Content -->
 
     <!-- Right Panel -->
-    <aside class="otsv-panel">
-        <h3><strong> On the Spot Volunteers</strong></h3>
+<aside class="otsv-panel" 
+       style="width: 380px; padding: 20px; background: #fff; border-radius: 10px; flex-shrink: 0; height: auto; margin-left: 20px;">
+    <h3><strong>My On the Spot Volunteers</strong></h3>
 
-        <ul class="otsv-list">
-            @forelse ($otsvList as $v)
-<li class="otsv-item">
-    <strong>{{ $v['student_name'] }}</strong><br>
+    <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
+        @forelse ($otsvList as $v)
+            <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
 
-   <small>
-    Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }} <br>
-    Available Time: 
-        {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
-        -
-        {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }} <br>
+                {{-- Accepted / Declined Badge (TOP) --}}
+                @php $status = strtolower($v['status'] ?? '') @endphp
+                @if($status === 'accepted')
+                    <div class="mb-2 text-end">
+                        <span class="text-white badge bg-success">
+                            <i class="bi bi-check-circle-fill me-1"></i> Accepted
+                        </span>
+                    </div>
+                @elseif($status === 'declined')
+                    <div class="mb-2 text-end">
+                        <span class="text-white badge bg-danger">
+                            <i class="bi bi-x-circle-fill me-1"></i> Declined
+                        </span>
+                    </div>
+                @endif
 
-    {{-- Reason Section --}}
-    @php
-        $reasons = $v['reasons'] ?? [];
-        $other = $v['other_reason'] ?? null;
-    @endphp
+                <strong>{{ $v['student_name'] }}</strong><br>
 
-    @if (!empty($reasons) || $other)
-        <span class="reason-label"><strong>Reason:</strong></span><br>
+                <small>
+                    Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
+                    Available Time: {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
+                    – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
 
-        {{-- List multiple selected reasons --}}
-        @foreach ($reasons as $reason)
-            • {{ $reason }} <br>
-        @endforeach
+                    @php
+                        $reasons = $v['reasons'] ?? [];
+                        $other = $v['other_reason'] ?? null;
+                    @endphp
 
-        {{-- Show "Other reason" if present --}}
-        @if ($other)
-            • {{ $other }}
-        @endif
-    @endif
-</small>
+                    @if(!empty($reasons) || $other)
+                        <strong>Reason:</strong><br>
+                        @foreach($reasons as $reason)
+                            • {{ $reason }}<br>
+                        @endforeach
+                        @if($other)
+                            • {{ $other }}
+                        @endif
+                    @endif
+                </small>
 
+                {{-- Accepted / Declined By --}}
+                @if(isset($v['status']) && in_array($status, ['accepted', 'declined']) && isset($v['action_by']))
+                    <small class="mt-2 text-muted d-block">
+                        <strong>{{ ucfirst($status) }} by:</strong> {{ $v['action_by']['name'] ?? 'N/A' }}<br>
+                        <em>
+                            {{ $v['action_by']['role'] ?? '' }}
+                            @if(!empty($v['action_by']['office']))
+                                – {{ $v['action_by']['office'] }}
+                            @endif
+                        </em>
+                    </small>
+                @else
+                    {{-- Accept / Decline Buttons --}}
+                    <div class="mt-2 otsv-actions">
+                        <form action="{{ route('volunteers-admin.otsv.accept', $v['id']) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button class="btn btn-success btn-sm me-1 w-100">
+                                <i class="bi bi-check-circle me-1"></i> Accept
+                            </button>
+                        </form>
 
-<div class="otsv-actions">
-    @if(isset($v['status']) && $v['status'] === 'accepted')
-        <span class="text-white otsv-accepted badge bg-success">
-            <i class="bi bi-check-circle-fill me-1"></i> Accepted
-        </span>
-    @else
-        <form action="{{ route('volunteers-admin.otsv.accept', $v['id']) }}" method="POST" style="display:inline;">
-            @csrf
-            <button class="btn btn-success btn-sm me-1">
-                <i class="bi bi-check-circle me-1"></i> Accept
-            </button>
-        </form>
+                        <form action="{{ route('volunteers-admin.otsv.decline', $v['id']) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button class="mt-1 btn btn-danger btn-sm w-100">
+                                <i class="bi bi-x-circle me-1"></i> Decline
+                            </button>
+                        </form>
+                    </div>
+                @endif
 
-        <form action="{{ route('volunteers-admin.otsv.decline', $v['id']) }}" method="POST" style="display:inline;">
-            @csrf
-            <button class="btn btn-danger btn-sm">
-                <i class="bi bi-x-circle me-1"></i> Decline
-            </button>
-        </form>
-    @endif
-</div>
+            </li>
+        @empty
+            <li>No on-the-spot volunteers.</li>
+        @endforelse
+    </ul>
+</aside>
 
-</li>
-
-            @empty
-                <li>No on-the-spot volunteers yet.</li>
-            @endforelse
-        </ul>
-    </aside>
 
 
   </div> <!-- End Wrapper -->

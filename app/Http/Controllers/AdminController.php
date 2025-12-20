@@ -73,7 +73,7 @@ class AdminController extends Controller
         $paginatedOffices = $paginateArray($offices);
         $paginatedOfficeAccounts = $paginateArray($officeAccounts);
 
-        return view('superadmin.offices', [
+        return view('volunteers-offices.offices', [
             'offices' => $paginatedOffices,
             'officeAccounts' => $paginatedOfficeAccounts,
         ]);
@@ -141,7 +141,7 @@ class AdminController extends Controller
 
     public function createAdminForm()
     {
-        return view('superadmin.create-admin');
+        return view('volunteers-offices.create-admin');
     }
 
     public function storeAdmin(Request $request)
@@ -178,7 +178,7 @@ class AdminController extends Controller
             )
         );
 
-        return redirect()->route('superadmin.admins.list')->with('success', 'Admin created successfully!');
+        return redirect()->route('volunteers-offices.admins.list')->with('success', 'Admin created successfully!');
     }
 
 
@@ -234,7 +234,7 @@ public function listAdmins(Request $request)
     $paginatedOffices = $paginateArray($offices);
     $paginatedOfficeAccounts = $paginateArray($officeAccounts);
 
-    return view('superadmin.list-admins', [
+    return view('volunteers-offices.list-admins', [
         'admins' => $admins,
         'offices' => $paginatedOffices,
         'officeAccounts' => $paginatedOfficeAccounts,

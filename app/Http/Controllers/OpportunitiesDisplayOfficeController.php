@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Kreait\Firebase\Factory;
+use App\Http\Controllers\OnTheSpotVolunteerController;
+
 
 class OpportunitiesDisplayOfficeController extends Controller
 {
@@ -18,6 +20,9 @@ class OpportunitiesDisplayOfficeController extends Controller
 
         $this->database = $factory->createDatabase();
     }
+
+
+
 
 public function requestVolunteer()
 {
@@ -69,6 +74,7 @@ public function dashboardOffice()
         abort(403, 'No logged in user email found.');
     }
 
+    // --- Fetch Opportunities ---
     $allOpportunities = $this->database->getReference('opportunities')
         ->orderByChild('submitted_by')
         ->equalTo($userEmail)
@@ -92,10 +98,22 @@ public function dashboardOffice()
         ['path' => request()->url()]
     );
 
-    return view('volunteers-offices.dashboard-office', [ // ✅ load dashboard view
+    // --- Fetch On-The-Spot Volunteers ---
+    $otsvController = new \App\Http\Controllers\OnTheSpotVolunteerController();
+    $otsvList = $otsvController->fetchOTSVForOffice();
+
+    // --- Return view with both datasets ---
+    return view('volunteers-offices.dashboard-office', [
         'opportunities' => $pagedOpportunities,
-        'allOpportunities' => $allOpportunities
+        'allOpportunities' => $allOpportunities,
+        'otsvList' => $otsvList, // ✅ now Blade has $otsvList
     ]);
 }
+
+
+
+
+
+
 
 }

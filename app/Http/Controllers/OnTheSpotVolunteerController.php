@@ -18,7 +18,6 @@ class OnTheSpotVolunteerController extends Controller
         $this->database = $factory->createDatabase();
     }
 
-
     /*---------------------------------------------------------
      | Scholar Submits On-The-Spot Volunteer Availability
      *---------------------------------------------------------*/
@@ -50,115 +49,204 @@ class OnTheSpotVolunteerController extends Controller
                 'other_reason' => $validated['other_reason'] ?? null,
                 'willing_to_transfer' => $validated['willing_to_transfer'],
                 'status' => 'available',
+                    'transfer_unlocked' => false,   // 🔥 REQUIRED
+
                 'created_at' => now()->toDateTimeString(),
             ]);
 
         return redirect()->back()->with('success', 'You are now marked as available for on-the-spot volunteering.');
     }
 
-
     /*---------------------------------------------------------
-     | Fetch ALL OTSV (ADMIN VIEW)
+     | Fetch OTSV for Office Dashboard
      *---------------------------------------------------------*/
-    public function fetchOTSV()
-    {
-        $data = $this->database->getReference('on_the_spot_volunteers')->getValue();
+/*---------------------------------------------------------
+ | Fetch OTSV for Office/Admin Dashboard
+ *---------------------------------------------------------*/
+public function fetchOTSVForOffice()
+{
+    $data = $this->database->getReference('on_the_spot_volunteers')->getValue();
+    $list = [];
 
-        $list = [];
-        if ($data) {
-            foreach ($data as $id => $item) {
-                $list[] = array_merge($item, ['id' => $id]);
-            }
-        }
+    $currentOffice = session('volunteers_office.office_name') ?? null;
+    $isAdmin = session()->has('volunteers_admin');
 
-        // sort by creation date (latest first)
-        usort($list, function ($a, $b) {
-            return strtotime($b['created_at']) <=> strtotime($a['created_at']);
-        });
-
-        return $list;
+    if (!$data || (!$currentOffice && !$isAdmin)) {
+        return [];
     }
 
+    foreach ($data as $id => $item) {
 
-    /*---------------------------------------------------------
-     | Fetch ONLY my own entries (SCHOLAR VIEW)
-     *---------------------------------------------------------*/
-    public function fetchMyOTSV()
-    {
-        $studentId = session('scholar_accounts.student_no');
+        $status = $item['status'] ?? 'available';
+        $willing = $item['willing_to_transfer'] ?? 'no';
+        $transferUnlocked = isset($item['transfer_unlocked']) && $item['transfer_unlocked'] === true;
+        $originalOffice = $item['office'] ?? null;
 
-        $data = $this->database->getReference('on_the_spot_volunteers')->getValue();
+        // Skip accepted or cancelled
+        if (in_array($status, ['accepted', 'cancelled'])) {
+            continue;
+        }
 
-        $list = [];
-        if ($data) {
-            foreach ($data as $id => $item) {
-                if (($item['student_id'] ?? null) === $studentId) {
+        /**
+         * ===============================
+         * WILLING TO TRANSFER = YES
+         * ===============================
+         */
+        if ($willing === 'yes') {
+
+            // BEFORE DECLINE → only original office sees it
+            if (!$transferUnlocked && $originalOffice === $currentOffice) {
+                $list[] = array_merge($item, ['id' => $id]);
+                continue;
+            }
+
+            // AFTER DECLINE → other offices + admin
+            if ($transferUnlocked) {
+                if ($isAdmin || $originalOffice !== $currentOffice) {
                     $list[] = array_merge($item, ['id' => $id]);
                 }
+                continue;
             }
+
+            continue;
         }
 
-        // sort my entries too
-        usort($list, function ($a, $b) {
-            return strtotime($b['created_at']) <=> strtotime($a['created_at']);
-        });
+        /**
+         * ===============================
+         * WILLING TO TRANSFER = NO
+         * ===============================
+         */
+        if ($willing === 'no') {
 
-        return $list;
+            // Show ONLY to the originally chosen office (including SDA Office)
+            if ($originalOffice === $currentOffice) {
+                $list[] = array_merge($item, ['id' => $id]);
+            }
+
+            // ❌ Do NOT show to admin or other offices
+            continue;
+        }
     }
 
+    // Sort newest first
+    usort($list, fn($a, $b) => strtotime($b['created_at']) <=> strtotime($a['created_at']));
+
+    return $list;
+}
 
     /*---------------------------------------------------------
-     | Accept OTSV (Admin)
+     | Accept OTSV (Office)
      *---------------------------------------------------------*/
     public function acceptOTSV($id)
     {
-        $this->database->getReference("on_the_spot_volunteers/$id")
-            ->update(['status' => 'accepted']);
+        $approver = $this->getApprover();
+
+        if (!$approver) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
+        $this->database->getReference("on_the_spot_volunteers/$id")->update([
+            'status' => 'accepted',
+            'action_by' => $approver,
+            'action_at' => now()->toDateTimeString(),
+        ]);
 
         return redirect()->back()->with('success', 'Volunteer accepted.');
     }
 
-
     /*---------------------------------------------------------
-     | Decline OTSV (Admin)
+     | Decline OTSV (Office)
      *---------------------------------------------------------*/
-    public function declineOTSV($id)
-    {
-        $this->database->getReference("on_the_spot_volunteers/$id")
-            ->update(['status' => 'declined']);
-
-        return redirect()->back()->with('success', 'Volunteer declined.');
-    }
-
-
-    /*---------------------------------------------------------
- | Cancel OTSV (Scholar)
- *---------------------------------------------------------*/
-/*---------------------------------------------------------
- | Cancel OTSV (Scholar) – Move to Archive
- *---------------------------------------------------------*/
-public function cancelOTSV($id)
+ public function declineOTSV($id)
 {
-    $studentId = session('scholar_accounts.student_no');
+    $approver = $this->getApprover();
+    if (!$approver) {
+        return redirect()->back()->with('error', 'Unauthorized action.');
+    }
 
     $ref = $this->database->getReference("on_the_spot_volunteers/$id")->getValue();
-
-    if ($ref && ($ref['student_id'] ?? null) === $studentId) {
-        // Add a cancelled_at timestamp
-        $ref['status'] = 'cancelled';
-        $ref['cancelled_at'] = now()->toDateTimeString();
-
-        // Push to archive
-        $this->database->getReference("on_the_spot_volunteers_archive/$id")->set($ref);
-
-        // Remove from the active list
-        $this->database->getReference("on_the_spot_volunteers/$id")->remove();
-
-        return redirect()->back()->with('success', 'Your on-the-spot volunteer entry has been cancelled and archived.');
+    if (!$ref) {
+        return redirect()->back()->with('error', 'Record not found.');
     }
 
-    return redirect()->back()->with('error', 'Unable to cancel this entry.');
+    $update = [
+        'declined_by' => $approver,
+        'declined_at' => now()->toDateTimeString(),
+    ];
+
+    /**
+     * WILLING TO TRANSFER = YES
+     * → unlock transfer, make available again
+     */
+    if (($ref['willing_to_transfer'] ?? 'no') === 'yes') {
+        $update['transfer_unlocked'] = true;   // ✅ unlock
+        $update['status'] = 'available';
+    }
+    /**
+     * WILLING TO TRANSFER = NO
+     * → lock transfer forever, permanent decline
+     */
+    else {
+        $update['transfer_unlocked'] = false;  // ✅ explicitly locked
+        $update['status'] = 'declined';
+    }
+
+    $this->database
+        ->getReference("on_the_spot_volunteers/$id")
+        ->update($update);
+
+    return redirect()->back()->with('success', 'Volunteer declined.');
 }
+
+
+    /*---------------------------------------------------------
+     | Cancel OTSV (Scholar)
+     *---------------------------------------------------------*/
+    public function cancelOTSV($id)
+    {
+        $studentId = session('scholar_accounts.student_no');
+        $ref = $this->database->getReference("on_the_spot_volunteers/$id")->getValue();
+
+        if ($ref && ($ref['student_id'] ?? null) === $studentId) {
+            $ref['status'] = 'cancelled';
+            $ref['cancelled_at'] = now()->toDateTimeString();
+
+            $this->database->getReference("on_the_spot_volunteers_archive/$id")->set($ref);
+            $this->database->getReference("on_the_spot_volunteers/$id")->remove();
+
+            return redirect()->back()->with('success', 'Your on-the-spot volunteer entry has been cancelled and archived.');
+        }
+
+        return redirect()->back()->with('error', 'Unable to cancel this entry.');
+    }
+
+    /*---------------------------------------------------------
+     | Get Approver (Office or Admin)
+     *---------------------------------------------------------*/
+    private function getApprover()
+    {
+        if (session()->has('volunteers_admin')) {
+            $admin = session('volunteers_admin');
+            return [
+                'id' => $admin['id'] ?? null,
+                'name' => ($admin['last_name'] ?? '') . ', ' . ($admin['first_name'] ?? ''),
+                'role' => 'SDA Assistant',
+                'office' => null,
+            ];
+        }
+
+        if (session()->has('volunteers_office')) {
+            $office = session('volunteers_office');
+            return [
+                'id' => $office['id'] ?? null,
+                'name' => $office['office_name'] ?? $office['email'],
+                'role' => 'Office',
+                'office' => $office['office_name'] ?? null,
+            ];
+        }
+
+        return null;
+    }
 
 
 

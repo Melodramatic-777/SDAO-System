@@ -3,6 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OpportunitiesController;
 use App\Http\Controllers\OpportunitiesDisplayOfficeController;
+use App\Http\Controllers\OnTheSpotVolunteerController;
+use App\Http\Controllers\AccountsOfficesController;
+use App\Http\Controllers\AdminController;
+
+
 
 Route::prefix('volunteers-offices')->group(function () {
 
@@ -12,6 +17,14 @@ Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessio
     ->name('volunteers-offices.logout');
 
 Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create']);
+
+
+
+Route::post('/otsv/{id}/accept', [OnTheSpotVolunteerController::class, 'acceptOTSV'])
+    ->name('volunteers-offices.otsv.accept');
+
+Route::post('/otsv/{id}/decline', [OnTheSpotVolunteerController::class, 'declineOTSV'])
+    ->name('volunteers-offices.otsv.decline');
 
     
 
@@ -47,5 +60,29 @@ Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionC
         Route::post('/store-opportunity', 'store')
             ->name('volunteers-offices.store-opportunity');
     });
+
+  Route::get('/admins', [AdminController::class, 'listAdmins'])
+        ->name('volunteers-offices.list-admins');
+
+    Route::get('/admins/create', [AdminController::class, 'createAdminForm'])
+        ->name('volunteers-offices.create-admin');
+
+    Route::post('/admins/create', [AdminController::class, 'storeAdmin'])
+        ->name('volunteers-offices.store-admin');
+
+    Route::post('/offices/create', [AccountsOfficesController::class, 'storeOffice'])
+        ->name('volunteers-offices.create-office');
+
+    Route::post('/office-accounts/create', [AccountsOfficesController::class, 'storeOfficeAccount'])
+        ->name('volunteers-offices.create-office-account');
+
+    // Admin / Office User Deletion
+    Route::delete('/admins/revoke/{email}', [AdminController::class, 'revokeAdmin'])
+        ->name('volunteers-offices.revoke-admin');
+
+    Route::delete('/office-users/revoke/{email}', [AdminController::class, 'revokeOfficeUser'])
+        ->name('volunteers-offices.revoke-office-user');
+
+
 
 });

@@ -2,137 +2,134 @@
 
 @section('content')
 
-@extends('volunteers-offices.layout')
-
-@section('content')
-
-
-
-
-
-        <div class="dashboard-row">
-      <div class="action-buttons">
+<div class="dashboard-row">
+    <div class="action-buttons">
         <a href="{{ route('volunteers-offices.create-opportunity') }}" class="action-card">
-          <div class="card-icon">📝</div>
-          <h3>Submit a Volunteer Opportunity</h3>
-          <p>Propose a new volunteer activity for approval.</p>
+            <div class="card-icon">📝</div>
+            <h3>Submit a Volunteer Opportunity</h3>
+            <p>Propose a new volunteer activity for approval.</p>
         </a>
 
         <a href="{{ route('volunteers-offices.invite-volunteer-office') }}" class="action-card">
-          <div class="card-icon">📩</div>
-          <h3>Invite a Student Volunteer</h3>
-          <p>Send an invitation for student volunteers to join your activity.</p>
+            <div class="card-icon">📩</div>
+            <h3>Invite a Student Volunteer</h3>
+            <p>Send an invitation for student volunteers to join your activity.</p>
         </a>
-      </div>
+    </div>
 
-      
-      @php
-$approved = collect($allOpportunities ?? [])->where('status', 'Approved')->count();
-$returned = collect($allOpportunities ?? [])->whereIn('status', ['Returned', 'Returned to SDAO'])->count();
-$waiting = collect($allOpportunities ?? [])->whereNotIn('status', ['Approved', 'Returned', 'Returned to SDAO'])->count();
+    @php
+        $approved = collect($allOpportunities ?? [])->where('status', 'Approved')->count();
+        $returned = collect($allOpportunities ?? [])->whereIn('status', ['Returned', 'Returned to SDAO'])->count();
+        $waiting = collect($allOpportunities ?? [])->whereNotIn('status', ['Approved', 'Returned', 'Returned to SDAO'])->count();
 
         $total = collect($opportunities ?? [])->count();
-$urgent = collect($opportunities ?? [])->filter(function($op) {
-    $isUrgent = !empty($op['is_urgent']) && ($op['is_urgent'] === true || $op['is_urgent'] === 'yes');
-    if (!$isUrgent) return false;
+        $urgent = collect($opportunities ?? [])->filter(function($op) {
+            $isUrgent = !empty($op['is_urgent']) && ($op['is_urgent'] === true || $op['is_urgent'] === 'yes');
+            if (!$isUrgent) return false;
 
-    $status = strtolower($op['status'] ?? '');
-    $participants = count($op['participants'] ?? []);
-    $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
+            $status = strtolower($op['status'] ?? '');
+            $participants = count($op['participants'] ?? []);
+            $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
 
-    // Only count if:
-    // 1) Waiting for approval (Pending)
-    if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) return true;
+            if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) return true;
+            if ($status === 'approved' && $participants < $target) return true;
 
-    // 2) Approved but not full
-    if ($status === 'approved' && $participants < $target) return true;
+            return false;
+        })->count();
+    @endphp
 
-    return false; // Otherwise do not count
-})->count();
-      @endphp
-
-      <div class="status-cards">
+    <div class="status-cards">
         <div class="status-card approved">Approved <span>{{ $approved }}</span></div>
         <div class="status-card waiting">Waiting for Approval <span>{{ $waiting }}</span></div>
         <div class="status-card returned">Returned <span>{{ $returned }}</span></div>
         <div class="status-card urgent">Urgent <span>{{ $urgent }}</span></div>
-      </div>
-        </div>
+    </div>
+</div>
+<aside class="otsv-panel" 
+       style="width: 380px; padding: 20px; background: #fff; border-radius: 10px; flex-shrink: 0; height: auto; margin-left: 20px;">
+    <h3><strong>My On the Spot Volunteers</strong></h3>
+
+    <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
+        @forelse ($otsvList as $v)
+            <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
+
+                {{-- Accepted / Declined Badge (TOP) --}}
+                @php $status = strtolower($v['status'] ?? '') @endphp
+                @if($status === 'accepted')
+                    <div class="mb-2 text-end">
+                        <span class="text-white badge bg-success">
+                            <i class="bi bi-check-circle-fill me-1"></i> Accepted
+                        </span>
+                    </div>
+                @elseif($status === 'declined')
+                    <div class="mb-2 text-end">
+                        <span class="text-white badge bg-danger">
+                            <i class="bi bi-x-circle-fill me-1"></i> Declined
+                        </span>
+                    </div>
+                @endif
+
+                <strong>{{ $v['student_name'] }}</strong><br>
+
+                <small>
+                    Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
+                    Available Time: {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
+                    – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
+
+                    @php
+                        $reasons = $v['reasons'] ?? [];
+                        $other = $v['other_reason'] ?? null;
+                    @endphp
+
+                    @if(!empty($reasons) || $other)
+                        <strong>Reason:</strong><br>
+                        @foreach($reasons as $reason)
+                            • {{ $reason }}<br>
+                        @endforeach
+                        @if($other)
+                            • {{ $other }}
+                        @endif
+                    @endif
+                </small>
+
+                {{-- Accepted / Declined By --}}
+                @if(isset($v['status']) && in_array($status, ['accepted', 'declined']) && isset($v['action_by']))
+                    <small class="mt-2 text-muted d-block">
+                        <strong>{{ ucfirst($status) }} by:</strong> {{ $v['action_by']['name'] ?? 'N/A' }}<br>
+                        <em>
+                            {{ $v['action_by']['role'] ?? '' }}
+                            @if(!empty($v['action_by']['office']))
+                                – {{ $v['action_by']['office'] }}
+                            @endif
+                        </em>
+                    </small>
+                @else
+                    {{-- Accept / Decline Buttons --}}
+                    <div class="mt-2 otsv-actions">
+                        <form action="{{ route('volunteers-offices.otsv.accept', $v['id']) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button class="btn btn-success btn-sm me-1 w-100">
+                                <i class="bi bi-check-circle me-1"></i> Accept
+                            </button>
+                        </form>
+
+                        <form action="{{ route('volunteers-offices.otsv.decline', $v['id']) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button class="mt-1 btn btn-danger btn-sm w-100">
+                                <i class="bi bi-x-circle me-1"></i> Decline
+                            </button>
+                        </form>
+                    </div>
+                @endif
+
+            </li>
+        @empty
+            <li>No on-the-spot volunteers.</li>
+        @endforelse
+    </ul>
+</aside>
 
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-  <script>
-
-  </script>
-
-
-
-@endsection
-
-
-  <main class="page-container">
-
-
-        <div class="dashboard-row">
-      <div class="action-buttons">
-        <a href="{{ route('volunteers-offices.create-opportunity') }}" class="action-card">
-          <div class="card-icon">📝</div>
-          <h3>Submit a Volunteer Opportunity</h3>
-          <p>Propose a new volunteer activity for approval.</p>
-        </a>
-
-        <a href="{{ route('volunteers-offices.invite-volunteer-office') }}" class="action-card">
-          <div class="card-icon">📩</div>
-          <h3>Invite a Student Volunteer</h3>
-          <p>Send an invitation for student volunteers to join your activity.</p>
-        </a>
-      </div>
-
-      
-      @php
-$approved = collect($allOpportunities ?? [])->where('status', 'Approved')->count();
-$returned = collect($allOpportunities ?? [])->whereIn('status', ['Returned', 'Returned to SDAO'])->count();
-$waiting = collect($allOpportunities ?? [])->whereNotIn('status', ['Approved', 'Returned', 'Returned to SDAO'])->count();
-
-        $total = collect($opportunities ?? [])->count();
-$urgent = collect($opportunities ?? [])->filter(function($op) {
-    $isUrgent = !empty($op['is_urgent']) && ($op['is_urgent'] === true || $op['is_urgent'] === 'yes');
-    if (!$isUrgent) return false;
-
-    $status = strtolower($op['status'] ?? '');
-    $participants = count($op['participants'] ?? []);
-    $target = (int) ($op['schedule'][0]['target_number'] ?? 0);
-
-    // Only count if:
-    // 1) Waiting for approval (Pending)
-    if (in_array($status, ['pending', 'waiting', 'waiting for approval'])) return true;
-
-    // 2) Approved but not full
-    if ($status === 'approved' && $participants < $target) return true;
-
-    return false; // Otherwise do not count
-})->count();
-      @endphp
-
-      <div class="status-cards">
-        <div class="status-card approved">Approved <span>{{ $approved }}</span></div>
-        <div class="status-card waiting">Waiting for Approval <span>{{ $waiting }}</span></div>
-        <div class="status-card returned">Returned <span>{{ $returned }}</span></div>
-        <div class="status-card urgent">Urgent <span>{{ $urgent }}</span></div>
-      </div>
-        </div>
-
-
-</main>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-  <script>
-
-  </script>
-
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 @endsection
