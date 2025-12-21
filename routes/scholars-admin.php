@@ -5,6 +5,8 @@ use App\Http\Controllers\AccountsScholarsController;
 use App\Http\Controllers\ScholarshipTypesController;
 use App\Http\Controllers\ScholarRecordsController;
 use App\Http\Controllers\ScholarsDashboardController;
+use App\Http\Controllers\ContactUsController;
+
 
 Route::prefix('scholars-admin')->group(function () {
 
@@ -14,6 +16,18 @@ Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessio
 Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create']);
 
     
+
+
+Route::get('/contactUs', [ContactUsController::class, 'index'])->name('scholars-admin.contactUs');
+Route::get('/contactUs/{id}', [ContactUsController::class, 'show'])
+     ->name('scholars-admin.contactUs.view');
+
+Route::post('/contactUs/{id}/reply', [ContactUsController::class, 'reply'])
+     ->name('scholars-admin.contactUs.reply');
+
+
+
+
     Route::controller(ScholarsDashboardController::class)->group(function () {
         Route::get('/dashboard', 'dashboard')->name('scholars-admin.dashboard');
     });

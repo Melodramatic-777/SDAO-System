@@ -153,7 +153,8 @@
         <a href="{{ route('volunteers-admin.history') }}" class="{{ request()->routeIs('volunteers-admin.history') ? 'active' : '' }}">History</a>
         <a href="{{ route('volunteers-admin.student-volunteers') }}" class="{{ request()->routeIs('volunteers-admin.student-volunteers') ? 'active' : '' }}">Student Volunteers</a>
         <a href="{{ route('volunteers-admin.accounts') }}" class="{{ request()->routeIs('volunteers-admin.accounts') ? 'active' : '' }}">Accounts</a>
-        <a href="{{ route('volunteers-admin.inquiries') }}" class="{{ request()->routeIs('volunteers-admin.inquiries') ? 'active' : '' }}">Contact</a>
+        <a href="{{ route('volunteers-admin.contactUs') }}" class="{{ request()->routeIs('volunteers-admin.contactUs') ? 'active' : '' }}">Contact</a>
+        <a href="{{ route('volunteers-admin.profile') }}" class="{{ request()->routeIs('volunteers-admin.profile') ? 'active' : '' }}">Profile</a>
 
         <div class="logout-container">
             <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="logout-btn">

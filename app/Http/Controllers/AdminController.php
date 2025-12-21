@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Mail;
 use Kreait\Firebase\Factory;
 use App\Mail\TemporaryCredentialsMailable;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
+
 
 class AdminController extends Controller
 {
@@ -277,6 +279,48 @@ public function revokeOfficeUser($email)
 
     return back()->with('error', 'User not found.');
 }
+
+
+public function showProfile()
+{
+    // Fetch admin email from session
+    $adminEmail = session('volunteers_admin.email'); // assuming you stored the admin array on login
+
+    if (!$adminEmail) {
+        abort(403, 'You are not logged in as admin.');
+    }
+
+    $adminsData = $this->database->getReference('admins')->getValue();
+
+    $foundAdmin = null;
+
+    if ($adminsData) {
+        foreach ($adminsData as $uid => $admin) {
+            if (($admin['email'] ?? null) === $adminEmail) {
+                $foundAdmin = $admin;
+                $foundAdmin['uid'] = $uid;
+                break;
+            }
+        }
+    }
+
+    if (!$foundAdmin) {
+        abort(404, 'Admin profile not found.');
+    }
+
+    // Optionally, add extra fields like temporary statistics if needed
+    $foundAdmin['login_count'] = $foundAdmin['login_count'] ?? 0;
+    $foundAdmin['last_login'] = $foundAdmin['last_login'] ?? null;
+
+    $offices = $this->database->getReference('offices')->getValue() ?? [];
+
+    return view('volunteers-admin.profile', [
+        'admin' => $foundAdmin,
+        'offices' => $offices,
+    ]);
+}
+
+
 
 
 

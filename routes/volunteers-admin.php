@@ -7,9 +7,14 @@ use App\Http\Controllers\OpportunitiesController;
 use App\Http\Controllers\OpportunitiesDisplayController;
 use App\Http\Controllers\SubmitOpportunityController;
 use App\Http\Controllers\OnTheSpotVolunteerController;
+use App\Http\Controllers\ContactUsController;
+use App\Http\Controllers\AdminController;
+
+
 
 Route::prefix('volunteers-admin')->group(function () {
 
+    
 
     
 Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
@@ -18,18 +23,33 @@ Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessio
 Route::get('/admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create']);
 
     
+Route::post('/profile/change-password', [AdminController::class, 'changePassword'])
+    ->name('volunteers-admin.profile.change-password');
+
+
+    Route::get('/profile', [AdminController::class, 'showProfile'])
+        ->name('volunteers-admin.profile');
+
+
 Route::post('/otsv/{id}/accept', [OnTheSpotVolunteerController::class, 'acceptOTSV'])
     ->name('volunteers-admin.otsv.accept');
 
 Route::post('/otsv/{id}/decline', [OnTheSpotVolunteerController::class, 'declineOTSV'])
     ->name('volunteers-admin.otsv.decline');
 
-    
+
+
+Route::get('/contactUs', [ContactUsController::class, 'index'])->name('volunteers-admin.contactUs');
+Route::get('/contactUs/{id}', [ContactUsController::class, 'show'])
+     ->name('volunteers-admin.contactUs.view');
+
+Route::post('/contactUs/{id}/reply', [ContactUsController::class, 'reply'])
+     ->name('volunteers-admin.contactUs.reply');
+
 
 Route::get('/dashboard', [\App\Http\Controllers\VolunteersAdminDashboardController::class, 'dashboard'])
     ->name('volunteers-admin.dashboard');
     Route::view('/leader-board', 'volunteers-admin.leader-board')->name('volunteers-admin.leader-board');
-    Route::view('/inquiries', 'volunteers-admin.inquiries')->name('volunteers-admin.inquiries');
     Route::view('/home', 'volunteers-admin.home')->name('volunteers-admin.home');
 
     Route::controller(OpportunitiesDisplayController::class)->group(function () {

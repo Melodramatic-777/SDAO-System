@@ -405,39 +405,44 @@ html {
         padding:2.3rem; 
         border-radius:20px;
     ">
-<form>
+<form method="POST" action="/admin-login">
+    @csrf
 
     <div style="display:flex; gap:1rem;">
         <div style="flex:1;">
-            <label style="display:block; margin-bottom:0.25rem; font-size:0.9rem;">First Name</label>
-            <input type="text" placeholder="Enter First Name"
+            <label>First Name</label>
+            <input type="text" name="first_name" required placeholder="Enter First Name"
                    style="width:100%; padding:0.75rem; border:1px solid #003DA5; border-radius:5px; margin-bottom:1rem;">
         </div>
 
         <div style="flex:1;">
-            <label style="display:block; margin-bottom:0.25rem; font-size:0.9rem;">Last Name</label>
-            <input type="text" placeholder="Enter Last Name"
+            <label>Last Name</label>
+            <input type="text" name="last_name" required placeholder="Enter Last Name"
                    style="width:100%; padding:0.75rem; border:1px solid #003DA5; border-radius:5px; margin-bottom:1rem;">
         </div>
     </div>
 
-    <label style="display:block; margin-bottom:0.25rem; font-size:0.9rem;">School Email</label>
-    <input type="text" placeholder="Enter Email"
+    <label>School Email</label>
+    <input type="email" name="email" required placeholder="Enter Email"
            style="width:100%; padding:0.75rem; border:1px solid #003DA5; border-radius:5px; margin-bottom:1rem;">
 
-    <label style="display:block; margin-bottom:0.25rem; font-size:0.9rem;">Department</label>
-    <select style="width:100%; padding:0.75rem; border:1px solid #003DA5; border-radius:5px; margin-bottom:1rem;">
-        <option>Select…</option>
-    </select>
 
-    <label style="display:block; margin-bottom:0.25rem; font-size:0.9rem;">Message</label>
-    <textarea style="width:100%; padding:0.75rem; border:1px solid #003DA5; border-radius:5px; height:120px; margin-bottom:1rem;"></textarea>
+           <label>Subject</label>
+<input type="text" name="subject" required placeholder="Enter Subject"
+       style="width:100%; padding:0.75rem; border:1px solid #003DA5; border-radius:5px; margin-bottom:1rem;">
 
-    <button style="background:#003DA5; color:white; padding:0.75rem 2rem; border-radius:25px; border:none; margin-top:0.5rem; cursor:pointer;">
+
+       
+    <label>Message</label>
+    <textarea name="message" required
+              style="width:100%; padding:0.75rem; border:1px solid #003DA5; border-radius:5px; height:120px; margin-bottom:1rem;"></textarea>
+
+    <button type="submit"
+        style="background:#003DA5; color:white; padding:0.75rem 2rem; border-radius:25px; border:none; margin-top:0.5rem; cursor:pointer;">
         Submit
     </button>
-
 </form>
+
 
     </div>
 </section>
