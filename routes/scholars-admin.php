@@ -6,6 +6,8 @@ use App\Http\Controllers\ScholarshipTypesController;
 use App\Http\Controllers\ScholarRecordsController;
 use App\Http\Controllers\ScholarsDashboardController;
 use App\Http\Controllers\ContactUsController;
+use App\Http\Controllers\AdminController;
+
 
 
 Route::prefix('scholars-admin')->group(function () {
@@ -25,6 +27,13 @@ Route::get('/contactUs/{id}', [ContactUsController::class, 'show'])
 Route::post('/contactUs/{id}/reply', [ContactUsController::class, 'reply'])
      ->name('scholars-admin.contactUs.reply');
 
+
+    Route::post('/profile/change-password', [AdminController::class, 'changeScholarsAdminPassword'])
+    ->name('scholars-admin.profile.change-password');
+
+
+Route::get('/scholars-admin/profile', [AdminController::class, 'showScholarsAdminProfile'])
+    ->name('scholars-admin.profile');
 
 
 

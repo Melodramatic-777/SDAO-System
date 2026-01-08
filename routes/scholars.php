@@ -5,7 +5,7 @@ use App\Http\Controllers\OpportunitiesController;
 use App\Http\Controllers\AccountsScholarsController;
 use App\Http\Controllers\ScholarJoinController;
 use App\Http\Controllers\OnTheSpotVolunteerController;
-use App\Http\Controllers\ScholarDashboardController;
+use App\Http\Controllers\AdminController;
 
 
 Route::prefix('scholars')->name('scholars.')->group(function () {
@@ -17,6 +17,8 @@ Route::prefix('scholars')->name('scholars.')->group(function () {
     Route::get('/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create'])
         ->name('login');
 
+            Route::post('/profile/change-password', [AdminController::class, 'changeScholarPassword'])
+    ->name('profile.change-password');
 
 
 Route::post('volunteer-opportunities/join-task', [ScholarJoinController::class, 'joinTask'])

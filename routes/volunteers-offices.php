@@ -26,6 +26,12 @@ Route::post('/otsv/{id}/accept', [OnTheSpotVolunteerController::class, 'acceptOT
 Route::post('/otsv/{id}/decline', [OnTheSpotVolunteerController::class, 'declineOTSV'])
     ->name('volunteers-offices.otsv.decline');
 
+
+    Route::post('/profile/change-password', [AdminController::class, 'changeOfficePassword'])
+    ->name('volunteers-offices.profile.change-password');
+
+        Route::get('/profile', [AdminController::class, 'showOfficeProfile'])
+        ->name('volunteers-offices.profile');
     
 
     Route::controller(OpportunitiesDisplayOfficeController::class)->group(function () {

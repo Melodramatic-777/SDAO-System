@@ -163,6 +163,8 @@
                class="{{ request()->routeIs('volunteers-offices.request-volunteer') ? 'active' : '' }}">Volunteer Requests</a>
             <a href="{{ route('volunteers-offices.history-office') }}"
                class="{{ request()->routeIs('volunteers-offices.history-office') ? 'active' : '' }}">History</a>
+               <a href="{{ route('volunteers-offices.profile') }}"
+               class="{{ request()->routeIs('volunteers-offices.profile') ? 'active' : '' }}">Profile</a>
                @if(session('volunteers_office.office_name') === 'IT Systems Office')
     <a href="{{ route('volunteers-offices.list-admins') }}"
        class="{{ request()->routeIs('volunteers-offices.list-admins') ? 'active' : '' }}">List Admins</a>

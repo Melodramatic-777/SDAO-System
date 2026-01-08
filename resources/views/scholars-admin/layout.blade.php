@@ -171,6 +171,11 @@
 </a>
 
 
+<a href="{{ route('scholars-admin.profile') }}"
+   class="{{ Request::is('scholars-admin/profile') ? 'active' : '' }}">
+   Profile
+</a>
+
 <a href="{{ route('scholars-admin.contactUs') }}"
    class="{{ Request::is('scholars-admin/contactUs') ? 'active' : '' }}">
    Contact
