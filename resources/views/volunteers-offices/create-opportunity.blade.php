@@ -422,6 +422,39 @@
     outline: none;
 }
 
+
+
+.task-step-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.task-left {
+  flex: 2;
+}
+
+.task-right {
+  flex: 1;
+  background: #f9fafb;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  position: sticky;
+  top: 20px;
+}
+
+@media (max-width: 768px) {
+  .task-step-layout {
+    flex-direction: column;
+  }
+  .task-right {
+    position: static;
+  }
+}
+
+
+
 </style>
 
 <div class="page-wrap">
@@ -592,56 +625,49 @@
 </div>
 
         </div>
-<!-- STEP 3 (Tasks) -->
+
+
+
+
+        <!-- STEP 3 (Tasks) -->
 <div class="form-step" id="step-3" style="display:none;">
 
+  <p class="mb-6 text-gray-600">
+    Select the tasks you need volunteers for and specify how many for each task.
+  </p>
 
-    
-  <p class="mb-6 text-gray-600">Select the tasks you need volunteers for and specify how many for each task.</p>
+  <!-- TWO COLUMN LAYOUT -->
+  <div class="task-step-layout">
 
+    <!-- ================= LEFT COLUMN ================= -->
+    <div class="task-left">
 
-<div class="form-section" style="margin-bottom: 20px;">
-    <label>Select Date for Tasks <span class="text-danger">*</span></label>
-    <select id="task-date-selector" class="form-control" style="padding: 10px; border-radius: 10px;">
-        <option value="" disabled selected>Loading dates...</option>
-    </select>
-    <div id="task-save-row" style="display:none; margin-top:10px;">
-    <button type="button" id="save-date-tasks" class="btn btn-primary">
-        Save Tasks for This Date
-    </button>
+      <!-- DATE SELECTOR -->
+      <div class="mb-4 form-section">
+        <label>
+          Select Date for Tasks <span class="text-danger">*</span>
+        </label>
+        <select id="task-date-selector"
+                class="form-control"
+                style="padding:10px; border-radius:10px;">
+          <option value="" disabled selected>Loading dates...</option>
+        </select>
 
-    
-</div>
-
-<!-- Task Summary Table -->
-<div id="task-summary-table" style="margin-top:20px; display:none;">
-    <h6 style="color:#003DA5; font-weight:700; margin-bottom:10px;">
-        Saved Task Assignments
-    </h6>
-
-    <table class="table table-bordered" style="background:white; border-radius:10px; overflow:hidden;">
-        <thead style="background:#003DA5; color:white;">
-            <tr>
-                <th>Date</th>
-                <th>Task</th>
-                <th>Needed Volunteers</th>
-            </tr>
-        </thead>
-        <tbody id="task-summary-body"></tbody>
-    </table>
-</div>
+        <div id="task-save-row" style="display:none; margin-top:10px;">
+          <button type="button" id="save-date-tasks" class="btn btn-primary">
+            Save Tasks for This Date
+          </button>
+        </div>
+      </div>
 
 
-</div>
+      
+      <!-- TASK CARDS CONTAINER -->
+      <div id="taskSelectionContainer"
+           class="mb-6 space-y-4"
+           style="max-height:500px; overflow-y:auto; padding-right:6px;">
 
-
-
-
-
- <!-- Task cards container -->
-<div id="taskSelectionContainer" class="mb-6 space-y-4" style="max-height: 500px; overflow-y: auto; padding-right: 6px;">
-
-  <!-- Marshalling -->
+   <!-- Marshalling -->
   <div class="p-4 border rounded-lg task-card">
     <div class="flex items-start gap-3">
       <input type="checkbox" data-task-name="Marshalling" name="tasks[Marshalling][active]" class="form-checkbox task-toggle">
@@ -862,17 +888,43 @@
   <div id="taskByDateContainer" class="space-y-4"></div>
 </div>
 
-<div id="intermittentSummaryInputs"></div>
 
+      <div id="intermittentSummaryInputs"></div>
 
+    </div>
 
-<div class="form-navigation-between" style="justify-content: flex-end;">
-  <button type="button" class="btn-outline prev-step">Back</button>
-  <button type="submit" class="btn-primary">Submit Opportunity</button>
+    <!-- ================= RIGHT COLUMN ================= -->
+    <div class="task-right">
+
+      <h6 style="color:#003DA5; font-weight:700; margin-bottom:10px;">
+        Saved Task Assignments
+      </h6>
+
+      <table id="task-summary-table"
+             class="table table-bordered"
+             style="background:white; border-radius:10px; overflow:hidden; display:none;">
+        <thead style="background:#003DA5; color:white;">
+          <tr>
+            <th>Date</th>
+            <th>Task</th>
+            <th>Needed Volunteers</th>
+          </tr>
+        </thead>
+        <tbody id="task-summary-body"></tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+  <!-- NAVIGATION -->
+  <div class="form-navigation-between" style="justify-content:flex-end; margin-top:20px;">
+    <button type="button" class="btn-outline prev-step">Back</button>
+    <button type="submit" class="btn-primary">Submit Opportunity</button>
+  </div>
+
 </div>
 
-
-</div>
 
 
         </form>

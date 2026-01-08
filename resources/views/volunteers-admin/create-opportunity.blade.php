@@ -463,12 +463,6 @@
         </div>
         <div class="step-line"></div>
     </div>
-    <div class="step-item">
-        <div class="step-content">
-            <div id="stepIndicator4" class="step-indicator">4</div>
-            <div class="step-label">Summary</div>
-        </div>
-    </div>
 </div>
 
 
@@ -532,7 +526,7 @@
 
             <label>Does your event happen intermittently?<span class="text-danger">*</span></label>
             <div class="radio-group">
-                <label><input type="radio" name="intermittent" value="0" checked> No, continuous period</label>
+                <label><input type="radio" name="intermittent" value="0" checked> No</label>
                 <label><input type="radio" name="intermittent" value="1"> Yes, multiple dates</label>
             </div>
 
@@ -1261,15 +1255,23 @@ document.querySelectorAll("input[name='intermittent']").forEach(radio=>{
     } else {
       intermittentLayout.style.display = "none"; 
       regularSchedule.style.display = "block";
+
       // Clear intermittent schedules
       document.querySelectorAll(".scheduled-entry-input").forEach(i=>i.remove());
-      scheduledEntries.innerHTML = ""; 
+      document.getElementById('scheduled-entries').innerHTML = ""; 
       scheduleIndex = 0; 
       selectedDates.clear(); 
       indexMap = {};
+
+      // CLEAR intermittent tasks
+      tasksByDate = {};
+
+      // Refresh task summary table for REGULAR schedule
+      refreshTaskSummaryTable();
     }
   });
 });
+
 
 // Fix adding intermittent schedule
 document.getElementById('add-calendar-schedule').addEventListener('click', function(){
@@ -1426,8 +1428,7 @@ function rebuildTaskingHiddenInputs() {
         if (!dateText || !taskName) return;
 
         // Convert display date → ISO (Y-m-d)
-        const iso = new Date(dateText).toISOString().split("T")[0];
-
+const iso = dateText;
         // Build correct input name
         const input = document.createElement("input");
         input.type = "hidden";
@@ -1634,16 +1635,27 @@ function updateSaveTaskButton() {
         saveTaskRow.style.display = "none";
     }
 }
+// Helper: format Date object → ISO YYYY-MM-DD
+function formatDateToISO(date) {
+    if (!(date instanceof Date)) return "";
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+}
+
 function refreshTaskDateDropdown() {
     const dropdown = document.getElementById("task-date-selector");
     if (!dropdown) return;
 
-    dropdown.innerHTML = ""; // clear all options
+    dropdown.innerHTML = ""; // Clear all options
 
+    // Get all date cells from the scheduled table
     const dateCells = document.querySelectorAll("#scheduled-table tbody .col-date");
+
     if (dateCells.length > 0) {
-        // placeholder
-        let placeholder = document.createElement("option");
+        // Add placeholder
+        const placeholder = document.createElement("option");
         placeholder.value = "";
         placeholder.textContent = "Select a date";
         placeholder.disabled = true;
@@ -1654,38 +1666,33 @@ function refreshTaskDateDropdown() {
             const dateText = cell.textContent.trim();
             if (!dateText) return;
 
-            // skip dates that already have saved tasks
-            const tasksForDate = Array.from(document.querySelectorAll(`input[name^="tasks"][value="${dateText}"]`));
-            if (tasksForDate.length > 0) return;
+            const parsedDate = new Date(dateText);
+            if (isNaN(parsedDate)) return; // skip invalid dates
 
-        // parse display text into an ISO date if it is display-formatted; if it's already ISO keep it
-const iso = (/\d{4}-\d{2}-\d{2}/.test(dateText)) ? dateText : (new Date(dateText)).toISOString().split('T')[0];
-let opt = document.createElement("option");
-opt.value = iso;              // store ISO as the key
-opt.textContent = new Date(iso).toLocaleDateString(); // user-friendly display
-dropdown.appendChild(opt);
+            const iso = formatDateToISO(parsedDate);
 
+            const opt = document.createElement("option");
+            opt.value = iso;
+            opt.textContent = parsedDate.toLocaleDateString('en-US'); // consistent display
+            dropdown.appendChild(opt);
         });
 
         updateSaveTaskButton();
         return;
     }
 
-    // fallback: regular schedule
-// fallback: regular schedule
-const sd = document.querySelector('input[name="start_date"]')?.value;
-if (sd) {
-    const iso = sd; // already ISO
-    let opt = document.createElement("option");
-    opt.value = iso;
-    opt.textContent = new Date(iso).toLocaleDateString('en-US');
-    dropdown.appendChild(opt);
-}
-
+    // Fallback: if no table dates, use start_date input
+    const startDateValue = document.querySelector('input[name="start_date"]')?.value;
+    if (startDateValue) {
+        const opt = document.createElement("option");
+        opt.value = startDateValue;
+        const parsedDate = new Date(startDateValue);
+        opt.textContent = isNaN(parsedDate) ? startDateValue : parsedDate.toLocaleDateString('en-US');
+        dropdown.appendChild(opt);
+    }
 
     updateSaveTaskButton();
 }
-
 
 
 document.querySelectorAll('.task-toggle').forEach(cb => {
@@ -1703,19 +1710,40 @@ function refreshTaskSummaryTable() {
     tbody.innerHTML = "";
 
     let hasData = false;
+    const isIntermittent = document.querySelector("input[name='intermittent']:checked")?.value === "1";
 
-    Object.keys(tasksByDate).forEach(date => {
-        Object.keys(tasksByDate[date]).forEach(taskName => {
-            hasData = true;
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${new Date(date).toLocaleDateString()}</td>
-                <td>${taskName}</td>
-                <td>${tasksByDate[date][taskName]}</td>
-            `;
-            tbody.appendChild(tr);
+    if (isIntermittent) {
+        // Intermittent → build from tasksByDate
+        Object.keys(tasksByDate).forEach(date => {
+            Object.keys(tasksByDate[date]).forEach(taskName => {
+                hasData = true;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${new Date(date).toLocaleDateString()}</td>
+                    <td>${taskName}</td>
+                    <td>${tasksByDate[date][taskName]}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         });
-    });
+    } else {
+        // Regular → build from task cards using start_date
+        const startDate = document.querySelector('input[name="start_date"]').value;
+        if (startDate) {
+            document.querySelectorAll(".task-card input[type='checkbox']:checked").forEach(checkbox => {
+                const taskName = checkbox.dataset.taskName;
+                const numInput = checkbox.closest(".task-card").querySelector('input[type="number"]').value || 1;
+                hasData = true;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${new Date(startDate).toLocaleDateString()}</td>
+                    <td>${taskName}</td>
+                    <td>${numInput}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
 
     table.style.display = hasData ? "table" : "none";
 }
@@ -1824,8 +1852,7 @@ function buildTasksByDateFromSummary() {
         if (!dateText || !taskName) return;
 
         // Convert displayed date back to ISO
-        const iso = new Date(dateText).toISOString().split("T")[0];
-
+const iso = dateText;
         const input = document.createElement("input");
         input.type = "hidden";
         input.classList.add("task-by-date-input");
@@ -1898,8 +1925,7 @@ function buildIntermittentSummaryInputs() {
         if (!dateText || !task) return;
 
         // Convert displayed date → ISO
-        const iso = new Date(dateText).toISOString().split("T")[0];
-
+const iso = dateText;
         // Create hidden input using the structure PHP requires
         const input = document.createElement("input");
         input.type = "hidden";
