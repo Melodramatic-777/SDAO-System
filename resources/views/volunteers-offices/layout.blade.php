@@ -193,10 +193,14 @@
                     </div>
                 </div>
                 <div class="header-right-group">
-    <p>
-        Welcome, {{ session('volunteers_office.first_name') }}! 
-        {{ session('volunteers_office.office_name') ? ' ' . session('volunteers_office.office_name') : '' }}
-    </p>                </div>
+<p style="text-align: right;">
+    Welcome, {{ session('volunteers_office.first_name') }}! <br>
+<strong>
+    @if(session('volunteers_office.office_name'))
+        <strong>{{ session('volunteers_office.office_name') }}</strong>
+    @endif</strong>
+</p>
+               </div>
             </header>
 
             <main class="page-container">

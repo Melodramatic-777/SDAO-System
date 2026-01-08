@@ -179,8 +179,13 @@
                 </div>
             </div>
             <div class="header-right-group">
-                <p>Welcome, {{ session('volunteers_admin.first_name') }}! SDA Assistant</p>
-            </div>
+<p style="text-align: right;">
+        Welcome, {{ session('volunteers_admin.first_name') }}! <br><strong>
+        <strong>SDA Assistant</strong></strong>
+    </p>         
+
+
+</div>
         </header>
 
         <main class="page-container">

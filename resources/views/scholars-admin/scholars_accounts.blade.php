@@ -88,6 +88,14 @@
       <i class="bi bi-arrow-clockwise me-1"></i> Reset
     </button>
 
+
+    <button type="button"
+        id="toggleFingerprintColumn"
+        class="btn btn-success ms-2">
+  <i class="bi bi-fingerprint me-1"></i> Manage Fingerprint
+</button>
+
+
       <input type="text" id="searchScholars" 
          class="form-control search-input ms-auto" 
          placeholder="Search scholars..." 
@@ -113,7 +121,7 @@
     <table id="tableScholars">
 <thead>
       <tr class="table-title-row">
-        <th colspan="13" class="py-3 text-center fw-bold fs-5">
+<th id="tableTitleHeader" colspan="13" class="py-3 text-center fw-bold fs-5">
           Scholars A.Y. {{ request('academic_year') ?? $latestYear }} — {{ request('term') ?? $latestTerm }} Term
         </th>
       </tr>
@@ -131,6 +139,8 @@
           <th>Type</th>
           <th>Status</th>
           <th>Created At</th>
+          <th class="fingerprint-col d-none">Fingerprint</th>
+
         </tr>
       </thead>
       <tbody>
@@ -200,10 +210,20 @@ try {
 {{ $createdAt }}
 </td>
 
+<td class="text-center fingerprint-col d-none">
+    <button class="btn btn-sm btn-primary"
+            onclick="assignFingerprint('{{ $scholar['student_no'] }}')">
+        Assign Fingerprint
+    </button>
+</td>
+
+
         </tr>
       @empty
         <tr>
-          <td colspan="10" class="text-center text-muted">No Scholars found.</td>
+<td id="emptyRowColspan" colspan="13" class="text-center text-muted">
+    No Scholars found.
+</td>
         </tr>
       @endforelse
       </tbody>
@@ -284,6 +304,39 @@ function setupTableSearch(inputId, tableId) {
   });
 }
 setupTableSearch("searchScholars", "tableScholars");
+
+
+
+let fingerprintVisible = false;
+
+document.getElementById('toggleFingerprintColumn').addEventListener('click', function () {
+
+    fingerprintVisible = !fingerprintVisible;
+
+    // toggle column cells + header
+    document.querySelectorAll('.fingerprint-col').forEach(col => {
+        col.classList.toggle('d-none', !fingerprintVisible);
+    });
+
+    // adjust title header colspan
+    const titleHeader = document.getElementById('tableTitleHeader');
+    const emptyRow = document.getElementById('emptyRowColspan');
+
+    if (fingerprintVisible) {
+        titleHeader.colSpan = 14;   // 13 + Fingerprint
+        if (emptyRow) emptyRow.colSpan = 14;
+    } else {
+        titleHeader.colSpan = 13;
+        if (emptyRow) emptyRow.colSpan = 13;
+    }
+});
+
+// redirect or modal later
+function assignFingerprint(studentNo) {
+    window.location.href = `/scholars-admin/assign-fingerprint/${studentNo}`;
+}
+
+
 </script>
 
 @endsection

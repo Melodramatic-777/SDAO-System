@@ -144,7 +144,6 @@
         <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
             <div class="assistant-container">
-                <span class="assistant-text">SDA Associate</span>
                 <button class="assistant-btn">
                     <img src="{{ asset('images/Side.png') }}" height="30">
                 </button>
@@ -204,7 +203,11 @@
                     </div>
                 </div>
                 <div class="header-right-group">
-                    <p>Welcome, {{ session('scholars_admin.first_name') }}!</p>
+
+                    <p style="text-align: right;">
+        Welcome, {{ session('scholars_admin.first_name') }}! <br><strong>
+        <strong>SDA Associate</strong></strong>
+    </p>   
                 </div>
             </header>
 

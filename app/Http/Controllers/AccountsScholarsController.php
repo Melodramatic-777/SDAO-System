@@ -566,4 +566,37 @@ public function showVolunteerDetail($student_no)
     ]);
 }
 
+
+public function showAssignFingerprint($student_no)
+{
+
+
+    $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
+
+    $selectedScholar = null;
+
+    foreach ($scholarsData as $year => $terms) {
+        foreach ($terms as $term => $types) {
+            foreach ($types as $type => $records) {
+                foreach ($records as $id => $scholar) {
+                    if (($scholar['student_no'] ?? null) == $student_no) {
+                        $selectedScholar = $scholar;
+                        $selectedScholar['firebase_key'] = $id;
+                        $selectedScholar['academic_year'] = $year;
+                        $selectedScholar['term'] = $term;
+                        $selectedScholar['scholarship_type'] = $type;
+                        break 4;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!$selectedScholar) {
+        abort(404, 'Scholar not found');
+    }
+
+    return view('scholars-admin.assignFingerprint', compact('selectedScholar'));
+}
+
 }
