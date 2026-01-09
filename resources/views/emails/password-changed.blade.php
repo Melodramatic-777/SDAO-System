@@ -41,8 +41,8 @@
 
                             <p style="font-size:15px; color:#555;">
                                 Stay safe,<br>
-                                <strong>IsKonnect</strong>
-                            </p>
+                                <strong>IsKonnect System</strong><br>
+                                <em>This is an automated email. Please do not reply.</em>                            </p>
                         </td>
                     </tr>
 
