@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\OpportunitySubmittedMailable;
 use App\Mail\AdminOpportunityRequestMailable;
+use App\Mail\NewOpportunityForScholarsMailable;
+
+
+
 
 class SubmitOpportunityController extends Controller
 {
@@ -240,26 +244,86 @@ class SubmitOpportunityController extends Controller
         // -------------------------------
         // EMAILS
         // -------------------------------
-        try {
-            // Office confirmation
-            if ($isOffice) {
-                Mail::to($userEmail)->queue(
-                    new OpportunitySubmittedMailable($fullName ?: 'Office User')
-                );
+// -------------------------------
+// EMAILS
+// -------------------------------
+try {
+    if ($isOffice) {
+
+        // 1️⃣ Office confirmation email
+        Mail::to($userEmail)->send(
+            new OpportunitySubmittedMailable($fullName ?: 'Office User')
+        );
+
+        // 2️⃣ Fetch SDA Assistant(s) from Firebase
+        $adminsSnapshot = $this->database
+            ->getReference('admins')
+            ->getValue();
+
+        if (is_array($adminsSnapshot)) {
+            foreach ($adminsSnapshot as $admin) {
+
+                if (
+                    isset($admin['role'], $admin['email']) &&
+                    trim($admin['role']) === 'SDA Assistant'
+                ) {
+                    Mail::to($admin['email'])->send(
+                        new AdminOpportunityRequestMailable([
+                            'name' => $fullName,
+                            'office' => $userRole,
+                            'date_time' => now()->format('F d, Y h:i A'),
+                            'location' => $validated['location'],
+                            'title' => $validated['title'],
+                        ])
+                    );
+                }
             }
-
-            // Admin / SDA Assistant notification
-            Mail::to(config('mail.admin_address'))
-                ->queue(new AdminOpportunityRequestMailable([
-                    'name' => $fullName,
-                    'office' => $userRole,
-                    'date_time' => now()->format('F d, Y h:i A'),
-                    'location' => $validated['location'],
-                ]));
-
-        } catch (\Exception $e) {
-            Log::error('Opportunity email failed: ' . $e->getMessage());
         }
+
+        // 3️⃣ Notify ALL scholars about the new opportunity
+        $scholarsSnapshot = $this->database
+            ->getReference('scholars')
+            ->getValue();
+
+        /**
+         * Scholars structure:
+         * scholars
+         *  └ academic_year
+         *    └ term
+         *      └ scholarship_type
+         *        └ scholar_id => scholar data
+         */
+        if (is_array($scholarsSnapshot)) {
+            foreach ($scholarsSnapshot as $academicYear) {
+                if (!is_array($academicYear)) continue;
+
+                foreach ($academicYear as $term) {
+                    if (!is_array($term)) continue;
+
+                    foreach ($term as $scholarshipType) {
+                        if (!is_array($scholarshipType)) continue;
+
+                        foreach ($scholarshipType as $scholar) {
+                            if (!is_array($scholar)) continue;
+
+                            if (
+                                isset($scholar['email']) &&
+                                filter_var($scholar['email'], FILTER_VALIDATE_EMAIL)
+                            ) {
+                                Mail::to($scholar['email'])
+                                    ->send(new NewOpportunityForScholarsMailable());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+} catch (\Throwable $e) {
+    Log::error('Opportunity email failed', [
+        'error' => $e->getMessage()
+    ]);
+}
 
         // -------------------------------
         // Redirect

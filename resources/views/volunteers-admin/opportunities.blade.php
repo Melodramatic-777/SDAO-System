@@ -143,86 +143,145 @@ data-target="{{ $targetNumber }}">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content custom-modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title">{{ $opportunity['title'] ?? 'Untitled Opportunity' }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+<div class="modal-header">
+    <h5 class="modal-title">Request Details</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
 
             <div class="modal-body custom-modal-body row g-4">
 
                 {{-- Left Panel --}}
                {{-- Left Panel --}}
 <div class="col-md-6 left-panel">
-    <p><strong>Office:</strong> {{ $opportunity['submitted_by_role'] ?? 'N/A' }}</p>
-    <p><strong>Submitted By:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</p>
-<p><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
+    <div class="left-panel-scroll">
 
-{{-- Display Date and Time separately only if NOT intermittent --}}
-@php
-    $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
-@endphp
+        {{-- Status + Submitted At --}}
+        <div class="gap-2 mb-2 d-flex align-items-center status-meta">
+            <span class="status-pill {{ $badgeClass }}"
+                  @isset($badgeStyle) style="{{ $badgeStyle }}" @endisset>
+                <i class="bi bi-clock-history me-1"></i>
+                {{ ucfirst($displayStatus) }}
+            </span>
 
-@if(!$isIntermittent && !empty($opportunity['schedule']))
-    @foreach($opportunity['schedule'] as $s)
-        @if(!empty($s['date']))
-            <p><strong>Date:</strong> {{ \Carbon\Carbon::parse($s['date'])->format('F j, Y') }}</p>
-        @endif
-        @if(!empty($s['start_time']) && !empty($s['end_time']))
-            <p><strong>Time:</strong> {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }} – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}</p>
-        @endif
-        <hr>
-    @endforeach
+            <span class="submitted-at text-muted">
+                Submitted
+                {{ isset($opportunity['submitted_at'])
+                    ? \Carbon\Carbon::parse($opportunity['submitted_at'])->format('M d, Y, g:i A')
+                    : 'N/A'
+                }}
+            </span>
+        </div>
+<BR>
+        {{-- Opportunity Title --}}
+        <div class="mb-2 volunteer-heading">
+            ACTIVITY TITLE
+        </div>
+
+        <p class="opportunity-title">
+            {{ $opportunity['title'] ?? 'Untitled Opportunity' }}
+        </p>
+
+
+    {{-- Office + Submitted By (SIDE BY SIDE) --}}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="info-tile">
+<div class="info-label">
+    <i class="bi bi-building me-1"></i> Office
+</div>                <div class="info-value">
+                    {{ $opportunity['submitted_by_role'] ?? 'N/A' }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="info-tile">
+
+<div class="info-label">
+    <i class="bi bi-person-circle me-1"></i> Submitted by
+</div>                <div class="info-value">
+                    {{ $opportunity['submitted_by_name'] ?? 'N/A' }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Location --}}
+    <div class="mt-3 info-tile">
+<div class="info-label">
+    <i class="bi bi-geo-alt me-1"></i> Location
+</div>        <div class="info-value">
+            {{ $opportunity['location'] ?? 'N/A' }}
+        </div>
+    </div>
+
+    {{-- Description --}}
+    <div class="mt-3 description-tile">
+        <div class="info-label">Description</div>
+        <p class="mb-0">
+            {{ $opportunity['description'] ?? 'No description provided.' }}
+        </p>
+    </div>
+
+
+{{-- Schedule Breakdown --}}
+{{-- Schedule Breakdown --}}
+@if(!empty($opportunity['schedule']) && is_array($opportunity['schedule']))
+
+<div class="mt-4 schedule-section">
+    <div class="schedule-card">
+
+        {{-- Header --}}
+        <div class="schedule-header">
+            <div class="gap-2 d-flex align-items-center">
+                <span class="schedule-icon">
+                    <i class="bi bi-calendar-event"></i>
+                </span>
+                <div>
+                    <div class="schedule-title">Schedule Breakdown</div>
+                    <div class="schedule-subtitle">
+                        {{ count($opportunity['schedule']) }} dates
+                    </div>
+                </div>
+            </div>
+        </div>
+<hr>
+        {{-- Items --}}
+        <div class="schedule-list">
+            @foreach($opportunity['schedule'] as $s)
+                @php
+                    $dateText = !empty($s['date'])
+                        ? \Carbon\Carbon::parse($s['date'])->format('F j, Y')
+                        : 'N/A';
+
+                    $timeText = (!empty($s['start_time']) && !empty($s['end_time']))
+                        ? \Carbon\Carbon::parse($s['start_time'])->format('g:i A') . ' – ' .
+                          \Carbon\Carbon::parse($s['end_time'])->format('g:i A')
+                        : null;
+                @endphp
+
+                <div class="schedule-item">
+                    <div class="schedule-date">
+                        <i class="bi bi-calendar3 me-1"></i> {{ $dateText }}
+                    </div>
+
+                    @if($timeText)
+                        <div class="schedule-time">
+                            <i class="bi bi-clock me-1"></i> {{ $timeText }}
+                        </div>
+                    @endif
+                </div>
+
+            @endforeach
+        </div>
+
+    </div>
+</div>
+
 @endif
 
 
-<h6><strong>Description</strong></h6>
-<div>{{ $opportunity['description'] ?? 'No description provided.' }}</div>
-<hr>
 
-
-    {{-- Intermittent Table --}}
-    @php
-        $isIntermittent = !empty($opportunity['is_intermittent']) && (int)$opportunity['is_intermittent'] === 1;
-    @endphp
-
-    @if($isIntermittent)
-        <h6 class="mb-3 fw-bold">Schedule</h6>
-        <div class="table-responsive">
-            <table class="table align-middle shadow-sm table-sm table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th class="text-center">Date</th>
-                        <th class="text-center">Time</th>
-                        <th class="text-center">Food Provided</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($opportunity['schedule'] ?? [] as $s)
-                        <tr>
-                            <td class="text-center">
-                                {{ !empty($s['date']) ? \Carbon\Carbon::parse($s['date'])->format('F j, Y') : 'N/A' }}
-                            </td>
-                            <td class="text-center">
-                                @if(!empty($s['start_time']) && !empty($s['end_time']))
-                                    {{ \Carbon\Carbon::parse($s['start_time'])->format('g:i A') }}
-                                    – {{ \Carbon\Carbon::parse($s['end_time'])->format('g:i A') }}
-                                @else
-                                    N/A
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                {{ strtolower($s['food_provided'] ?? 'no') === 'yes' ? 'Yes' : 'No' }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">No schedule details provided</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    @endif
 
     @if(!empty($opportunity['return_comment']) && strtolower($opportunity['status']) === 'returned')
         <div class="mt-2 alert alert-danger">
@@ -247,7 +306,7 @@ data-target="{{ $targetNumber }}">
         </ul>
     @endif
 </div>
-
+</div>   
    {{-- Right Panel --}}
 <div class="col-md-6 right-panel">
 
@@ -260,88 +319,98 @@ data-target="{{ $targetNumber }}">
             ->sum();
     @endphp
 
-    @if($totalVolunteersNeededOverall > 0)
-        <p class="fw-bold text-primary">Total Volunteers Needed: {{ $totalVolunteersNeededOverall }}</p>
-    @endif
+@if($totalVolunteersNeededOverall > 0)
+<div class="mb-2 volunteer-heading">
+    TOTAL VOLUNTEERS NEEDED
+</div>
 
-    @if(isset($opportunity['intermittent_tasks_by_date']) && is_array($opportunity['intermittent_tasks_by_date']))
-        @foreach($opportunity['intermittent_tasks_by_date'] as $date => $tasksForDate)
-            @if($isIntermittent)
-                {{-- Intermittent: collapsible --}}
-                @php
-                    $collapseId = 'tasksCollapse_' . md5($opportunity['opportunity_id'] . $date);
-                    $totalVolunteersNeeded = collect($tasksForDate)->sum(fn($task) => isset($task['needed']) ? (int)$task['needed'] : 0);
-                @endphp
-                <div class="mb-3">
-                    <button class="btn w-100 text-start" type="button" 
-                            data-bs-toggle="collapse" 
-                            data-bs-target="#{{ $collapseId }}" 
-                            aria-expanded="false" 
-                            aria-controls="{{ $collapseId }}"
-                            style="background-color: #cce7ff; color: #000; border: 1px solid #99d1ff;">
-                        {{ \Carbon\Carbon::parse($date)->format('F d, Y') }}
-                        @if($totalVolunteersNeeded > 0)
-                            - {{ $totalVolunteersNeeded }} Volunteers Needed
-                        @endif
-                    </button>
+<div class="mb-3 volunteer-summary">
+    <div class="volunteer-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <circle cx="9" cy="7" r="4" stroke="white" stroke-width="2"/>
+            <circle cx="17" cy="7" r="3" stroke="white" stroke-width="2"/>
+            <path d="M3 21c0-3 3-6 6-6s6 3 6 6" stroke="white" stroke-width="2"/>
+            <path d="M14 21c.5-2 2-4 4-4 2.5 0 3 2 3 4" stroke="white" stroke-width="2"/>
+        </svg>
+    </div>
 
-                    <div class="mt-2 collapse" id="{{ $collapseId }}">
-                        <div class="p-3 border rounded bg-light">
-                            @foreach($tasksForDate as $taskItem)
-                                <div class="pb-2 mb-3 border-bottom">
-                                    <p class="mb-1"><strong>{{ $taskItem['task'] ?? 'Unnamed Task' }}</strong></p>
-                                    @if(!empty($taskItem['description']))
-                                        <p class="mb-1 text-muted" style="margin-left: 12px;">
-                                            {{ $taskItem['description'] }}
-                                        </p>
-                                    @endif
-                                    @if(!empty($taskItem['skills']))
-                                        <p class="mb-1" style="margin-left: 12px;">
-                                            <strong class="text-primary">Skills:</strong> {{ $taskItem['skills'] }}
-                                        </p>
-                                    @endif
-                                    @if(!empty($taskItem['needed']))
-                                        <p class="mb-0" style="margin-left: 12px;">
-                                            <strong class="text-dark">Volunteers Needed:</strong> {{ $taskItem['needed'] }}
-                                        </p>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            @else
-                {{-- Regular: show all tasks expanded, no collapse, no volunteers needed beside date --}}
-                <div class="mb-3">
-                    <h6 class="mb-2">{{ \Carbon\Carbon::parse($date)->format('F d, Y') }}</h6>
-                    <div class="p-3 border rounded bg-light">
-                        @foreach($tasksForDate as $taskItem)
-                            <div class="pb-2 mb-3 border-bottom">
-                                <p class="mb-1"><strong>{{ $taskItem['task'] ?? 'Unnamed Task' }}</strong></p>
-                                @if(!empty($taskItem['description']))
-                                    <p class="mb-1 text-muted" style="margin-left: 12px;">
-                                        {{ $taskItem['description'] }}
-                                    </p>
-                                @endif
-                                @if(!empty($taskItem['skills']))
-                                    <p class="mb-1" style="margin-left: 12px;">
-                                        <strong class="text-primary">Skills:</strong> {{ $taskItem['skills'] }}
-                                    </p>
-                                @endif
-                                @if(!empty($taskItem['needed']))
-                                    <p class="mb-0" style="margin-left: 12px;">
-                                        <strong class="text-dark">Volunteers Needed:</strong> {{ $taskItem['needed'] }}
-                                    </p>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+    <div class="volunteer-text">
+        <div class="volunteer-count">{{ $totalVolunteersNeededOverall }}</div>
+        <div class="volunteer-label">volunteers required</div>
+    </div>
+</div>
+
+
+@endif
+
+@if(isset($opportunity['intermittent_tasks_by_date']) && is_array($opportunity['intermittent_tasks_by_date']))
+
+<div class="mb-2 volunteer-heading">
+    DATES & TASKS BREAKDOWN
+</div>
+
+<div class="dates-tasks-scroll">
+@foreach($opportunity['intermittent_tasks_by_date'] as $date => $tasksForDate)
+
+    @php
+        $schedule = collect($opportunity['schedule'] ?? [])
+            ->firstWhere('date', $date);
+
+        $start = $schedule['start_time'] ?? null;
+        $end   = $schedule['end_time'] ?? null;
+        $food  = strtolower($schedule['food_provided'] ?? 'no') === 'yes';
+
+        $dateTotal = collect($tasksForDate)
+            ->sum(fn($task) => (int)($task['needed'] ?? 0));
+    @endphp
+
+    <div class="mb-3 date-card">
+
+        {{-- Header --}}
+        <div class="date-header d-flex justify-content-between">
+            <strong>{{ \Carbon\Carbon::parse($date)->format('F j, Y') }}</strong>
+            <span class="date-volunteers">{{ $dateTotal }} volunteers</span>
+        </div>
+
+        {{-- Time + Food --}}
+        <div class="date-meta">
+            @if($start && $end)
+<span class="time-badge">
+    <i class="bi bi-clock me-1"></i>
+    {{ \Carbon\Carbon::parse($start)->format('g:i A') }} –
+    {{ \Carbon\Carbon::parse($end)->format('g:i A') }}
+</span>
+
+
+                <span class="food-badge {{ $food ? 'food-yes' : 'food-no' }}">
+                    <i class="bi {{ $food ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }} me-1"></i>
+                    {{ $food ? 'Food Provided' : 'No Food' }}
+                </span>
             @endif
-        @endforeach
-    @else
-        <p class="text-muted">No tasks found.</p>
-    @endif
+        </div>
+
+        <hr>
+
+        {{-- Tasks --}}
+        <ul class="task-list">
+            @foreach($tasksForDate as $task)
+                <li class="task-item">
+                    <span>• {{ $task['task'] ?? 'Unnamed Task' }}</span>
+                    <span class="needed">{{ $task['needed'] ?? 0 }} needed</span>
+                </li>
+            @endforeach
+        </ul>
+
+    </div>
+
+@endforeach
+</div>
+
+
+@else
+    <p class="text-muted">No tasks found.</p>
+@endif
+
 
 </div>
 
@@ -349,22 +418,52 @@ data-target="{{ $targetNumber }}">
             </div>
 
 {{-- Approve / Return Buttons --}}
-<div class="modal-footer d-flex justify-content-end">
+<div class="gap-3 modal-footer d-flex justify-content-end">
+
     @if(in_array(strtolower($opportunity['status'] ?? ''), ['pending', 'waiting for approval', 'returned to sdao']))
-        <form method="POST" action="{{ route('volunteers-admin.opportunity.update-status', $opportunity['opportunity_id']) }}" class="d-inline me-2">
-            @csrf
-            @method('PATCH')
-            <input type="hidden" name="status" value="Approved">
-            <button type="submit" class="btn btn-approve">Approve</button>
+
+        {{-- Return Request --}}
+        <button
+            type="button"
+            class="btn btn-return-outline"
+            data-bs-toggle="modal"
+            data-bs-target="#returnModal{{ $opportunity['opportunity_id'] }}"
+        >
+            <i class="bi bi-x-lg me-2"></i> Return Request
+        </button>
+
+        {{-- Approve Request --}}
+<form
+    method="POST"
+    action="{{ route('volunteers-admin.opportunity.update-status', $opportunity['opportunity_id']) }}"
+    id="returnForm{{ $opportunity['opportunity_id'] }}"
+>
+
+    @csrf
+    @method('PATCH')
+    <input type="hidden" name="status" value="Approved">
+
+<button
+    type="button"
+    class="btn btn-approve-solid action-btn"
+    data-title="Confirm Approval"
+    data-message="Are you sure you want to approve this request?"
+    data-form-id="approveForm{{ $opportunity['opportunity_id'] }}"
+    data-confirm-class="btn-success"
+    data-bs-toggle="modal"
+    data-bs-target="#globalModal"
+>
+    <i class="bi bi-check-lg me-2"></i> Approve Request
+</button>
+
         </form>
 
-        <button type="button" class="btn btn-return" data-bs-toggle="modal" data-bs-target="#returnModal{{ $opportunity['opportunity_id'] }}">
-            Return
-        </button>
     @elseif(strtolower($opportunity['status'] ?? '') === 'approved' && strtolower($opportunity['submitted_by_role'] ?? '') !== 'sda assistant')
         <span class="text-success fw-bold">This opportunity is already approved.</span>
     @endif
+
 </div>
+
 
 
 
@@ -394,7 +493,7 @@ data-target="{{ $targetNumber }}">
 {{-- Return Modal --}}
 {{-- Return Modal --}}
 <div class="modal fade" id="returnModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+<div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
 
             <div class="modal-header">
@@ -428,8 +527,29 @@ data-target="{{ $targetNumber }}">
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Submit Return</button>
+<button
+    type="button"
+    class="btn btn-outline-secondary action-btn"
+    data-title="Cancel Return"
+    data-message="Are you sure you want to cancel returning this request?"
+    data-dismiss-only="true"
+    data-bs-toggle="modal"
+    data-bs-target="#globalModal"
+>
+    Cancel
+</button>
+<button
+    type="button"
+    class="btn btn-success action-btn"
+    data-title="Confirm Return"
+    data-message="Are you sure you want to return this request?"
+    data-form-id="returnForm{{ $opportunity['opportunity_id'] }}"
+    data-confirm-class="btn-danger"
+    data-bs-toggle="modal"
+    data-bs-target="#globalModal"
+>
+    Submit Return
+</button>
                 </div>
             </form>
         </div>
@@ -450,6 +570,33 @@ data-target="{{ $targetNumber }}">
 
 </main>
 
+
+<div class="modal fade" id="globalModal" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="globalModalTitle">
+          Confirm Action
+        </h5>
+      </div>
+
+      <div class="modal-body" id="globalModalBody">
+        Are you sure?
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" id="modalConfirmBtn">
+          Confirm
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
 <script>
 const cards = document.querySelectorAll('.status-card-container');
 
@@ -496,6 +643,55 @@ document.getElementById('filterUrgent').addEventListener('click', () => {
         const isUrgent = card.querySelector('.badge.bg-danger')?.textContent.trim() === 'Urgent';
         card.style.display = isUrgent ? "block" : "none";
     });
+});
+
+let formToSubmit = null;
+
+document.querySelectorAll('.approve-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        formToSubmit = document.getElementById(this.dataset.formId);
+    });
+});
+
+document.getElementById('modalConfirmBtn').addEventListener('click', function () {
+    if (formToSubmit) {
+        formToSubmit.submit();
+    }
+});
+
+
+let pendingForm = null;
+let dismissOnly = false;
+
+document.querySelectorAll('.action-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+
+        // Modal text
+        document.getElementById('globalModalTitle').textContent = this.dataset.title;
+        document.getElementById('globalModalBody').textContent = this.dataset.message;
+
+        // Button styling
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        confirmBtn.className = 'btn ' + (this.dataset.confirmClass || 'btn-primary');
+
+        // Action behavior
+        dismissOnly = this.dataset.dismissOnly === "true";
+        pendingForm = this.dataset.formId
+            ? document.getElementById(this.dataset.formId)
+            : null;
+    });
+});
+
+document.getElementById('modalConfirmBtn').addEventListener('click', function () {
+
+    if (dismissOnly) {
+        bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide();
+        return;
+    }
+
+    if (pendingForm) {
+        pendingForm.submit();
+    }
 });
 </script>
 

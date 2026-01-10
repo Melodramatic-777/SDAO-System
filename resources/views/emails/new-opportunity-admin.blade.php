@@ -31,7 +31,7 @@
                             <strong>Request Details:</strong><br><br>
                             <strong>Requestor:</strong> {{ $name }}<br>
                             <strong>Office:</strong> {{ $office }}<br>
-                            <strong>Date & Time:</strong> {{ $dateTime }}<br>
+<strong>Date & Time:</strong> {{ $date_time }}<br>
                             <strong>Location:</strong> {{ $location }}
                         </p>
 

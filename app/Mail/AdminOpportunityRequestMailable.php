@@ -10,17 +10,24 @@ class AdminOpportunityRequestMailable extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public array $details;
+    public array $data;
 
-    public function __construct(array $details)
+    public function __construct(array $data)
     {
-        $this->details = $details;
+        $this->data = $data;
     }
 
     public function build()
     {
         return $this
             ->subject('New Volunteer Opportunity Request')
-            ->view('emails.new-opportunity-admin');
+            ->view('emails.new-opportunity-admin')
+            ->with([
+                'name' => $this->data['name'] ?? '',
+                'office' => $this->data['office'] ?? '',
+                'date_time' => $this->data['date_time'] ?? '',
+                'location' => $this->data['location'] ?? '',
+                'title' => $this->data['title'] ?? '',
+            ]);
     }
 }
