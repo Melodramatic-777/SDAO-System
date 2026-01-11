@@ -28,130 +28,120 @@ class AccountsScholarsController extends Controller
     /**
      * Show paginated scholars list
      */
-  public function showScholarsPage(Request $request) 
-    {
-        // Fetch all scholars from Firebase
-        $scholarsData = $this->database->getReference('scholars')->getValue();
-        $scholars = [];
+ public function showScholarsPage(Request $request)
+{
+    $scholarsData = $this->database
+        ->getReference('scholars')
+        ->getValue() ?? [];
 
-        if ($scholarsData) {
-            foreach ($scholarsData as $academicYear => $terms) {
-                foreach ($terms as $term => $types) {
-                    foreach ($types as $scholarshipType => $records) {
-                        foreach ($records as $scholarId => $scholar) {
-                            $scholars[] = [
-                                'student_no'       => $scholar['student_no'] ?? '',
-                                'email'            => $scholar['email'] ?? '',
-                                'first_name'       => $scholar['first_name'] ?? '',
-                                'middle_name'      => $scholar['middle_name'] ?? '',
-                                'last_name'        => $scholar['last_name'] ?? '',
-                                'school'           => $scholar['school'] ?? '',
-                                'program'          => $scholar['program'] ?? '',
-                                'birthday'         => $scholar['birthday'] ?? '',
-                                'scholarship_type' => $scholarshipType,
-                                'academic_year'    => $academicYear,
-                                'term'             => $term,
-                                'created_at'       => $scholar['created_at'] ?? '',
-                                'gwa_records'      => $scholar['gwa_records'] ?? []
-                            ];
-                        }
-                    }
+    $scholars = [];
+
+    if (!is_array($scholarsData)) {
+        $scholarsData = [];
+    }
+
+    foreach ($scholarsData as $academicYear => $terms) {
+        if (!is_array($terms)) continue;
+
+        foreach ($terms as $term => $types) {
+            if (!is_array($types)) continue;
+
+            foreach ($types as $scholarshipType => $records) {
+                if (!is_array($records)) continue;
+
+                foreach ($records as $scholarId => $scholar) {
+                    if (!is_array($scholar)) continue;
+
+                    $scholars[] = [
+                        'student_no'       => $scholar['student_no'] ?? '',
+                        'email'            => $scholar['email'] ?? '',
+                        'first_name'       => $scholar['first_name'] ?? '',
+                        'middle_name'      => $scholar['middle_name'] ?? '',
+                        'last_name'        => $scholar['last_name'] ?? '',
+                        'school'           => $scholar['school'] ?? '',
+                        'program'          => $scholar['program'] ?? '',
+                        'birthday'         => $scholar['birthday'] ?? '',
+                        'scholarship_type' => $scholarshipType,
+                        'academic_year'    => $academicYear,
+                        'term'             => $term,
+                        'created_at'       => $scholar['created_at'] ?? '',
+                        'gwa_records'      => is_array($scholar['gwa_records'] ?? null)
+                                                ? $scholar['gwa_records']
+                                                : [],
+                    ];
                 }
             }
         }
-
-        $collection = collect($scholars);
-
-        // Extract filters
-        $academicYears = $collection->pluck('academic_year')->unique()->sortDesc()->values();
-        $terms         = $collection->pluck('term')->unique()->sort()->values();
-        $scholarshipTypes = $collection->pluck('scholarship_type')->unique()->sort()->values();
-        $programs         = $collection->pluck('program')->unique()->sort()->values();
-        $schools          = $collection->pluck('school')->unique()->sort()->values();
-
-        // Latest year + term detection
-        $academicYears = collect($scholars)->pluck('academic_year')->unique()->sortDesc()->values();
-        $latestYear = $academicYears->first();
-
-        $filtered = collect($scholars)->where('academic_year', $latestYear);
-
-        $termOrder = ["1st", "2nd", "3rd"];
-        $latestTerm = $filtered->pluck('term')
-            ->unique()
-            ->sort(function($a, $b) use ($termOrder) {
-                return array_search($a, $termOrder) <=> array_search($b, $termOrder);
-            })
-            ->last();
-
-        // ⭐ ADDED — automatic filtering for Latest A.Y. + Term
-$selectedYear = $request->input('academic_year', $latestYear);
-
-// IF the user selected an academic year → show ALL TERMS under that A.Y.
-// IF not, default to latest term only for the latest A.Y.
-if ($request->filled('academic_year')) {
-    $collection = $collection->where('academic_year', $selectedYear);
-} else {
-    // Default load: latest year + latest term
-    $collection = $collection->where('academic_year', $latestYear)
-                             ->where('term', $latestTerm);
-}
-
-// Only filter TERM if user selected a term
-if ($request->filled('term')) {
-    $collection = $collection->where('term', $request->term);
-}
-
-        // ⭐ END ADDED
-
-
-        // OTHER FILTERS (Unchanged)
-        if ($request->filled('scholarship_type')) {
-            if ($request->scholarship_type === 'Aspiring Scholar') {
-                $collection = $collection->where('is_aspiring', true);
-            } else {
-                $collection = $collection->where('scholarship_type', $request->scholarship_type);
-            }
-        }
-
-        if (!$request->filled('scholarship_type')) {
-            $collection = $collection->filter(function ($item) {
-                return empty($item['is_aspiring']) || $item['is_aspiring'] == false;
-            });
-        }
-
-        if ($request->filled('program')) {
-            $collection = $collection->where('program', $request->program);
-        }
-
-        if ($request->filled('school')) {
-            $collection = $collection->where('school', $request->school);
-        }
-
-        // Pagination
-        $perPage = 10;
-        $page = $request->get('page', 1);
-        $total = $collection->count();
-        $results = $collection->slice(($page - 1) * $perPage, $perPage)->values();
-
-        $paginatedScholars = (new LengthAwarePaginator(
-            $results,
-            $total,
-            $perPage,
-            $page,
-            ['path' => request()->url()]
-        ))->appends(request()->query());
-
-        return view('scholars-admin.scholars_accounts', [
-            'scholars'         => $paginatedScholars,
-            'scholarshipTypes' => $scholarshipTypes,
-            'programs'         => $programs,
-            'schools'          => $schools,
-            'academicYears'    => $academicYears,
-            'terms'            => $terms,
-            'latestYear'       => $latestYear,
-            'latestTerm'       => $latestTerm   
-        ]);
     }
+
+    /* -------------------------------------------
+     * COLLECTION + FILTERS (UNCHANGED)
+     * ------------------------------------------- */
+    $collection = collect($scholars);
+
+    $academicYears = $collection->pluck('academic_year')->unique()->sortDesc()->values();
+    $terms = $collection->pluck('term')->unique()->sort()->values();
+    $scholarshipTypes = $collection->pluck('scholarship_type')->unique()->sort()->values();
+    $programs = $collection->pluck('program')->unique()->sort()->values();
+    $schools = $collection->pluck('school')->unique()->sort()->values();
+
+    $latestYear = $academicYears->first();
+
+    $latestTerm = $collection
+        ->where('academic_year', $latestYear)
+        ->pluck('term')
+        ->unique()
+        ->sortBy(fn($t) => ['1st'=>1,'2nd'=>2,'3rd'=>3][$t] ?? 99)
+        ->last();
+
+    // Default filter
+    if ($request->filled('academic_year')) {
+        $collection = $collection->where('academic_year', $request->academic_year);
+    } else {
+        $collection = $collection->where('academic_year', $latestYear)
+                                 ->where('term', $latestTerm);
+    }
+
+    if ($request->filled('term')) {
+        $collection = $collection->where('term', $request->term);
+    }
+
+    if ($request->filled('scholarship_type')) {
+        $collection = $collection->where('scholarship_type', $request->scholarship_type);
+    }
+
+    if ($request->filled('program')) {
+        $collection = $collection->where('program', $request->program);
+    }
+
+    if ($request->filled('school')) {
+        $collection = $collection->where('school', $request->school);
+    }
+
+    // Pagination
+    $perPage = 10;
+    $page = $request->get('page', 1);
+
+    $paginatedScholars = new LengthAwarePaginator(
+        $collection->forPage($page, $perPage)->values(),
+        $collection->count(),
+        $perPage,
+        $page,
+        ['path' => request()->url()]
+    );
+
+    return view('scholars-admin.scholars_accounts', [
+        'scholars'         => $paginatedScholars,
+        'scholarshipTypes' => $scholarshipTypes,
+        'programs'         => $programs,
+        'schools'          => $schools,
+        'academicYears'    => $academicYears,
+        'terms'            => $terms,
+        'latestYear'       => $latestYear,
+        'latestTerm'       => $latestTerm,
+    ]);
+}
+
     /**
      * Import scholars via uploaded Excel/CSV
      */
@@ -599,4 +589,31 @@ public function showAssignFingerprint($student_no)
     return view('scholars-admin.assignFingerprint', compact('selectedScholar'));
 }
 
+
+public function storeAssignFingerprint(Request $request, $student_no)
+{
+    $data = $request->validate([
+        'firebase_key' => ['required', 'string'],
+        'academic_year' => ['required', 'string'],
+        'term' => ['required', 'string'],
+        'scholarship_type' => ['required', 'string'],
+        'fingerprint_slot_id' => ['required', 'integer', 'min:1'],
+    ]);
+
+    // IMPORTANT: remove "/records"
+    $path = "scholars/{$data['academic_year']}/{$data['term']}/{$data['scholarship_type']}/{$data['firebase_key']}";
+
+    $existing = $this->database->getReference($path)->getValue();
+    if (!$existing) {
+        return redirect()->route('scholars-admin.scholars_accounts')
+            ->with('error', 'Scholar record not found in Firebase. No changes saved.');
+    }
+
+    $this->database->getReference($path)->update([
+        'fingerprint_slot_id' => (int) $data['fingerprint_slot_id'],
+    ]);
+
+    return redirect()->route('scholars-admin.scholars_accounts')
+        ->with('success', 'Fingerprint assigned successfully.');
+    }
 }

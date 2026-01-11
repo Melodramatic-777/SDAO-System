@@ -42,6 +42,10 @@ Route::get('/scholars-admin/profile', [AdminController::class, 'showScholarsAdmi
 
 
 
+Route::post('/assign-fingerprint/{student_no}',
+    [AccountsScholarsController::class, 'storeAssignFingerprint']
+)->name('scholars-admin.assign-fingerprint.store');
+
 
     Route::controller(ScholarsDashboardController::class)->group(function () {
         Route::get('/dashboard', 'dashboard')->name('scholars-admin.dashboard');

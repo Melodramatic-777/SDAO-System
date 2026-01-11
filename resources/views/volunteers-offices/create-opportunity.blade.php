@@ -455,7 +455,12 @@
   }
 }
 
-
+.volunteer-heading {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280; /* muted gray */
+    letter-spacing: 0.6px;
+}
 
 </style>
 
@@ -480,14 +485,14 @@
     <div class="step-item">
         <div class="step-content">
             <div id="stepIndicator1" class="step-indicator active">1</div>
-            <div class="step-label">Activity Details</div>
+            <div class="step-label">Basic Information</div>
         </div>
         <div class="step-line"></div>
     </div>
     <div class="step-item">
         <div class="step-content">
             <div id="stepIndicator2" class="step-indicator">2</div>
-            <div class="step-label">Schedule</div>
+            <div class="step-label">Date & Time</div>
         </div>
         <div class="step-line"></div>
     </div>
@@ -512,7 +517,7 @@
 </div>
 
 
-    <div id="stepTitle">Activity Details</div>
+    <div id="stepTitle">Basic Information</div>
 
     <main>
       <!-- LEFT: main form area (keeps your internal form inputs + calendar) -->
@@ -523,7 +528,7 @@
           <!-- STEP 1 -->
           <div class="form-step" id="step-1" >
             <div class="form-section">
-              <label>Title of activity <span class="text-danger">*</span></label>
+              <label>Activity Title <span class="text-danger">*</span></label>
               <input type="text" name="title" placeholder="Enter title proposal" required>
             </div>
 
@@ -558,9 +563,28 @@
               <input type="hidden" name="location" id="location" />
             </div>
 
-     <div class="form-section" style="display:flex; justify-content:flex-end; gap:12px;">
-    <button type="button" class="btn-primary next-step" id="next-step-1">Next</button>
+<div class="form-section" style="display:flex; justify-content:flex-end; gap:12px;">
+    
+    <!-- Cancel (go back) -->
+    <button
+        type="button"
+        class="btn btn-danger"
+        onclick="window.history.back();"
+    >
+        Cancel
+    </button>
+
+    <!-- Next -->
+    <button
+        type="button"
+        class="btn btn-primary next-step"
+        id="next-step-1"
+    >
+        Next
+    </button>
+
 </div>
+
 
 
           </div>
@@ -1164,7 +1188,7 @@ function showStep(i) {
         setTimeout(refreshTaskDateDropdown, 150); // <-- IMPORTANT
     }
 
-    document.getElementById('stepTitle').textContent = ['Activity Details','Schedule','Tasking','Summary'][i] || '';
+    document.getElementById('stepTitle').textContent = ['Basic Information','Date & Time','Tasking','Summary'][i] || '';
     updateIndicators(i+1);
     if (currentStep === 3) generateSummary();
 }

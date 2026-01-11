@@ -28,7 +28,7 @@ class OnTheSpotVolunteerController extends Controller
             'available_date' => 'required|date',
             'available_start_time' => 'required|date_format:H:i',
             'available_end_time' => 'required|date_format:H:i|after:available_start_time',
-            'reasons' => 'array',
+'reasons' => 'nullable|array',
             'reasons.*' => 'string',
             'other_reason' => 'nullable|string|max:255',
             'willing_to_transfer' => 'required|in:yes,no',
@@ -95,7 +95,7 @@ public function fetchOTSVForOffice()
         if ($willing === 'yes') {
 
             // BEFORE DECLINE → only original office sees it
-            if (!$transferUnlocked && $originalOffice === $currentOffice) {
+if (!$transferUnlocked && ($originalOffice === $currentOffice || $isAdmin)) {
                 $list[] = array_merge($item, ['id' => $id]);
                 continue;
             }

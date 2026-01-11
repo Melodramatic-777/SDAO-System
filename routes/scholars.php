@@ -29,6 +29,8 @@ Route::post('volunteer-opportunities/join-task', [ScholarJoinController::class, 
         Route::get('dashboard', 'joinedOpportunities')->name('dashboard');
         Route::get('volunteer-opportunities', 'scholarOpportunities')->name('volunteer-opportunities');
         Route::post('opportunities/join/{id}', 'join')->name('opportunities.join');
+
+        
         
         Route::get('opportunities/intermittent-dates/{id}', 'getIntermittentDates')
             ->name('opportunities.intermittent-dates');
@@ -60,6 +62,8 @@ Route::controller(OpportunitiesController::class)->group(function () {
     Route::controller(OnTheSpotVolunteerController::class)->group(function () {
         Route::post('on-the-spot', 'onTheSpotVolunteer')->name('ontheSpotVolunteer');
             Route::post('on-the-spot/cancel/{id}', 'cancelOTSV')->name('ontheSpotVolunteer.cancel'); // <--- new
+Route::post('volunteer-opportunities/join-task', [ScholarJoinController::class, 'joinTask'])
+    ->name('joinTask');
 
     });
 });

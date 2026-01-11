@@ -19,29 +19,33 @@ class ScholarsDashboardController extends Controller
     }
 
     /* ============================================================
-     *  ADMIN DASHBOARD (scholars-admin.dashboard)
+     *  ADMIN DASHBOARD
      * ============================================================ */
     public function dashboard()
     {
         /* -------------------------------------------
-         * FETCH SCHOLARS COLLECTION
+         * FETCH SCHOLARS
          * ------------------------------------------- */
-        $ref = $this->database->getReference('scholars');
-        $scholars = $ref->getValue() ?? [];
+        $scholars = $this->database
+            ->getReference('scholars')
+            ->getValue() ?? [];
 
         /* -------------------------------------------
-         * FETCH OTSV LIST FOR SIDE PANEL
+         * FETCH OTSV LIST
          * ------------------------------------------- */
-        $otsvList = $this->database->getReference('on_the_spot_volunteers')->getValue() ?? [];
+        $otsvList = $this->database
+            ->getReference('on_the_spot_volunteers')
+            ->getValue() ?? [];
 
-        // Convert Firebase associative array → indexed
-        $otsvList = $otsvList ? array_map(function ($id, $item) {
-            $item['id'] = $id;
-            return $item;
-        }, array_keys($otsvList), $otsvList) : [];
+        $otsvList = is_array($otsvList)
+            ? array_map(function ($id, $item) {
+                $item['id'] = $id;
+                return $item;
+            }, array_keys($otsvList), $otsvList)
+            : [];
 
         /* -------------------------------------------
-         * SCHOLAR STATISTICS
+         * INITIALIZE STATS
          * ------------------------------------------- */
         $total = 0;
         $eligible = 0;
@@ -63,47 +67,57 @@ class ScholarsDashboardController extends Controller
         $allAcademicYears = [];
         $termsByYear = [];
 
-        if ($scholars) {
+        /* -------------------------------------------
+         * PROCESS SCHOLARS
+         * ------------------------------------------- */
+        if (is_array($scholars)) {
 
             $allAcademicYears = array_keys($scholars);
             sort($allAcademicYears);
             $recentYear = end($allAcademicYears);
 
             foreach ($scholars as $year => $terms) {
-                $termsByYear[$year] = array_keys($terms);
+                $termsByYear[$year] = is_array($terms) ? array_keys($terms) : [];
             }
 
             foreach ($scholars as $academicYear => $terms) {
+                if (!is_array($terms)) continue;
+
                 foreach ($terms as $term => $types) {
+                    if (!is_array($types)) continue;
+
                     foreach ($types as $scholarshipType => $students) {
+                        if (!is_array($students)) continue;
+
                         foreach ($students as $studentId => $studentData) {
+                            if (!is_array($studentData)) continue;
 
                             $total++;
 
-                            if (!isset($byScholarship[$scholarshipType])) {
-                                $byScholarship[$scholarshipType] = 0;
-                            }
-                            $byScholarship[$scholarshipType]++;
+                            $byScholarship[$scholarshipType] =
+                                ($byScholarship[$scholarshipType] ?? 0) + 1;
 
-                            $status = strtolower($studentData['gwa_records'][$academicYear]['status'] ?? '');
+                            $status = strtolower(
+                                $studentData['gwa_records'][$academicYear]['status']
+                                ?? $studentData['status']
+                                ?? ''
+                            );
 
                             if ($status === 'eligible') $eligible++;
-                            if ($status === 'probationary') $probationary++;
-                            if ($status === 'revoked') $revoked++;
+                            elseif ($status === 'probationary') $probationary++;
+                            elseif ($status === 'revoked') $revoked++;
 
                             $normalizedTerm = preg_replace('/(st|nd|rd|th)/', '', $term);
 
-                            if ($academicYear == $recentYear && isset($termStats[$normalizedTerm])) {
-                                $termStats[$normalizedTerm][$status] = ($termStats[$normalizedTerm][$status] ?? 0) + 1;
+                            if (
+                                $academicYear === $recentYear &&
+                                isset($termStats[$normalizedTerm])
+                            ) {
+                                $termStats[$normalizedTerm][$status] =
+                                    ($termStats[$normalizedTerm][$status] ?? 0) + 1;
                             }
 
-                            if ($recentYear && isset($scholars[$recentYear])) {
-                                $yrTerms = array_keys($scholars[$recentYear]);
-                                sort($yrTerms);
-                                $currentTerm = end($yrTerms);
-                            }
-
-                            if ($academicYear == $recentYear) {
+                            if ($academicYear === $recentYear) {
                                 $recentYearTotal++;
                                 if ($status === 'revoked') $recentYearRevoked++;
                             }
@@ -111,78 +125,86 @@ class ScholarsDashboardController extends Controller
                     }
                 }
             }
+
+            if ($recentYear && isset($scholars[$recentYear])) {
+                $yrTerms = array_keys($scholars[$recentYear]);
+                sort($yrTerms);
+                $currentTerm = end($yrTerms);
+            }
         }
 
+        /* -------------------------------------------
+         * RETENTION RATE
+         * ------------------------------------------- */
         $retentionRate = $recentYearTotal > 0
             ? round((($recentYearTotal - $recentYearRevoked) / $recentYearTotal) * 100, 2)
             : 0;
 
-        $scholarshipByTerm = [
-            "1" => [], "2" => [], "3" => []
-        ];
+        /* -------------------------------------------
+         * SCHOLARSHIP BY TERM
+         * ------------------------------------------- */
+        $scholarshipByTerm = ["1" => [], "2" => [], "3" => []];
 
-        if ($scholars) {
-            foreach ($scholars as $academicYear => $terms) {
-                foreach ($terms as $term => $types) {
+        foreach ($scholars as $academicYear => $terms) {
+            if (!is_array($terms)) continue;
 
-                    $normalizedTerm = preg_replace('/(st|nd|rd|th)/', '', $term);
+            foreach ($terms as $term => $types) {
+                if (!is_array($types)) continue;
 
-                    foreach ($types as $scholarshipType => $students) {
-                        if (!isset($scholarshipByTerm[$normalizedTerm][$scholarshipType])) {
-                            $scholarshipByTerm[$normalizedTerm][$scholarshipType] = 0;
-                        }
-                        $scholarshipByTerm[$normalizedTerm][$scholarshipType] += count($students);
-                    }
+                $normalizedTerm = preg_replace('/(st|nd|rd|th)/', '', $term);
+
+                foreach ($types as $scholarshipType => $students) {
+                    if (!is_array($students)) continue;
+
+                    $scholarshipByTerm[$normalizedTerm][$scholarshipType] =
+                        ($scholarshipByTerm[$normalizedTerm][$scholarshipType] ?? 0)
+                        + count($students);
                 }
             }
         }
 
-        return view('scholars-admin.dashboard', [
-            'total'             => $total,
-            'eligible'          => $eligible,
-            'probationary'      => $probationary,
-            'revoked'           => $revoked,
-            'byScholarship'     => $byScholarship,
-            'retentionRate'     => $retentionRate,
-            'recentYear'        => $recentYear,
-            'termStats'         => $termStats,
-            'currentTerm'       => $currentTerm,
-            'scholarshipByTerm' => $scholarshipByTerm,
-            'allAcademicYears'  => $allAcademicYears,
-            'termsByYear'       => $termsByYear,
-            'otsvList'          => $otsvList,
-        ]);
+        /* -------------------------------------------
+         * RETURN VIEW
+         * ------------------------------------------- */
+        return view('scholars-admin.dashboard', compact(
+            'total',
+            'eligible',
+            'probationary',
+            'revoked',
+            'byScholarship',
+            'retentionRate',
+            'recentYear',
+            'termStats',
+            'currentTerm',
+            'scholarshipByTerm',
+            'allAcademicYears',
+            'termsByYear',
+            'otsvList'
+        ));
     }
 
     /* ============================================================
-     *  SCHOLAR PERSONAL DASHBOARD (scholars.dashboard)
+     *  SCHOLAR PERSONAL DASHBOARD
      * ============================================================ */
     public function joinedOpportunities()
     {
-        $studentId = session('scholar_accounts.student_no');
+        $scholars = $this->database
+            ->getReference('scholars')
+            ->getValue() ?? [];
 
-        /* -------------------------------------------
-         * FETCH SCHOLARS LIST (for left panel widgets)
-         * ------------------------------------------- */
-        $scholars = $this->database->getReference('scholars')->getValue() ?? [];
-
-        /* -------------------------------------------
-         * FETCH OTSV LIST (only available)
-         * ------------------------------------------- */
         $otsvList = $this->database
             ->getReference('on_the_spot_volunteers')
             ->orderByChild('status')
             ->equalTo('available')
-            ->getValue();
+            ->getValue() ?? [];
 
-        $otsvList = $otsvList ? array_map(function ($id, $item) {
-            $item['id'] = $id;
-            return $item;
-        }, array_keys($otsvList), $otsvList) : [];
+        $otsvList = is_array($otsvList)
+            ? array_map(function ($id, $item) {
+                $item['id'] = $id;
+                return $item;
+            }, array_keys($otsvList), $otsvList)
+            : [];
 
-        return view('scholars.dashboard', [
-            'scholars' => $scholars,
-            'otsvList' => $otsvList,
-        ]);
+        return view('scholars.dashboard', compact('scholars', 'otsvList'));
     }
 }

@@ -28,7 +28,10 @@ body {
     padding: 2rem;
     width: 50%;
     border-radius: 8px;
+        max-height: 90vh;
+    overflow: hidden;
 }
+
 
 .modal-header {
   position: sticky;
@@ -578,9 +581,10 @@ table thead tr:first-child {
   min-width: 1500px;
 }
 
+
 .modal-content.custom-modal-content {
-  max-height: 95vh;
-  overflow-y: auto;
+    max-height: 90vh;
+    overflow: hidden;
 }
 
 /* Status Cards */
@@ -807,7 +811,6 @@ body.modal-open {
       border-radius: 8px;
       padding: 2rem;
     }
-
 
     .modal.show .modal-dialog {
   margin: 2rem auto !important; /* add margin on left/right */
@@ -1173,14 +1176,31 @@ table thead tr:first-child {
 }
 
 .dates-tasks-scroll {
-    max-height: 620px;      /* adjust as needed */
-    overflow-y: auto;
-    padding-right: 6px;    /* prevents scrollbar overlap */
+    max-height: 620px;        /* controls vertical scroll height */
+    overflow-y: auto;        /* ✅ vertical scroll */
+    overflow-x: hidden;      /* 🚫 prevent horizontal scroll */
+    padding-right: 6px;
+    display: block;
 }
 
-/* Optional: nicer scrollbar (Chrome/Edge) */
+
+.left-panel {
+    overflow: hidden;        /* stops outer scroll */
+}
+
+.left-panel * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.left-panel-scroll {
+    max-height: 100%;
+    overflow-y: auto;        /* ✅ vertical scroll */
+    overflow-x: hidden;      /* 🚫 remove bottom scroll */
+    padding-right: 6px;
+}
+/* Optional: nicer vertical scrollbar (Chrome / Edge) */
 .dates-tasks-scroll::-webkit-scrollbar {
-    width: 6px;
+    width: 6px;              /* vertical scrollbar width */
 }
 
 .dates-tasks-scroll::-webkit-scrollbar-thumb {
@@ -1192,6 +1212,10 @@ table thead tr:first-child {
     background: transparent;
 }
 
+.task-list,
+.date-card {
+    overflow-x: hidden;
+}
 
 .schedule-card {
     background: #a9c4e5;
@@ -1344,3 +1368,278 @@ table thead tr:first-child {
     color: #fff !important;
     box-shadow: none !important;
 }
+
+/* Awaiting Approval container */
+.approval-alert {
+    background-color: #fff3cd;
+    border: 1px solid #ffe69c;
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 16px;
+}
+
+.approval-alert-footer {
+    background-color: #fff3cd;
+    border: 1px solid #ffe69c;
+    padding: 12px 16px;
+    border-radius: 10px;
+}
+
+/* LEFT text */
+.approval-header i {
+    color: #f0ad4e;
+    font-size: 18px;
+}
+
+.approval-subtext {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* RIGHT wide button */
+.cancel-opportunity-btn {
+    background-color: #ffffff;
+    border: 1.5px solid #ff4d4f;
+    color: #ff4d4f;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* make it wider */
+.cancel-opportunity-btn.wide-btn {
+    min-width: 220px;
+    justify-content: center;
+}
+
+/* no hover color change */
+.cancel-opportunity-btn:hover {
+    background-color: #ffffff;
+    color: #ff4d4f;
+}
+
+/* Returned Alert Container */
+.returned-alert {
+    border: 1.5px solid #f5c2c7;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+/* Header */
+.returned-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.returned-icon {
+    color: #dc3545;
+    font-size: 22px;
+    margin-top: 2px;
+}
+
+.returned-title {
+    font-weight: 700;
+    color: #842029;
+    font-size: 16px;
+}
+
+.returned-subtitle {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+/* Meta */
+.returned-meta {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 6px 0;
+}
+
+/* Reason */
+.returned-reason {
+    font-size: 14px;
+    margin: 6px 0;
+}
+
+/* Comment */
+.returned-comment {
+    margin-top: 4px; /* reduced */
+}
+
+.comment-box {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 4px 6px;     /* 🔥 less inner padding */
+    font-size: 14px;
+    line-height: 1.35;    /* slightly tighter */
+}
+
+.comment-label {
+    font-weight: 600;
+    color: #842029;
+    margin: 0 0 1px 0;    /* 🔥 minimal space above text */
+}
+
+.comment-text {
+    margin: 0;            /* 🔥 removes top gap */
+    padding: 0;
+    white-space: pre-line;
+}
+
+
+.edit-returned-btn {
+    background-color: #fff;
+    border: 1.5px solid #dc3545;
+    color: #dc3545;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* No hover color change */
+.edit-returned-btn:hover {
+    background-color: #fff;
+    color: #dc3545;
+}
+
+
+.task-toggle-card {
+    cursor: pointer;
+}
+
+.toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+.toggle-icon.rotate {
+    transform: rotate(180deg);
+}
+
+.returned-footer-alert {
+    border: 1px solid #f5c2c7;
+    background: #fff5f5;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.edit-returned-btn {
+    margin-left: 34px; /* aligns with text block */
+}
+
+.custom-modal-content {
+    max-height: 90vh;
+}
+
+.modal-body {
+    overflow: hidden; /* 🔥 disables whole modal scrolling */
+}
+
+.left-panel-scroll {
+    overflow-y: auto;
+    max-height: 100%;
+    padding-right: 6px;
+}
+
+.participants-section {
+    background: #d9f8dc; /* light green */
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.participants-header {
+    font-weight: 700;
+    color: #198754;
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.participants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.participant-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.participant-name {
+    font-weight: 600;
+    color: #212529;
+}
+
+.participant-meta {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.participants-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* ✅ 2 per row */
+    gap: 12px;
+}
+
+/* Mobile fallback */
+@media (max-width: 576px) {
+    .participants-grid {
+        grid-template-columns: 1fr; /* 1 per row on small screens */
+    }
+}
+
+.approved-summary {
+    background: #c9f7ce;
+    border: 1px solid #8fe19b;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.approved-header i {
+    color: #198754;
+    font-size: 1.4rem;
+}
+
+.approved-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.stat {
+    text-align: center;
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #145c2e;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #145c2e;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 34px;
+    background: #6fcf97;
+}
+
