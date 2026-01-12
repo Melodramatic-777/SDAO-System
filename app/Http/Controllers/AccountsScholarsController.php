@@ -1,6 +1,8 @@
-<?php 
+<?php
+
 
 namespace App\Http\Controllers;
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,18 +14,22 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class AccountsScholarsController extends Controller 
+
+class AccountsScholarsController extends Controller
 {
     protected $database;
 
-    public function __construct() 
+
+    public function __construct()
     {
         $factory = (new Factory())
             ->withServiceAccount(storage_path('firebase/sdao-system-firebase-adminsdk-fbsvc-3a7070d3f6.json'))
             ->withDatabaseUri('https://sdao-system-default-rtdb.asia-southeast1.firebasedatabase.app/');
 
+
         $this->database = $factory->createDatabase();
     }
+
 
     /**
      * Show paginated scholars list
@@ -34,23 +40,30 @@ class AccountsScholarsController extends Controller
         ->getReference('scholars')
         ->getValue() ?? [];
 
+
     $scholars = [];
+
 
     if (!is_array($scholarsData)) {
         $scholarsData = [];
     }
 
+
     foreach ($scholarsData as $academicYear => $terms) {
         if (!is_array($terms)) continue;
+
 
         foreach ($terms as $term => $types) {
             if (!is_array($types)) continue;
 
+
             foreach ($types as $scholarshipType => $records) {
                 if (!is_array($records)) continue;
 
+
                 foreach ($records as $scholarId => $scholar) {
                     if (!is_array($scholar)) continue;
+
 
                     $scholars[] = [
                         'student_no'       => $scholar['student_no'] ?? '',
@@ -64,6 +77,7 @@ class AccountsScholarsController extends Controller
                         'scholarship_type' => $scholarshipType,
                         'academic_year'    => $academicYear,
                         'term'             => $term,
+                        'fingerprint_slot_id' => $scholar['fingerprint_slot_id'] ?? null,
                         'created_at'       => $scholar['created_at'] ?? '',
                         'gwa_records'      => is_array($scholar['gwa_records'] ?? null)
                                                 ? $scholar['gwa_records']
@@ -74,10 +88,12 @@ class AccountsScholarsController extends Controller
         }
     }
 
+
     /* -------------------------------------------
      * COLLECTION + FILTERS (UNCHANGED)
      * ------------------------------------------- */
     $collection = collect($scholars);
+
 
     $academicYears = $collection->pluck('academic_year')->unique()->sortDesc()->values();
     $terms = $collection->pluck('term')->unique()->sort()->values();
@@ -85,7 +101,9 @@ class AccountsScholarsController extends Controller
     $programs = $collection->pluck('program')->unique()->sort()->values();
     $schools = $collection->pluck('school')->unique()->sort()->values();
 
+
     $latestYear = $academicYears->first();
+
 
     $latestTerm = $collection
         ->where('academic_year', $latestYear)
@@ -93,6 +111,7 @@ class AccountsScholarsController extends Controller
         ->unique()
         ->sortBy(fn($t) => ['1st'=>1,'2nd'=>2,'3rd'=>3][$t] ?? 99)
         ->last();
+
 
     // Default filter
     if ($request->filled('academic_year')) {
@@ -102,25 +121,31 @@ class AccountsScholarsController extends Controller
                                  ->where('term', $latestTerm);
     }
 
+
     if ($request->filled('term')) {
         $collection = $collection->where('term', $request->term);
     }
+
 
     if ($request->filled('scholarship_type')) {
         $collection = $collection->where('scholarship_type', $request->scholarship_type);
     }
 
+
     if ($request->filled('program')) {
         $collection = $collection->where('program', $request->program);
     }
+
 
     if ($request->filled('school')) {
         $collection = $collection->where('school', $request->school);
     }
 
+
     // Pagination
     $perPage = 10;
     $page = $request->get('page', 1);
+
 
     $paginatedScholars = new LengthAwarePaginator(
         $collection->forPage($page, $perPage)->values(),
@@ -129,6 +154,7 @@ class AccountsScholarsController extends Controller
         $page,
         ['path' => request()->url()]
     );
+
 
     return view('scholars-admin.scholars_accounts', [
         'scholars'         => $paginatedScholars,
@@ -142,33 +168,40 @@ class AccountsScholarsController extends Controller
     ]);
 }
 
+
     /**
      * Import scholars via uploaded Excel/CSV
      */
-    public function importScholars(Request $request) 
+    public function importScholars(Request $request)
     {
         $request->validate([
             'scholars_file' => 'required|mimes:xlsx,csv',
         ]);
 
+
         $fullPath = $request->file('scholars_file')->getRealPath();
+
 
         if (!file_exists($fullPath)) {
             return back()->with('error', "❌ File not found at: {$fullPath}");
         }
 
+
         $spreadsheet = IOFactory::load($fullPath);
         $emailsToSend = [];
+
 
         foreach ($spreadsheet->getSheetNames() as $sheetName) {
             $sheet = $spreadsheet->getSheetByName($sheetName);
             $rows = $sheet->toArray(null, true, true, true);
+
 
             // Academic year is in row 2, col A
 $academicYear = $request->academic_year;
 $term = $request->term;
             foreach ($rows as $index => $row) {
                 if ($index < 5) continue; // skip headers
+
 
                 $studentNo = trim($row['A'] ?? '');
                 $email     = trim($row['B'] ?? '');
@@ -177,15 +210,18 @@ $term = $request->term;
                 $program   = trim($row['E'] ?? '');
                 $birthday  = trim($row['F'] ?? '');
 
+
                 if (empty($studentNo)) {
                     Log::warning("⚠️ Skipped row {$index} - student number empty");
                     continue;
                 }
 
+
                 // Split name
                 $lastName = '';
                 $firstName = '';
                 $middleName = '';
+
 
                 if (strpos($name, ',') !== false) {
                     [$lastNamePart, $firstMiddlePart] = explode(',', $name, 2);
@@ -198,9 +234,11 @@ $term = $request->term;
                     $lastName = trim($name);
                 }
 
+
                 // Password
                 $tempPass = Str::random(8);
                 $hashed = Hash::make($tempPass);
+
 
                 // Save to Firebase
 $this->database
@@ -219,8 +257,10 @@ $this->database
         'term'             => $term,
         'password'         => $hashed,
         'created_at'       => now()->toDateTimeString(),
-        'status'           => 'Eligible', 
+        'status'           => 'Eligible',
     ]);
+
+
 
 
                 // Queue email if exists
@@ -232,9 +272,11 @@ $this->database
                     ];
                 }
 
+
                 Log::info("✅ Imported row {$index}: {$studentNo} - {$lastName}, {$firstName} {$middleName}");
             }
         }
+
 
         // Send emails after import
         foreach ($emailsToSend as $data) {
@@ -251,13 +293,17 @@ $this->database
             }
         }
 
+
         return back()->with('success', '✅ Scholars imported and emails sent!');
     }
+
+
 
 
  public function showStudentVolunteers(Request $request)
 {
     $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
+
 
     // If empty DB
     if (!$scholarsData) {
@@ -272,13 +318,16 @@ $this->database
         ]);
     }
 
+
     // Extract all scholars (whole DB)
     $flattened = [];
+
 
     foreach ($scholarsData as $year => $terms) {
         foreach ($terms as $term => $types) {
             foreach ($types as $scholarshipType => $records) {
                 foreach ($records as $id => $scholar) {
+
 
                     $flattened[] = [
                         'student_no'       => $scholar['student_no'] ?? '',
@@ -302,7 +351,10 @@ $this->database
     }
 
 
+
+
 $aspiringData = $this->database->getReference('aspiring_scholar_accounts')->getValue() ?? [];
+
 
 foreach ($aspiringData as $id => $scholar) {
     $flattened[] = [
@@ -325,7 +377,10 @@ foreach ($aspiringData as $id => $scholar) {
 }
 
 
+
+
     $collection = collect($flattened);
+
 
     // Build dropdown data
 $academicYears = $collection->pluck('academic_year')
@@ -334,11 +389,13 @@ $academicYears = $collection->pluck('academic_year')
     ->sortDesc()
     ->values();
 
+
 $terms = $collection->pluck('term')
     ->filter(fn($v) => !empty($v))
     ->unique()
     ->sort()
     ->values();
+
 
 $scholarshipTypes = $collection->pluck('scholarship_type')
     ->filter(fn($v) => !empty($v))
@@ -346,11 +403,13 @@ $scholarshipTypes = $collection->pluck('scholarship_type')
     ->sort()
     ->values();
 
+
 $programs = $collection->pluck('program')
     ->filter(fn($v) => !empty($v))
     ->unique()
     ->sort()
     ->values();
+
 
 $schools = $collection->pluck('school')
     ->filter(fn($v) => !empty($v))
@@ -359,17 +418,22 @@ $schools = $collection->pluck('school')
     ->values();
 
 
+
+
     // Latest Year
     $latestYear = $academicYears->first();
+
 
     // Filters
     if ($request->filled('academic_year')) {
         $collection = $collection->where('academic_year', $request->academic_year);
     }
 
+
     if ($request->filled('term')) {
         $collection = $collection->where('term', $request->term);
     }
+
 
 if ($request->filled('scholarship_type')) {
     if ($request->scholarship_type === 'Aspiring Scholar') {
@@ -379,19 +443,23 @@ if ($request->filled('scholarship_type')) {
     }
 }
 
+
 if (!$request->filled('scholarship_type')) {
     $collection = $collection->filter(function ($item) {
         return empty($item['is_aspiring']) || $item['is_aspiring'] == false;
     });
 }
 
+
     if ($request->filled('program')) {
         $collection = $collection->where('program', $request->program);
     }
 
+
     if ($request->filled('school')) {
         $collection = $collection->where('school', $request->school);
     }
+
 
     if ($request->filled('search')) {
         $search = strtolower($request->search);
@@ -402,11 +470,13 @@ if (!$request->filled('scholarship_type')) {
         });
     }
 
+
     // Pagination
     $perPage = 10;
     $page = $request->get('page', 1);
     $total = $collection->count();
     $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
 
     $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
         $items,
@@ -415,6 +485,7 @@ if (!$request->filled('scholarship_type')) {
         $page,
         ['path' => $request->url()]
     );
+
 
     return view('volunteers-admin.student-volunteers', [
         'scholars' => $paginated,
@@ -428,12 +499,16 @@ if (!$request->filled('scholarship_type')) {
 }
 
 
+
+
 public function viewStudentProfile($student_no)
 {
     $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
     $aspiringData = $this->database->getReference('aspiring_scholar_accounts')->getValue() ?? [];
 
+
     $foundStudent = null;
+
 
     // 🔵 FIRST: Search in regular scholars
     foreach ($scholarsData as $academicYear => $terms) {
@@ -453,6 +528,7 @@ public function viewStudentProfile($student_no)
         }
     }
 
+
     // 🔵 SECOND: If not found, search aspiring scholars
     if (!$foundStudent) {
         foreach ($aspiringData as $id => $record) {
@@ -467,27 +543,35 @@ public function viewStudentProfile($student_no)
         }
     }
 
+
     if (!$foundStudent) {
         abort(404, 'Student not found.');
     }
+
 
     return view('volunteers-admin.student-volunteer-detail', [
         'student' => $foundStudent
     ]);
 }
 
+
 public function scholarProfile()
 {
 
+
 $student_no = session('scholar_accounts.student_no');
+
 
     if (!$student_no) {
         abort(403, 'Not logged in.');
     }
 
+
     $scholarsData = $this->database->getReference('scholars')->getValue();
 
+
     $foundStudent = null;
+
 
     foreach ($scholarsData as $academicYear => $terms) {
         foreach ($terms as $term => $types) {
@@ -505,9 +589,11 @@ $student_no = session('scholar_accounts.student_no');
         }
     }
 
+
     if (!$foundStudent) {
         abort(404, 'Scholar profile not found.');
     }
+
 
     // Add temporary volunteer fields like the admin version
     $foundStudent['hours_completed'] = $record['volunteer_hours'] ?? 0;
@@ -515,20 +601,26 @@ $student_no = session('scholar_accounts.student_no');
     $foundStudent['hours_month'] = 0;
     $foundStudent['remaining_hours'] = max(0, 10 - ($record['volunteer_hours'] ?? 0));
 
+
     $offices = $this->database->getReference('offices')->getValue() ?? [];
+
 
     return view('scholars.profile', [
         'studentData' => $foundStudent,
         'offices' => $offices
 
+
     ]);
 }
+
 
 public function showVolunteerDetail($student_no)
 {
     $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
 
+
     $studentData = null;
+
 
     foreach ($scholarsData as $year => $terms) {
         foreach ($terms as $term => $types) {
@@ -543,12 +635,15 @@ public function showVolunteerDetail($student_no)
         }
     }
 
+
     if (!$studentData) {
         return redirect()->back()->with('error', 'Student not found.');
     }
 
+
     // Load offices (needed by your dropdown)
     $offices = $this->database->getReference('offices')->getValue() ?? [];
+
 
     return view('volunteers-admin.student-volunteer-detail', [
         'studentData' => $studentData,
@@ -557,13 +652,19 @@ public function showVolunteerDetail($student_no)
 }
 
 
+
+
 public function showAssignFingerprint($student_no)
 {
 
 
+
+
     $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
 
+
     $selectedScholar = null;
+
 
     foreach ($scholarsData as $year => $terms) {
         foreach ($terms as $term => $types) {
@@ -582,12 +683,18 @@ public function showAssignFingerprint($student_no)
         }
     }
 
+
     if (!$selectedScholar) {
         abort(404, 'Scholar not found');
     }
 
+
     return view('scholars-admin.assignFingerprint', compact('selectedScholar'));
 }
+
+
+
+
 
 
 public function storeAssignFingerprint(Request $request, $student_no)
@@ -600,8 +707,10 @@ public function storeAssignFingerprint(Request $request, $student_no)
         'fingerprint_slot_id' => ['required', 'integer', 'min:1'],
     ]);
 
+
     // IMPORTANT: remove "/records"
     $path = "scholars/{$data['academic_year']}/{$data['term']}/{$data['scholarship_type']}/{$data['firebase_key']}";
+
 
     $existing = $this->database->getReference($path)->getValue();
     if (!$existing) {
@@ -609,11 +718,18 @@ public function storeAssignFingerprint(Request $request, $student_no)
             ->with('error', 'Scholar record not found in Firebase. No changes saved.');
     }
 
+
     $this->database->getReference($path)->update([
         'fingerprint_slot_id' => (int) $data['fingerprint_slot_id'],
     ]);
+
 
     return redirect()->route('scholars-admin.scholars_accounts')
         ->with('success', 'Fingerprint assigned successfully.');
     }
 }
+
+
+
+
+

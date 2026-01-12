@@ -55,6 +55,8 @@ Route::post('/otsv/{id}/decline', [OnTheSpotVolunteerController::class, 'decline
 
         Route::get('/invite-volunteer-office', 'showScholarsOffice')
             ->name('volunteers-offices.invite-volunteer-office');
+
+            
         Route::post('/invite-scholar', 'inviteScholar')
             ->name('volunteers-offices.invite-scholar');
 

@@ -36,15 +36,21 @@ Route::get('/scholars-admin/profile', [AdminController::class, 'showScholarsAdmi
     ->name('scholars-admin.profile');
 
 
-    Route::get('/assign-fingerprint/{student_no}', 
+
+
+    Route::get('/assign-fingerprint/{student_no}',
     [AccountsScholarsController::class, 'showAssignFingerprint']
 )->name('scholars-admin.assign-fingerprint');
-
 
 
 Route::post('/assign-fingerprint/{student_no}',
     [AccountsScholarsController::class, 'storeAssignFingerprint']
 )->name('scholars-admin.assign-fingerprint.store');
+
+
+
+
+    
 
 
     Route::controller(ScholarsDashboardController::class)->group(function () {

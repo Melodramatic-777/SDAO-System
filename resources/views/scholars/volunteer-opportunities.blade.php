@@ -408,28 +408,29 @@ if (isIntermittent && selectedTaskDate && tasksByDate[selectedTaskDate]) {
         timeStr = `${formatTime(tasks[0].start_time)} – ${formatTime(tasks[0].end_time)}`;
     }
 
-    rightColumnContent = `
-    <div class="task-panel">
+const foodProvided = op.food_provided || op.food || '';
 
-        <div class="section-label">
-            <i class="bi bi-calendar-event me-1"></i> Select Date
-        </div>
+rightColumnContent = `
+<div class="task-panel">
 
-        <div class="mb-3 date-pill-group">
-            ${Object.keys(tasksByDate).map(d => `
-                <button class="date-pill ${d === selectedTaskDate ? 'active' : ''}"
-                    onclick="showDetail('${id}', '${d}')">
-                    ${new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
-                </button>
-            `).join('')}
-        </div>
+    <div class="section-label">
+        <i class="bi bi-calendar-event me-1"></i> Select Date
+    </div>
 
-        <div class="mb-3 time-banner">
-            <i class="bi bi-clock me-2"></i> ${timeStr}
-        </div>
+    <div class="mb-3 date-pill-group">
+        ${Object.keys(tasksByDate).map(d => `
+            <button class="date-pill ${d === selectedTaskDate ? 'active' : ''}"
+                onclick="showDetail('${id}', '${d}')">
+                ${new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
+            </button>
+        `).join('')}
+    </div>
 
-        ${renderTaskList(tasks, id, selectedTaskDate)}
-    </div>`;
+${renderTimeAndFood(timeStr, foodProvided)} <hr>
+
+    ${renderTaskList(tasks, id, selectedTaskDate)}
+</div>`;
+
 }
 
 // ================= REGULAR =================
@@ -451,28 +452,26 @@ else if (!isIntermittent && op.schedule?.length) {
         timeStr = `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`;
     }
 
-    rightColumnContent = `
-    <div class="task-panel">
+const foodProvided = op.food_provided || op.food || '';
 
-        <div class="mb-2 section-label">
-            <i class="bi bi-calendar-event me-1"></i> Schedule
+rightColumnContent = `
+<div class="task-panel">
+
+    <div class="mb-2 section-label">
+        <i class="bi bi-calendar-event me-1"></i> Schedule
+    </div>
+
+    <div class="mb-3 date-time-banner">
+        <div class="date-text">
+            <i class="bi bi-calendar-event me-2"></i>
+            ${dateStr}
         </div>
+        
+${renderTimeAndFood(timeStr, foodProvided)}
 
-       <div class="mb-3 date-time-banner">
-    <div class="date-text">
-        <i class="bi bi-calendar-event me-2"></i>
-        ${dateStr}
-    </div>
-    <div class="time-text">
-        <i class="bi bi-clock me-2"></i>
-        ${timeStr}
-    </div>
-</div>
+    ${renderTaskList(tasks, id, taskDate)}
+</div>`;
 
-
-
-        ${renderTaskList(tasks, id, taskDate)}
-    </div>`;
 }
 
     const rightColumn = `<div class="col-md-6">${rightColumnContent || '<p>No tasks available.</p>'}</div>`;
@@ -707,6 +706,37 @@ function renderTaskList(tasks, opportunityId, date) {
         </button>
     `;
 }
+
+function renderTimeAndFood(timeStr, food) {
+
+    const hasFood =
+        food === true ||
+        food === 1 ||
+        food === '1' ||
+        (typeof food === 'string' && food.toLowerCase() === 'yes');
+
+    return `
+        <div class="flex-wrap gap-2 mt-1 date-meta d-flex">
+            ${
+                timeStr
+                    ? `
+                    <span class="time-badge">
+                        <i class="bi bi-clock me-1"></i>
+                        ${timeStr}
+                    </span>
+                    `
+                    : ''
+            }
+
+            <span class="food-badge ${hasFood ? 'food-yes' : 'food-no'}">
+                <i class="bi ${hasFood ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-1"></i>
+                ${hasFood ? 'Food Provided' : 'No Food'}
+            </span>
+        </div>
+    `;
+}
+
+
 
 </script>
 

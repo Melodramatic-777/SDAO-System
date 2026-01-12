@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Kreait\Firebase\Factory;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Carbon\Carbon;
 
 class OpportunitiesController extends Controller
 {
@@ -26,32 +27,35 @@ class OpportunitiesController extends Controller
     }
 
 
-public function inviteScholar(Request $request) 
+public function inviteScholar(Request $request)
 {
+    /* ========== VALIDATION ========== */
     $validated = $request->validate([
-        'scholar_id'        => 'required|string',
-        'opportunity_id'    => 'required|string',
-        'schedule_indices'  => 'array',        // <- allow multiple dates
-        'schedule_indices.*'=> 'numeric',
+        'scholar_id'          => 'required|string',
+        'opportunity_id'      => 'required|string',
+        'schedule_indices'    => 'array',
+        'schedule_indices.*'  => 'date',
+        'tasks'               => 'required|array',
     ]);
 
-    $scholarId = $validated['scholar_id'];
-    $opportunityId = $validated['opportunity_id'];
-    $selectedScheduleIndices = $validated['schedule_indices'] ?? [];
+    $scholarId       = $validated['scholar_id'];
+    $opportunityId   = $validated['opportunity_id'];
+    $scheduleDates   = $validated['schedule_indices'] ?? [];
+    $selectedTasks   = $validated['tasks'];
 
-    // Fetch scholar info
+    /* ========== FIND SCHOLAR ========== */
     $scholars = $this->database->getReference('scholars')->getValue();
     $selectedScholar = null;
-    $selectedKeys = [];
+    $scholarPath = null;
 
     if ($scholars) {
         foreach ($scholars as $yearKey => $terms) {
-            foreach ($terms as $termKey => $scholarshipTypes) {
-                foreach ($scholarshipTypes as $typeKey => $students) {
+            foreach ($terms as $termKey => $types) {
+                foreach ($types as $typeKey => $students) {
                     foreach ($students as $scholarKey => $scholar) {
                         if (($scholar['student_no'] ?? '') === $scholarId) {
                             $selectedScholar = $scholar;
-                            $selectedKeys = [$yearKey, $termKey, $typeKey, $scholarKey];
+                            $scholarPath = "scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}";
                             break 4;
                         }
                     }
@@ -64,73 +68,53 @@ public function inviteScholar(Request $request)
         return back()->with('error', 'Scholar not found.');
     }
 
-    // Fetch opportunity
-    $ref = $this->database->getReference('opportunities/' . $opportunityId);
-    $opportunity = $ref->getValue();
+    /* ========== FIND OPPORTUNITY ========== */
+    $opportunity = $this->database
+        ->getReference("opportunities/{$opportunityId}")
+        ->getValue();
 
     if (!$opportunity) {
         return back()->with('error', 'Opportunity not found.');
     }
 
     $participants = $opportunity['participants'] ?? [];
-    if (!is_array($participants)) $participants = [];
 
-    // Check duplicate participant
+    /* ========== DUPLICATE CHECK ========== */
     foreach ($participants as $p) {
-        if (($p['scholar_id'] ?? null) === $scholarId) {
-            return back()->with('warning', 'Scholar is already listed as a participant.');
+        if (($p['scholar_id'] ?? '') === $scholarId) {
+            return back()->with('warning', 'Scholar already invited.');
         }
     }
 
-    // Capacity check (only for non-intermittent)
-    if (empty($selectedScheduleIndices)) {
-        $target = $opportunity['schedule'][0]['target_number'] ?? null;
-        if ($target !== null && count($participants) >= (int) $target) {
-            return back()->with('error', 'Maximum capacity reached for this activity.');
-        }
-    }
+    /* ========== BUILD PARTICIPANT ========== */
+    $newParticipant = [
+        'scholar_id' => $scholarId,
+        'name'       => trim(($selectedScholar['first_name'] ?? '') . ' ' . ($selectedScholar['last_name'] ?? '')),
+        'role'       => 'Volunteer',
+        'status'     => 'Pending Invite',
+        'tasks'      => $selectedTasks,
+        'schedule_dates' => $scheduleDates,
+        'invited_at' => Carbon::now()->toDateTimeString(),
+    ];
 
-    $selectedTasks = $request->input('tasks', []); // tasks[date] = array of selected tasks
+    /* ========== SAVE TO OPPORTUNITY (SAFE PUSH) ========== */
+    $this->database
+        ->getReference("opportunities/{$opportunityId}/participants")
+        ->push($newParticipant);
 
-    // 🌟 BUILD PARTICIPANT ENTRY
-$newParticipant = [
-    'scholar_id' => $scholarId,
-    'name'       => trim(($selectedScholar['first_name'] ?? '') . ' ' . ($selectedScholar['last_name'] ?? '')),
-    'role'       => 'Volunteer',
-    'status'     => 'Pending Invite',
-    'invited_at' => now()->toDateTimeString(),
-    'tasks'      => $selectedTasks, // SAVE selected tasks per date
-];
+    /* ========== SAVE TO SCHOLAR RECORD ========== */
+    $this->database
+        ->getReference("{$scholarPath}/invited/{$opportunityId}")
+        ->set([
+            'opportunity_id' => $opportunityId,
+            'status'         => 'Pending Invite',
+            'tasks'          => $selectedTasks,
+            'schedule_dates' => $scheduleDates,
+            'invited_at'     => Carbon::now()->toDateTimeString(),
+        ]);
 
-    // ⭐ If intermittent → SAVE all selected schedule indices
-if (!empty($selectedScheduleIndices)) {
-    $newParticipant['schedule_indices'] = $selectedScheduleIndices;
+    return back()->with('success', 'Scholar invited successfully!');
 }
-
-    $participants[] = $newParticipant;
-
-    try {
-        // Save participants
-        $ref->update(['participants' => $participants]);
-
-        // Save invited record under scholar
-        [$yearKey, $termKey, $typeKey, $scholarKey] = $selectedKeys;
-
-        $this->database
-            ->getReference("scholars/{$yearKey}/{$termKey}/{$typeKey}/{$scholarKey}/invited")
-            ->set([
-                'opportunity_id' => $opportunityId,
-                'status'         => 'Pending Invite',
-                'invited_at'     => now()->toDateTimeString(),
-                'schedule_indices' => $selectedScheduleIndices, // <- SAVE MULTIPLE DATES
-            ]);
-
-        return back()->with('success', 'Scholar invited successfully!');
-    } catch (\Exception $e) {
-        return back()->with('error', 'Failed to save data: ' . $e->getMessage());
-    }
-}
-
 
 public function showScholars(Request $request)
 {
