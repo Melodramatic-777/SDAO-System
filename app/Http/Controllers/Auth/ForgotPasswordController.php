@@ -81,31 +81,37 @@ class ForgotPasswordController extends Controller
     // =========================
     // UPDATE PASSWORD
     // =========================
-    public function resetPassword(Request $request)
-    {
-        $request->validate([
-            'token' => 'required',
-            'password' => 'required|min:8|confirmed',
+   public function resetPassword(Request $request)
+{
+    $request->validate([
+        'token' => 'required',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    $token = $request->token;
+
+    $data = $this->database
+        ->getReference("password_resets/$token")
+        ->getValue();
+
+    if (!$data || Carbon::now()->getTimestamp() > $data['expires_at']) {
+        return redirect('/login')->withErrors(['link' => 'Reset link expired.']);
+    }
+
+    $this->database
+        ->getReference($data['path'])
+        ->update([
+            'password' => Hash::make($request->password),
+            'updated_at' => Carbon::now()->toDateTimeString(),
         ]);
 
-        $token = $request->token;
+    $this->database
+        ->getReference("password_resets/$token")
+        ->remove();
 
-        $data = $this->database->getReference("password_resets/$token")->getValue();
+    return redirect('/login')->with('status', 'Password successfully reset.');
+}
 
-        if (!$data || $data['expires_at'] < now()->timestamp) {
-            return redirect('/login')->withErrors(['link' => 'Reset link expired.']);
-        }
-
-        $hashed = Hash::make($request->password);
-
-        // 🔁 Update password in original user location
-        $this->database->getReference($data['path'] . '/password')->set($hashed);
-
-        // ❌ Delete token
-        $this->database->getReference("password_resets/$token")->remove();
-
-        return redirect('/login')->with('status', 'Password successfully reset.');
-    }
 
     // =========================
     // FIND USER IN FIREBASE

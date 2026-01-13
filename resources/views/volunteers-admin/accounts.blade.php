@@ -145,56 +145,89 @@
 </div>
 
 <!-- ✅ Create Aspiring Scholar Account Modal -->
+<!-- ✅ Create Aspiring Scholar Account Modal -->
 <div id="createAspiringScholarAccount" class="modal">
   <div class="modal-content">
     <div class="modal-header">
       <h3>Create Aspiring Scholar Account</h3>
-      <span class="close" onclick="document.getElementById('createAspiringScholarAccount').style.display='none'">&times;</span>
+      <span class="close"
+            onclick="document.getElementById('createAspiringScholarAccount').style.display='none'">
+        &times;
+      </span>
     </div>
 
     <form method="POST" action="{{ route('volunteers-admin.create-aspiring-scholar-account') }}">
       @csrf
 
-      <label>School</label>
-<select name="school" id="schoolDropdown" class="form-control" required>
-  <option value="" disabled selected>Select School</option>
-  @foreach ($schools as $school)
-    <option value="{{ $school['name'] }}" data-programs='@json($school["programs"])'>
-      {{ strtoupper($school['name']) }}
-    </option>
-  @endforeach
-</select>
+      <!-- School -->
+      <div class="mb-3">
+        <label class="form-label">School</label>
+        <select name="school" id="schoolDropdown" class="form-control" required>
+          <option value="" disabled selected>Select School</option>
+          @foreach ($schools as $school)
+            <option value="{{ $school['name'] }}" data-programs='@json($school["programs"])'>
+              {{ strtoupper($school['name']) }}
+            </option>
+          @endforeach
+        </select>
+      </div>
 
-<br/>
+      <!-- Program -->
+      <div class="mb-3">
+        <label class="form-label">Program</label>
+        <select name="program" id="programDropdown" class="form-control" required>
+          <option value="" disabled selected>Select a School First</option>
+        </select>
+      </div>
 
-<label>Program</label>
-<select name="program" id="programDropdown" class="form-control" required>
-  <option value="" disabled selected>Select a School First</option>
-</select>
-<br/>
+      <!-- Student Number -->
+      <div class="mb-3">
+        <label class="form-label">Student Number</label>
+        <input type="text" name="student_no" class="form-control" required>
+      </div>
 
-<label>Student Number</label>
-<input type="text" name="student_no" required><br/>
+      <!-- First Name -->
+<!-- First Name -->
+<!-- First / Middle / Last Name Row -->
+<!-- First / Middle / Last / Suffix Row -->
+<div class="mb-3 row">
+  <div class="col-md-3">
+    <label class="form-label">First Name</label>
+    <input type="text" name="first_name" class="form-control" required>
+  </div>
 
-      <label>First Name</label>
-      <input type="text" name="first_name" required><br/>
+  <div class="col-md-3">
+    <label class="form-label">Middle Name</label>
+    <input type="text" name="middle_name" class="form-control">
+  </div>
 
-      <label>Middle Name</label>
-      <input type="text" name="middle_name"><br/>
+  <div class="col-md-3">
+    <label class="form-label">Last Name</label>
+    <input type="text" name="last_name" class="form-control" required>
+  </div>
 
-      <label>Last Name</label>
-      <input type="text" name="last_name" required><br/>
+  <div class="col-md-3">
+    <label class="form-label">Suffix</label>
+    <input type="text" name="suffix" class="form-control">
+  </div>
+</div>
 
-      <label>Suffix</label>
-      <input type="text" name="suffix"><br/>
 
-      <label>Email</label>
-      <input type="email" name="email" required><br/>
 
-      <button class="btn" type="submit">Create</button>
+      <!-- Email -->
+      <div class="mb-4">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" required>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary w-100">
+        Create Account
+      </button>
     </form>
   </div>
 </div>
+
 
 <!-- ✅ JS Search -->
 <script>

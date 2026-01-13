@@ -3,15 +3,18 @@
 @section('content')
 
 <!-- OUTER FLEX CONTAINER: LEFT MAIN CONTENT + RIGHT OTSV -->
-<div class="d-flex" style="gap: 20px; align-items: flex-start;">
+<div class="gap-4 dashboard-grid d-flex align-items-start">
+
 
     <!-- LEFT MAIN CONTENT -->
-    <div class="flex-grow-1">
+    <div class="main-content flex-grow-1">
 
-        <div class="flex-wrap mb-4 volunteer-progress-container d-flex justify-content-between align-items-stretch">
+        <div class="gap-4 mb-4 d-flex align-items-start">
 
-<!-- LEFT SIDE: Charts -->
-<div class="chart-section flex-grow-1 me-4 d-flex flex-column justify-content-between">
+            <div class="flex-grow-1">
+                <div class="flex-wrap volunteer-progress-container d-flex justify-content-between align-items-stretch">
+                                        <div class="chart-section flex-grow-1 me-4 d-flex flex-column justify-content-between">
+
     <h4 class="mb-3">Your Volunteer Progress</h4>
 
     <div class="flex-wrap gap-4 d-flex justify-content-center align-items-center flex-grow-1">
@@ -56,7 +59,97 @@
 
         </div>
 
-     <h4 class="mb-4">My Joined Volunteer Opportunities</h4>
+
+         
+ <!-- RIGHT PANEL: OTSV -->
+  <!-- RIGHT PANEL: OTSV -->
+<aside class="shadow-sm otsv-panel"
+       style="
+           width: 380px;
+           padding: 20px;
+           background: #fff;
+           border-radius: 12px;
+           flex-shrink: 0;
+           position: sticky;
+           top: 0;
+
+       ">
+
+
+    <h3><strong>My On the Spot Volunteers</strong></h3>
+
+  <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
+    @forelse ($otsvList as $v)
+       <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
+
+    {{-- Accepted Badge (TOP) --}}
+    @if(isset($v['status']) && $v['status'] === 'accepted')
+        <div class="mb-2 text-end">
+            <span class="text-white badge bg-success">
+                <i class="bi bi-check-circle-fill me-1"></i> Accepted
+            </span>
+        </div>
+    @endif
+
+    <strong>{{ $v['student_name'] }}</strong><br>
+
+    <small>
+        Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
+        Available Time:
+        {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
+        – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
+
+        @php
+            $reasons = $v['reasons'] ?? [];
+            $other = $v['other_reason'] ?? null;
+        @endphp
+
+        @if(!empty($reasons) || $other)
+            <strong>Reason:</strong><br>
+            @foreach($reasons as $reason)
+                • {{ $reason }}<br>
+            @endforeach
+            @if($other)
+                • {{ $other }}
+            @endif
+        @endif
+    </small>
+
+    {{-- Accepted By --}}
+    @if(isset($v['status']) && $v['status'] === 'accepted' && isset($v['action_by']))
+        <small class="mt-2 text-muted d-block">
+            <strong>Accepted by:</strong>
+            {{ $v['action_by']['name'] ?? 'N/A' }}<br>
+            <em>
+                {{ $v['action_by']['role'] ?? '' }}
+                @if(!empty($v['action_by']['office']))
+                    – {{ $v['action_by']['office'] }}
+                @endif
+            </em>
+        </small>
+    @else
+        {{-- Cancel Button --}}
+        @if(($v['student_id'] ?? null) === session('scholar_accounts.student_no'))
+            <button type="button" class="mt-2 text-white btn btn-sm w-100"
+                    style="background-color: #dc3545; border-color: #dc3545;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#cancelModal{{ $v['id'] }}">
+                Cancel
+            </button>
+        @endif
+    @endif
+
+</li>
+
+    @empty
+        <li>No on-the-spot volunteers.</li>
+    @endforelse
+</ul>
+
+
+</aside>
+
+     <h4 class="mb-4">Your Upcoming Tasks</h4>
 
 @php
     // Filter only opportunities where this scholar's participation status is 'Joined'
@@ -91,32 +184,75 @@
             }
         @endphp
 
-        <div class="p-3 mb-3 bg-white border rounded status-card-container">
-            <div class="d-flex justify-content-between align-items-center">
-                <strong>{{ $opportunity['title'] ?? 'No Title' }}</strong>
+        @php
+    // Get first schedule entry (earliest)
+    $firstSchedule = collect($opportunity['schedule'] ?? [])
+        ->sortBy('date')
+        ->first();
+
+    $cardDate = !empty($firstSchedule['date'])
+        ? \Carbon\Carbon::parse($firstSchedule['date'])->format('F j, Y')
+        : null;
+
+    $cardTime = (!empty($firstSchedule['start_time']) && !empty($firstSchedule['end_time']))
+        ? \Carbon\Carbon::parse($firstSchedule['start_time'])->format('g:i A')
+            . ' - ' .
+          \Carbon\Carbon::parse($firstSchedule['end_time'])->format('g:i A')
+        : null;
+@endphp
+
+
+<div class="p-3 mb-3 bg-white border rounded status-card-container d-flex justify-content-between align-items-start">
+<div class="task-card-content">
+
+    <strong>{{ $opportunity['title'] ?? 'No Title' }}</strong>
+    <br>
+
+    <small class="mb-1 text-muted d-block">
+        <i class="bi bi-building me-1"></i>
+        {{ $opportunity['submitted_by_role'] ?? 'Office N/A' }}
+    </small>
+
+    <p class="mb-1">{{ $opportunity['location'] ?? 'No Location' }}</p>
+
+    <small class="text-muted d-block">
+        Submitted by: {{ $opportunity['submitted_by_name'] ?? 'N/A' }}
+    </small>
+
+
+@if($cardDate || $cardTime)
+    <div class="flex-wrap gap-3 mt-2 d-flex align-items-center">
+
+        @if($cardDate)
+            <div class="gap-2 d-flex align-items-center small">
+                <span class="fw-semibold">Date:</span>
+                <span class="px-3 py-1 border rounded-pill bg-light">
+                    {{ $cardDate }}
+                </span>
             </div>
-            <div>
-                <p class="mb-1">{{ $opportunity['location'] ?? 'No Location' }}</p>
-                <small>Submitted by: {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</small><br>
+        @endif
 
-                <small>
-                @if($isIntermittent && !empty($joinedDates))
-                    <strong>Schedule Joined:</strong><br>
-                    @if($startDate && $endDate && !$startDate->equalTo($endDate))
-                        {{ $startDate->format('F j, Y') }} – {{ $endDate->format('F j, Y') }}
-                    @elseif($startDate)
-                        {{ $startDate->format('F j, Y') }}
-                    @else
-                        N/A
-                    @endif
-                @else
-                    <strong>Date:</strong> {{ $s ? \Carbon\Carbon::parse($s)->format('F j, Y') : 'N/A' }}
-                @endif
-                </small>
+        @if($cardTime)
+            <div class="gap-2 d-flex align-items-center small">
+                <span class="fw-semibold">Time:</span>
+                <span class="px-3 py-1 border rounded-pill bg-light">
+                    {{ $cardTime }}
+                </span>
+            </div>
+        @endif
 
-                <button class="view-details-btn float-end" data-bs-toggle="modal" data-bs-target="#joinedOpportunityModal{{ $opportunity['opportunity_id'] }}">
-                    View Details
-                </button>
+@endif
+
+<div class="ms-auto d-flex align-items-start">
+    <button class="view-details-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#joinedOpportunityModal{{ $opportunity['opportunity_id'] }}">
+        View Details
+    </button>
+</div>
+
+
+
             </div>
         </div>
 
@@ -270,87 +406,11 @@
 
     </div> <!-- END LEFT MAIN CONTENT -->
 
-    <!-- RIGHT PANEL: OTSV -->
-  <!-- RIGHT PANEL: OTSV -->
-<aside class="otsv-panel" 
-       style="width: 380px; padding: 20px; background: #fff; border-radius: 10px; flex-shrink: 0; height: auto; margin-left: 20px;">
-
-    <h3><strong>My On the Spot Volunteers</strong></h3>
-
-  <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
-    @forelse ($otsvList as $v)
-       <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
-
-    {{-- Accepted Badge (TOP) --}}
-    @if(isset($v['status']) && $v['status'] === 'accepted')
-        <div class="mb-2 text-end">
-            <span class="text-white badge bg-success">
-                <i class="bi bi-check-circle-fill me-1"></i> Accepted
-            </span>
-        </div>
-    @endif
-
-    <strong>{{ $v['student_name'] }}</strong><br>
-
-    <small>
-        Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
-        Available Time:
-        {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
-        – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
-
-        @php
-            $reasons = $v['reasons'] ?? [];
-            $other = $v['other_reason'] ?? null;
-        @endphp
-
-        @if(!empty($reasons) || $other)
-            <strong>Reason:</strong><br>
-            @foreach($reasons as $reason)
-                • {{ $reason }}<br>
-            @endforeach
-            @if($other)
-                • {{ $other }}
-            @endif
-        @endif
-    </small>
-
-    {{-- Accepted By --}}
-    @if(isset($v['status']) && $v['status'] === 'accepted' && isset($v['action_by']))
-        <small class="mt-2 text-muted d-block">
-            <strong>Accepted by:</strong>
-            {{ $v['action_by']['name'] ?? 'N/A' }}<br>
-            <em>
-                {{ $v['action_by']['role'] ?? '' }}
-                @if(!empty($v['action_by']['office']))
-                    – {{ $v['action_by']['office'] }}
-                @endif
-            </em>
-        </small>
-    @else
-        {{-- Cancel Button --}}
-        @if(($v['student_id'] ?? null) === session('scholar_accounts.student_no'))
-            <button type="button" class="mt-2 text-white btn btn-sm w-100"
-                    style="background-color: #dc3545; border-color: #dc3545;"
-                    data-bs-toggle="modal"
-                    data-bs-target="#cancelModal{{ $v['id'] }}">
-                Cancel
-            </button>
-        @endif
-    @endif
-
-</li>
-
-    @empty
-        <li>No on-the-spot volunteers.</li>
-    @endforelse
-</ul>
-
-
-</aside>
-
-
+  
 
 </div> <!-- END OUTER FLEX CONTAINER -->
+
+
 
 <!-- Scripts remain unchanged -->
 <script>
@@ -435,4 +495,4 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-@endsection
+@endsection 

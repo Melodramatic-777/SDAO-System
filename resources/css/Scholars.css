@@ -1005,3 +1005,49 @@
     font-size: 0.9rem;
     color: #495057;
 }
+
+.dashboard-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+/* LEFT CONTENT */
+.dashboard-wrapper .main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* RIGHT OTSV */
+.dashboard-wrapper .otsv-panel {
+    width: 380px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 48px; /* ⬅ increase this (was 24px) */
+    align-items: start;
+}
+
+
+/* Left column */
+.dashboard-grid .main-content {
+    min-width: 0;
+}
+
+/* Right column (OTSV) */
+.dashboard-grid .otsv-panel {
+    grid-column: 2;           /* FORCE it to the right */
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}

@@ -8,7 +8,6 @@ use Kreait\Firebase\Factory;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\VolunteerInvitationMail;
 
 
 class OpportunitiesController extends Controller

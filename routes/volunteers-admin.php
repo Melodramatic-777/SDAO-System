@@ -9,12 +9,20 @@ use App\Http\Controllers\SubmitOpportunityController;
 use App\Http\Controllers\OnTheSpotVolunteerController;
 use App\Http\Controllers\ContactUsController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AttendanceController;
+
 
 
 
 Route::prefix('volunteers-admin')->group(function () {
 
-    
+Route::get('/validate-attendance', function () {
+    return view('volunteers-admin.validate-attendance', [
+        'opportunities' => [] // 👈 prevents error
+    ]);
+})->name('volunteers-admin.validate-attendance');
+
+
 
     
 Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
@@ -81,7 +89,6 @@ Route::get('/dashboard', [\App\Http\Controllers\VolunteersAdminDashboardControll
 
 
 
-    
     Route::post('/store-opportunity', [SubmitOpportunityController::class, 'store'])
         ->name('volunteers-admin.store-opportunity');
 });

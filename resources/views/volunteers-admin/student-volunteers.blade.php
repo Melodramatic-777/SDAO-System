@@ -71,85 +71,125 @@
 
 <!-- Table -->
 <div id="Scholars" class="px-5 py-4 container-fluid">
-    <div id="scholarsTable" class="rounded shadow-sm table-responsive">
-        <table id="tableScholars" class="table table-striped">
-            <thead>
-                <tr class="table-title-row">
-                    <th colspan="11" class="py-3 text-center fw-bold fs-5">
-                        List of Student Volunteers A.Y. {{ $latestYear }}
-                    </th>
-                </tr>
-                <tr style="background-color: #FFD700; color: #000;">
-                    <th>#</th>
-                    <th>Student No.</th>
-                    <th>Email</th>
-                    <th>Full Name</th>
-                    <th>Birthday</th>
-                    <th>School</th>
-                    <th>Program</th>
-                    <th>Scholarship Type</th>
-                    <th>Status</th>
-                    <th>Total Volunteer Hour</th>
-                    <th>View</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($scholars as $index => $scholar)
-                    @php
-                        $year = $scholar['academic_year'] ?? null;
-                        $status = $year && isset($scholar['gwa_records'][$year]['status'])
-                                    ? $scholar['gwa_records'][$year]['status']
-                                    : 'N/A';
-                    @endphp
-                    <tr>
-                        <td>{{ $loop->iteration + ($scholars->currentPage() - 1) * $scholars->perPage() }}</td>
-                        <td>{{ $scholar['student_no'] }}</td>
-                        <td>{{ $scholar['email'] ?? 'N/A' }}</td>
-                        <td>{{ $scholar['last_name'] }}, {{ $scholar['first_name'] }} {{ $scholar['middle_name'] ?? '' }} {{ $scholar['suffix'] ?? '' }}</td>
-                        <td>{{ $scholar['birthday'] ? \Carbon\Carbon::parse($scholar['birthday'])->format('F d, Y') : 'N/A' }}</td>
-                        <td>{{ $scholar['school'] ?? 'N/A' }}</td>
-                        <td>{{ $scholar['program'] ?? '' }}</td>
-                        <td>{{ $scholar['is_aspiring'] ?? false ? 'Aspiring Scholar' : ($scholar['scholarship_type'] ?? '') }}</td>
-                        <td>
-                            @if(isset($scholar['is_aspiring']) && $scholar['is_aspiring'])
-                                <span class="badge bg-info text-dark">Aspiring Scholar</span>
-                            @else
-                                @php
-                                    $year = $scholar['academic_year'];
-                                    $status = $scholar['gwa_records'][$year]['status'] ?? 'N/A';
-                                @endphp
-                                @if(strtolower($status) === 'eligible')
-                                    <span class="badge bg-success">Eligible</span>
-                                @elseif(strtolower($status) === 'probationary')
-                                    <span class="badge bg-warning text-dark">Probationary</span>
-                                @elseif(strtolower($status) === 'ineligible' || strtolower($status) === 'revoked')
-                                    <span class="badge bg-danger">Revoked</span>
-                                @else
-                                    <span class="badge bg-secondary">{{ $status }}</span>
-                                @endif
-                            @endif
-                        </td>
-                        <td>
-                            <div class="gap-2 d-flex justify-content-center align-items-center">
-                                <input type="number" class="form-control form-control-sm" style="width: 90px;" placeholder="+ hours" min="1">
-                                <span class="fw-bold">{{ $scholar['volunteer_hours'] ?? 0 }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="{{ route('volunteers-admin.student-volunteer-detail', ['student_no' => $scholar['student_no']]) }}" class="icon-btn" title="View Profile">
-                                <i class="bi bi-eye fs-5"></i>
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="11" class="text-center text-muted">No student volunteers found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+  <!-- Table -->
+<div id="scholarsTable" class="px-5 py-4 container-fluid">
+  <div class="rounded shadow-sm table-responsive">
+
+    <table id="tableScholars">
+      <thead>
+
+        <!-- TITLE ROW -->
+        <tr class="table-title-row">
+          <th colspan="11" class="py-3 text-center fw-bold fs-5">
+            List of Student Volunteers A.Y. {{ $latestYear }}
+          </th>
+        </tr>
+
+        <!-- HEADER ROW (MATCHING DESIGN) -->
+        <tr>
+          <th>#</th>
+          <th>Student No.</th>
+          <th>Email</th>
+          <th>Full Name</th>
+          <th class="text-center">Birthday</th>
+          <th class="text-center">School</th>
+          <th class="text-center">Program</th>
+          <th class="text-center">Scholarship Type</th>
+          <th class="text-center">Status</th>
+          <th>Total Volunteer Hour</th>
+          <th>View</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+        @forelse ($scholars as $index => $scholar)
+          @php
+            $year = $scholar['academic_year'] ?? null;
+            $status = $year && isset($scholar['gwa_records'][$year]['status'])
+                      ? $scholar['gwa_records'][$year]['status']
+                      : 'N/A';
+          @endphp
+
+          <tr>
+            <td class="text-center fw-bold">
+              {{ ($scholars->currentPage() - 1) * $scholars->perPage() + ($index + 1) }}
+            </td>
+
+            <td>{{ $scholar['student_no'] }}</td>
+            <td>{{ $scholar['email'] ?? 'N/A' }}</td>
+
+            <td>
+              {{ $scholar['last_name'] }},
+              {{ $scholar['first_name'] }}
+              {{ $scholar['middle_name'] ?? '' }}
+              {{ $scholar['suffix'] ?? '' }}
+            </td>
+
+            <td class="text-center">
+              {{ $scholar['birthday']
+                ? \Carbon\Carbon::parse($scholar['birthday'])->format('F d, Y')
+                : 'N/A' }}
+            </td>
+
+            <td class="text-center">{{ $scholar['school'] ?? 'N/A' }}</td>
+            <td class="text-center">{{ $scholar['program'] ?? 'N/A' }}</td>
+
+            <td class="text-center">
+              {{ $scholar['is_aspiring'] ?? false
+                ? 'Aspiring Scholar'
+                : ($scholar['scholarship_type'] ?? 'N/A') }}
+            </td>
+
+            <td class="text-center">
+              @if(isset($scholar['is_aspiring']) && $scholar['is_aspiring'])
+                <span class="badge bg-info text-dark">Aspiring Scholar</span>
+              @else
+                @if(strtolower($status) === 'eligible')
+                  <span class="badge bg-success">Eligible</span>
+                @elseif(strtolower($status) === 'probationary')
+                  <span class="badge bg-warning text-dark">Probationary</span>
+                @elseif(in_array(strtolower($status), ['ineligible', 'revoked']))
+                  <span class="badge bg-danger">Revoked</span>
+                @else
+                  <span class="badge bg-secondary">{{ $status }}</span>
+                @endif
+              @endif
+            </td>
+
+            <td>
+              <div class="gap-2 d-flex justify-content-center align-items-center">
+                <input type="number"
+                       class="form-control form-control-sm"
+                       style="width: 90px;"
+                       placeholder="+ hours"
+                       min="1">
+                <span class="fw-bold">{{ $scholar['volunteer_hours'] ?? 0 }}</span>
+              </div>
+            </td>
+
+            <td class="text-center">
+              <a href="{{ route('volunteers-admin.student-volunteer-detail', ['student_no' => $scholar['student_no']]) }}"
+                 class="icon-btn"
+                 title="View Profile">
+                <i class="bi bi-eye fs-5"></i>
+              </a>
+            </td>
+          </tr>
+
+        @empty
+          <tr>
+            <td colspan="11" class="text-center text-muted">
+              No student volunteers found
+            </td>
+          </tr>
+        @endforelse
+      </tbody>
+
+    </table>
+  </div>
 </div>
+
 
 <!-- Optional: Pagination -->
 <div class="mt-4 d-flex justify-content-center">

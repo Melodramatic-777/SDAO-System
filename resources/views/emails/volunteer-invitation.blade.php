@@ -25,8 +25,8 @@
             </p>
 
             <p style="font-size:15px; color:#555; line-height:1.6;">
-                You have been invited by the
-                <strong>{{ $officeName }}</strong>
+                You have been <strong> invited by the
+                {{ $officeName }}</strong>
                 to participate in a volunteer opportunity on
                 <strong>IsKonnect</strong>.
             </p>
