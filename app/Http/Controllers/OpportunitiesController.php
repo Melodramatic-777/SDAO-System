@@ -7,6 +7,9 @@ use Illuminate\Support\Str;
 use Kreait\Firebase\Factory;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VolunteerInvitationMail;
+
 
 class OpportunitiesController extends Controller
 {
@@ -27,7 +30,7 @@ class OpportunitiesController extends Controller
     }
 
 
-public function inviteScholar(Request $request)
+public function inviteScholar(Request $request) 
 {
     /* ========== VALIDATION ========== */
     $validated = $request->validate([
@@ -38,10 +41,10 @@ public function inviteScholar(Request $request)
         'tasks'               => 'required|array',
     ]);
 
-    $scholarId       = $validated['scholar_id'];
-    $opportunityId   = $validated['opportunity_id'];
-    $scheduleDates   = $validated['schedule_indices'] ?? [];
-    $selectedTasks   = $validated['tasks'];
+    $scholarId     = $validated['scholar_id'];
+    $opportunityId = $validated['opportunity_id'];
+    $scheduleDates = $validated['schedule_indices'] ?? [];
+    $selectedTasks = $validated['tasks'];
 
     /* ========== FIND SCHOLAR ========== */
     $scholars = $this->database->getReference('scholars')->getValue();
@@ -77,9 +80,11 @@ public function inviteScholar(Request $request)
         return back()->with('error', 'Opportunity not found.');
     }
 
-    $participants = $opportunity['participants'] ?? [];
+    /* ========== FETCH INVITING OFFICE (CORRECT SOURCE) ========== */
+    $officeName = $opportunity['submitted_by_role'] ?? 'Issuing Office';
 
     /* ========== DUPLICATE CHECK ========== */
+    $participants = $opportunity['participants'] ?? [];
     foreach ($participants as $p) {
         if (($p['scholar_id'] ?? '') === $scholarId) {
             return back()->with('warning', 'Scholar already invited.');
@@ -87,17 +92,23 @@ public function inviteScholar(Request $request)
     }
 
     /* ========== BUILD PARTICIPANT ========== */
+    $scholarName = trim(
+        ($selectedScholar['first_name'] ?? '') . ' ' .
+        ($selectedScholar['last_name'] ?? '')
+    );
+
     $newParticipant = [
-        'scholar_id' => $scholarId,
-        'name'       => trim(($selectedScholar['first_name'] ?? '') . ' ' . ($selectedScholar['last_name'] ?? '')),
-        'role'       => 'Volunteer',
-        'status'     => 'Pending Invite',
-        'tasks'      => $selectedTasks,
+        'scholar_id'     => $scholarId,
+        'name'           => $scholarName,
+        'role'           => 'Volunteer',
+        'status'         => 'Pending Invite',
+        'tasks'          => $selectedTasks,
         'schedule_dates' => $scheduleDates,
-        'invited_at' => Carbon::now()->toDateTimeString(),
+        'invited_at'     => Carbon::now()->toDateTimeString(),
+        'office'         => $officeName,
     ];
 
-    /* ========== SAVE TO OPPORTUNITY (SAFE PUSH) ========== */
+    /* ========== SAVE TO OPPORTUNITY ========== */
     $this->database
         ->getReference("opportunities/{$opportunityId}/participants")
         ->push($newParticipant);
@@ -110,11 +121,23 @@ public function inviteScholar(Request $request)
             'status'         => 'Pending Invite',
             'tasks'          => $selectedTasks,
             'schedule_dates' => $scheduleDates,
+            'office'         => $officeName,
             'invited_at'     => Carbon::now()->toDateTimeString(),
         ]);
 
+    /* ========== SEND EMAIL ========== */
+    if (!empty($selectedScholar['email'])) {
+        Mail::to($selectedScholar['email'])->send(
+            new \App\Mail\VolunteerInvitationMail(
+                $scholarName,
+                $officeName
+            )
+        );
+    }
+
     return back()->with('success', 'Scholar invited successfully!');
 }
+
 
 public function showScholars(Request $request)
 {
