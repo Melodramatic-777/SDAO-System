@@ -10,6 +10,14 @@ use App\Http\Controllers\AdminController;
 
 Route::prefix('scholars')->name('scholars.')->group(function () {
 
+Route::get('/volunteerHistory', function () {
+    return view('scholars.volunteerHistory');
+})->name('volunteerHistory');
+
+
+
+
+
     Route::post('/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
         ->name('logout'); // <- now matches scholars.logout
 
@@ -62,6 +70,7 @@ Route::controller(OpportunitiesController::class)->group(function () {
     Route::controller(OnTheSpotVolunteerController::class)->group(function () {
         Route::post('on-the-spot', 'onTheSpotVolunteer')->name('ontheSpotVolunteer');
             Route::post('on-the-spot/cancel/{id}', 'cancelOTSV')->name('ontheSpotVolunteer.cancel'); // <--- new
+
 Route::post('volunteer-opportunities/join-task', [ScholarJoinController::class, 'joinTask'])
     ->name('joinTask');
 

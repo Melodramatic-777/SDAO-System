@@ -293,17 +293,39 @@
       max-width: 2000px !important;
   }
 
-  .otsv-panel {
-    width: 320px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 16px;
-    position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-}
+    /* Notifications Sidebar */
+    .otsv-panel {
+        flex: 0 0 300px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        max-height: 80vh;
+        overflow-y: auto;
+        font-family: 'Inter', sans-serif;
+    margin-top: 20px !important; /* match the dashboard-row gap */
+    }
+
+
+      
+    .otsv-panel h3 {
+        margin-top: 1;
+        font-size: 1.2rem;
+        color: #003DA5;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+    .otsv-list { list-style: none; padding: 0; margin: 10px 0 0 0; }
+    .otsv-list li { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; color: #333; }
+    .otsv-list li:last-child { border-bottom: none; }
+    .otsv-list li:hover { background-color: #f9f9f9; cursor: default; }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .content-wrapper { flex-direction: column; }
+        .otsv-panel { flex: 1 1 100%; max-height: none; margin-top: 20px; }
+    }
+
 
 .otsv-list {
     list-style: none;
@@ -1050,4 +1072,84 @@
     position: sticky;
     top: 20px;
     height: fit-content;
+}
+
+/* ===== CHANGE PASSWORD MODAL (ISOLATED) ===== */
+.custom-wide-modal {
+    max-width: 60vw;
+}
+
+.cp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.cp-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: 16px;
+}
+
+.cp-label {
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+}
+
+.cp-input {
+    width: 100%;
+}
+
+.cp-hint {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* ===== FIX CHANGE PASSWORD MODAL ONLY ===== */
+/* ===== CHANGE PASSWORD MODAL — FINAL WIDTH FIX ===== */
+#changePasswordModal .modal-dialog {
+    max-width: 1100px !important;   /* 👈 this fixes the cramped layout */
+    width: 1100px !important;
+    min-width: unset !important;
+}
+
+
+#changePasswordModal .modal-body {
+    display: block !important;     /* cancel flex */
+    overflow: visible !important;
+}
+
+/* Layout inside modal */
+#changePasswordModal .cp-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 32px;
+}
+
+/* Form alignment */
+#changePasswordModal .cp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+#changePasswordModal .cp-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    align-items: center;
+    gap: 14px;
+}
+
+#changePasswordModal .cp-label {
+    font-weight: 600;
+    margin: 0;
+}
+
+#changePasswordModal .cp-hint {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
 }

@@ -2,259 +2,146 @@
 
 @section('content')
 
-<!-- OUTER FLEX CONTAINER: LEFT MAIN CONTENT + RIGHT OTSV -->
-<div class="gap-4 dashboard-grid d-flex align-items-start">
+<!-- OUTER FLEX CONTAINER -->
+<div class="dashboard-grid align-items-start" style="display:grid; grid-template-columns: 1fr 380px; gap:16px;">
 
-
-    <!-- LEFT MAIN CONTENT -->
+    <!-- ================= LEFT MAIN CONTENT ================= -->
     <div class="main-content flex-grow-1">
 
-        <div class="gap-4 mb-4 d-flex align-items-start">
+<div class="mb-4 top-dashboard-section">
+        <div class="flex-grow-1">
+        <div class="gap-4 volunteer-progress-container d-flex align-items-start">
 
-            <div class="flex-grow-1">
-                <div class="flex-wrap volunteer-progress-container d-flex justify-content-between align-items-stretch">
-                                        <div class="chart-section flex-grow-1 me-4 d-flex flex-column justify-content-between">
+    <!-- ================= CHART COLUMN ================= -->
+    <div class="flex-grow-1 d-flex flex-column">
 
-    <h4 class="mb-3">Your Volunteer Progress</h4>
+        <!-- LABEL -->
+        <h4 style="margin:0 0 12px 0; color:var(--nu-blue);">
+            Your Volunteer Progress
+        </h4>
 
-    <div class="flex-wrap gap-4 d-flex justify-content-center align-items-center flex-grow-1">
-        <!-- Pie Chart -->
-        <div class="text-center chart-box">
-            <canvas id="officeVolunteerChart" width="320" height="320"></canvas>
-            <p class="mt-2 text-muted">Office Volunteer Hours</p>
-        </div>
+        <!-- CHART CARD -->
+<div class="chart-section"
+     style="
+        background-color:#fff;
+        border-radius:12px;
+        padding:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.1);
+        max-width:100%;
+     ">
 
-        <!-- Circular Progress -->
-        <div class="text-center chart-box">
-            <canvas id="progressCircleChart" width="220" height="220"></canvas>
-            <p class="mt-2 text-muted">Completed the required minimum 10 hours</p>
+
+<div class="chart-grid">
+
+<div class="text-center chart-box">
+<div class="chart-wrapper large">
+        <canvas id="officeVolunteerChart"></canvas>
+    </div>
+
+                    <p class="mt-2 text-muted">Office Volunteer Hours</p>
+                </div>
+
+<div class="text-center chart-box">
+    <div class="chart-wrapper large">
+        <canvas id="progressCircleChart"></canvas>
+    </div>
+
+                    <p class="mt-2 text-muted">Completed the required minimum 10 hours</p>
+                </div>
+
+            </div>
         </div>
     </div>
+
+    <!-- ================= STATUS CARD COLUMN ================= -->
+<div class="status-column d-flex flex-column">
+
+        <!-- LABEL -->
+        <h4 style="margin:0 0 12px 0; color:var(--nu-blue);">
+            Volunteer Hour Rank
+        </h4>
+
+        <!-- STATUS CARDS -->
+        <div class="status-cards status-grid">
+            <div class="status-card hoursCompleted">
+                <h6>Hours Completed</h6>
+                <h3>--</h3>
+            </div>
+            <div class="status-card activitiesParticipated">
+                <h6>Activities Participated</h6>
+                <h3>--</h3>
+            </div>
+            <div class="status-card hoursMonth">
+                <h6>Hours This Month</h6>
+                <h3>--</h3>
+            </div>
+            <div class="status-card remainingHours">
+                <h6>Remaining Hours</h6>
+                <h3>--</h3>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-
-            <!-- RIGHT SIDE: Status Cards -->
-            <div style="width: 500px;">
-                <h4 class="mb-3">Volunteer Hour Rank:</h4>
-
-                <div class="status-cards status-grid">
-                    <div class="status-card hoursCompleted">
-                        <h6>Hours Completed</h6>
-                        <h3>--</h3>
-                    </div>
-                    <div class="status-card activitiesParticipated">
-                        <h6>Activities Participated</h6>
-                        <h3>--</h3>
-                    </div>
-                    <div class="status-card hoursMonth">
-                        <h6>Hours This Month</h6>
-                        <h3>--</h3>
-                    </div>
-                    <div class="status-card remainingHours">
-                        <h6>Remaining Hours</h6>
-                        <h3>--</h3>
-                    </div>
-                </div>
             </div>
-
         </div>
 
 
-         
- <!-- RIGHT PANEL: OTSV -->
-  <!-- RIGHT PANEL: OTSV -->
-<aside class="shadow-sm otsv-panel"
-       style="
-           width: 380px;
-           padding: 20px;
-           background: #fff;
-           border-radius: 12px;
-           flex-shrink: 0;
-           position: sticky;
-           top: 0;
+<div class="gap-4 mb-4 d-flex align-items-center">
 
-       ">
+    <span class="status-tab active" id="tabUpcoming">
+        Upcoming Tasks
+    </span>
 
+    <span class="status-tab" id="tabAccomplished">
+        Accomplished Tasks
+    </span>
 
-    <h3><strong>My On the Spot Volunteers</strong></h3>
+</div>
 
-  <ul class="otsv-list" style="padding: 0; margin: 0; list-style: none;">
-    @forelse ($otsvList as $v)
-       <li class="otsv-item" style="margin-bottom: 18px; padding: 12px; border: 1px solid #ddd; border-radius: 10px;">
-
-    {{-- Accepted Badge (TOP) --}}
-    @if(isset($v['status']) && $v['status'] === 'accepted')
-        <div class="mb-2 text-end">
-            <span class="text-white badge bg-success">
-                <i class="bi bi-check-circle-fill me-1"></i> Accepted
-            </span>
-        </div>
-    @endif
-
-    <strong>{{ $v['student_name'] }}</strong><br>
-
-    <small>
-        Available Date: {{ \Carbon\Carbon::parse($v['available_date'])->format('F j, Y') }}<br>
-        Available Time:
-        {{ \Carbon\Carbon::parse($v['available_start_time'])->format('g:i A') }}
-        – {{ \Carbon\Carbon::parse($v['available_end_time'])->format('g:i A') }}<br>
-
-        @php
-            $reasons = $v['reasons'] ?? [];
-            $other = $v['other_reason'] ?? null;
-        @endphp
-
-        @if(!empty($reasons) || $other)
-            <strong>Reason:</strong><br>
-            @foreach($reasons as $reason)
-                • {{ $reason }}<br>
-            @endforeach
-            @if($other)
-                • {{ $other }}
-            @endif
-        @endif
-    </small>
-
-    {{-- Accepted By --}}
-    @if(isset($v['status']) && $v['status'] === 'accepted' && isset($v['action_by']))
-        <small class="mt-2 text-muted d-block">
-            <strong>Accepted by:</strong>
-            {{ $v['action_by']['name'] ?? 'N/A' }}<br>
-            <em>
-                {{ $v['action_by']['role'] ?? '' }}
-                @if(!empty($v['action_by']['office']))
-                    – {{ $v['action_by']['office'] }}
-                @endif
-            </em>
-        </small>
+<div id="upcomingTasksContainer" class="gap-3 d-flex flex-column">
+    @if($joinedOpportunities->isEmpty())
+        <p class="text-muted">You haven’t joined any opportunities.</p>
     @else
-        {{-- Cancel Button --}}
-        @if(($v['student_id'] ?? null) === session('scholar_accounts.student_no'))
-            <button type="button" class="mt-2 text-white btn btn-sm w-100"
-                    style="background-color: #dc3545; border-color: #dc3545;"
-                    data-bs-toggle="modal"
-                    data-bs-target="#cancelModal{{ $v['id'] }}">
-                Cancel
-            </button>
-        @endif
-    @endif
+        @foreach($joinedOpportunities as $opportunity)
+            @php
+                $firstSchedule = collect($opportunity['schedule'] ?? [])
+                    ->sortBy('date')
+                    ->first();
 
-</li>
+                $cardDate = !empty($firstSchedule['date'])
+                    ? \Carbon\Carbon::parse($firstSchedule['date'])->format('F j, Y')
+                    : null;
 
-    @empty
-        <li>No on-the-spot volunteers.</li>
-    @endforelse
-</ul>
+                $cardTime = (!empty($firstSchedule['start_time']) && !empty($firstSchedule['end_time']))
+                    ? \Carbon\Carbon::parse($firstSchedule['start_time'])->format('g:i A')
+                        . ' - ' . \Carbon\Carbon::parse($firstSchedule['end_time'])->format('g:i A')
+                    : null;
+            @endphp
 
+            <div class="p-3 mb-3 border rounded shadow-sm card opportunity-card">
+                <h5 class="mb-1 card-title fw-bold">{{ $opportunity['title'] ?? 'No Title' }}</h5>
 
-</aside>
+                <p class="mb-1"><strong>Office:</strong> {{ $opportunity['submitted_by_role'] ?? 'N/A' }}</p>
+                <p class="mb-1"><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
 
-     <h4 class="mb-4">Your Upcoming Tasks</h4>
+                {{-- Flex row for Submitted By + View Details --}}
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><strong>Submitted by:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</small>
 
-@php
-    // Filter only opportunities where this scholar's participation status is 'Joined'
-    $joinedOpportunities = collect($joinedOpportunities ?? [])->filter(function ($op) {
-        return collect($op['participants'] ?? [])->contains(function ($p) {
-            return ($p['scholar_id'] ?? '') === session('scholar_accounts.student_no')
-                && strtolower($p['status'] ?? '') === 'joined';
-        });
-    });
-@endphp
+                    <button class="view-details-btn float-end"
+                        data-bs-toggle="modal"
+                        data-bs-target="#joinedOpportunityModal{{ $opportunity['opportunity_id'] }}">
+                        View Details
+                    </button>
+                </div>
 
-@if($joinedOpportunities->isEmpty())
-    <p class="text-muted">You haven’t joined any opportunities.</p>
-@else
-    @foreach($joinedOpportunities as $opportunity)
-        @php
-            // Get participant info for the logged-in scholar
-            $participant = collect($opportunity['participants'])->firstWhere('scholar_id', session('scholar_accounts.student_no'));
-
-            $isIntermittent = !empty($opportunity['is_intermittent']) && $opportunity['is_intermittent'] == true;
-            $joinedDates = $participant['selected_dates'] ?? [];
-
-            // For intermittent tasks, get start and end dates
-            if ($isIntermittent && !empty($joinedDates)) {
-                $joinedSchedules = collect($joinedDates)->map(fn($d) => \Carbon\Carbon::parse($d))->sort()->values();
-                $startDate = $joinedSchedules->first();
-                $endDate = $joinedSchedules->last();
-            } else {
-                // For regular tasks
-                $schedule = $opportunity['schedule'] ?? [];
-                $s = !empty($schedule['start_date']) ? $schedule['start_date'] : null;
-            }
-        @endphp
-
-        @php
-    // Get first schedule entry (earliest)
-    $firstSchedule = collect($opportunity['schedule'] ?? [])
-        ->sortBy('date')
-        ->first();
-
-    $cardDate = !empty($firstSchedule['date'])
-        ? \Carbon\Carbon::parse($firstSchedule['date'])->format('F j, Y')
-        : null;
-
-    $cardTime = (!empty($firstSchedule['start_time']) && !empty($firstSchedule['end_time']))
-        ? \Carbon\Carbon::parse($firstSchedule['start_time'])->format('g:i A')
-            . ' - ' .
-          \Carbon\Carbon::parse($firstSchedule['end_time'])->format('g:i A')
-        : null;
-@endphp
-
-
-<div class="p-3 mb-3 bg-white border rounded status-card-container d-flex justify-content-between align-items-start">
-<div class="task-card-content">
-
-    <strong>{{ $opportunity['title'] ?? 'No Title' }}</strong>
-    <br>
-
-    <small class="mb-1 text-muted d-block">
-        <i class="bi bi-building me-1"></i>
-        {{ $opportunity['submitted_by_role'] ?? 'Office N/A' }}
-    </small>
-
-    <p class="mb-1">{{ $opportunity['location'] ?? 'No Location' }}</p>
-
-    <small class="text-muted d-block">
-        Submitted by: {{ $opportunity['submitted_by_name'] ?? 'N/A' }}
-    </small>
-
-
-@if($cardDate || $cardTime)
-    <div class="flex-wrap gap-3 mt-2 d-flex align-items-center">
-
-        @if($cardDate)
-            <div class="gap-2 d-flex align-items-center small">
-                <span class="fw-semibold">Date:</span>
-                <span class="px-3 py-1 border rounded-pill bg-light">
-                    {{ $cardDate }}
-                </span>
+              
             </div>
-        @endif
-
-        @if($cardTime)
-            <div class="gap-2 d-flex align-items-center small">
-                <span class="fw-semibold">Time:</span>
-                <span class="px-3 py-1 border rounded-pill bg-light">
-                    {{ $cardTime }}
-                </span>
-            </div>
-        @endif
-
-@endif
-
-<div class="ms-auto d-flex align-items-start">
-    <button class="view-details-btn"
-            data-bs-toggle="modal"
-            data-bs-target="#joinedOpportunityModal{{ $opportunity['opportunity_id'] }}">
-        View Details
-    </button>
-</div>
+       
 
 
-
-            </div>
-        </div>
 
        {{-- Modal --}}
 <div class="modal fade" id="joinedOpportunityModal{{ $opportunity['opportunity_id'] }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
@@ -406,9 +293,10 @@
 
     </div> <!-- END LEFT MAIN CONTENT -->
 
-  
 
-</div> <!-- END OUTER FLEX CONTAINER -->
+
+</div>
+<!-- END OUTER FLEX CONTAINER -->
 
 
 
@@ -493,6 +381,8 @@ document.addEventListener("DOMContentLoaded", function () {
     accomplishedContainer.style.display = "block";
   });
 });
+
+
 </script>
 
 @endsection 

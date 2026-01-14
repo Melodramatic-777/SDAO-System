@@ -49,14 +49,32 @@
   <!-- Left column -->
 <div class="opportunity-list" id="opportunityList">
     @forelse($opportunities as $op)
-      <div class="card opportunity-card" data-id="{{ $op['opportunity_id'] }}" onclick="showDetail('{{ $op['opportunity_id'] }}')">
-        <div class="card-body">
+<div class="card opportunity-card" data-id="{{ $op['opportunity_id'] }}" onclick="showDetail('{{ $op['opportunity_id'] }}')">
+    <div class="card-body position-relative">
+
+      @php
+    $joined = collect($op['participants'] ?? [])
+        ->filter(fn($p) => strtolower($p['status'] ?? '') !== 'pending invite')
+        ->count();
+
+    $total = collect($op['tasks'] ?? [])
+        ->sum(fn($t) => (int) ($t['needed'] ?? 0));
+@endphp
+
+<div class="participant-counter" id="cardCount_{{ $op['opportunity_id'] }}">
+    <i class="bi bi-people"></i>
+    <span>{{ $joined }}/{{ $total }}</span>
+</div>
+
+
+
 @if(isset($op['is_urgent']) && $op['is_urgent'] === 'yes')
   <span class="badge-urgent">Urgent</span>
 @endif
-          <h5 class="card-title">{{ $op['title'] }}</h5>
-<p class="mb-1">Office: {{ ($op['submitted_by_role'] ?? '') === 'SDA Assistant' ? 'SDA Office' : ($op['submitted_by_role'] ?? 'Unknown') }}</p>
-          <p class="mb-1">Location: {{ $op['location'] }}</p>
+          <h5 class="card-title"><strong>{{ $op['title'] }}</strong></h5>
+          
+<p class="mb-1"><strong>Office: </strong>{{ ($op['submitted_by_role'] ?? '') === 'SDA Assistant' ? 'SDA Office' : ($op['submitted_by_role'] ?? 'Unknown') }}</p>
+          <p class="mb-1"><strong>Location: </strong>{{ $op['location'] }}</p>
 <small>
   @php
     $isIntermittent = !empty($op['is_intermittent']) && (int)$op['is_intermittent'] === 1;
@@ -351,6 +369,24 @@
   </div>
 </div>
 
+<!-- Already Joined Date Modal -->
+<div class="modal fade" id="alreadyJoinedDateModal" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="p-4 text-center modal-content">
+      <div class="modal-body">
+        <i class="bi bi-exclamation-circle-fill text-warning fs-1"></i>
+        <h5 class="mt-3 fw-bold">Already Joined</h5>
+        <p class="mb-0">
+          You can only join <strong>one task per date</strong>.<br>
+          Please choose another date.
+        </p>
+        <button class="mt-4 btn btn-primary" data-bs-dismiss="modal">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -380,24 +416,40 @@ function showDetail(id, selectedDate = null) {
     }
 
     /* -------- LEFT COLUMN -------- */
+const counts = getParticipantCounts(op, selectedTaskDate);
+
 const leftColumn = `
     <div class="col-md-6">
-        <h6 class="mb-2 fw-bold">
-            <i class="bi bi-people me-1"></i>
+        <h6 class="gap-2 mb-2 fw-bold d-flex align-items-center">
+
+
+            <i class="bi bi-people"></i>
+                        <span>
+                ${counts.joined}/${counts.total}
+            </span>
             Participants Joined
             <span class="text-muted fw-normal">
-                (${selectedTaskDate ? new Date(selectedTaskDate).toLocaleDateString('en-US',{month:'short', day:'numeric'}) : ''})
+                (${selectedTaskDate
+                    ? new Date(selectedTaskDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    })
+                    : ''})
             </span>
         </h6>
+
         ${renderParticipants(op, selectedTaskDate)}
     </div>
 `;
+
+
 
 
     /* -------- RIGHT COLUMN -------- */
 /* -------- RIGHT COLUMN -------- */
 let rightColumnContent = '';
 
+// ================= INTERMITTENT =================
 // ================= INTERMITTENT =================
 if (isIntermittent && selectedTaskDate && tasksByDate[selectedTaskDate]) {
 
@@ -408,71 +460,85 @@ if (isIntermittent && selectedTaskDate && tasksByDate[selectedTaskDate]) {
         timeStr = `${formatTime(tasks[0].start_time)} – ${formatTime(tasks[0].end_time)}`;
     }
 
-const foodProvided = op.food_provided || op.food || '';
+    // ✅ DATE-SPECIFIC FOOD LOGIC
+// ✅ FOOD COMES FROM SCHEDULE (PER DATE)
+const scheduleEntry = (op.schedule || []).find(s => s.date === selectedTaskDate);
 
-rightColumnContent = `
-<div class="task-panel">
+const foodProvided =
+    scheduleEntry?.food_provided === true ||
+    scheduleEntry?.food_provided === 1 ||
+    scheduleEntry?.food_provided === '1' ||
+    (typeof scheduleEntry?.food_provided === 'string'
+        && scheduleEntry.food_provided.toLowerCase() === 'yes');
 
-    <div class="section-label">
-        <i class="bi bi-calendar-event me-1"></i> Select Date
-    </div>
 
-    <div class="mb-3 date-pill-group">
-        ${Object.keys(tasksByDate).map(d => `
-            <button class="date-pill ${d === selectedTaskDate ? 'active' : ''}"
-                onclick="showDetail('${id}', '${d}')">
-                ${new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
-            </button>
-        `).join('')}
-    </div>
+    rightColumnContent = `
+    <div class="task-panel">
 
-${renderTimeAndFood(timeStr, foodProvided)} <hr>
+        <div class="section-label">
+            <i class="bi bi-calendar-event me-1"></i> Select Date
+        </div>
 
-    ${renderTaskList(tasks, id, selectedTaskDate)}
-</div>`;
+        <div class="mb-3 date-pill-group">
+            ${Object.keys(tasksByDate).map(d => `
+                <button class="date-pill ${d === selectedTaskDate ? 'active' : ''}"
+                    onclick="showDetail('${id}', '${d}')">
+                    ${new Date(d).toLocaleDateString('en-US',{
+                        weekday:'short',month:'short',day:'numeric'
+                    })}
+                </button>
+            `).join('')}
+        </div>
 
+        ${renderTimeAndFood(timeStr, foodProvided)}
+        <hr>
+
+        ${renderTaskList(tasks, id, selectedTaskDate)}
+    </div>`;
 }
 
+
+// ================= REGULAR =================
 // ================= REGULAR =================
 else if (!isIntermittent && op.schedule?.length) {
 
     const s = op.schedule[0];
     const taskDate = s.date;
 
-    const tasks = op.tasks || []; // if you store tasks separately
-
-    const dateStr = taskDate
-        ? new Date(taskDate).toLocaleDateString('en-US', {
-            weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
-        })
-        : 'N/A';
+    const tasks = op.tasks || [];
 
     let timeStr = 'N/A';
     if (s.start_time && s.end_time) {
         timeStr = `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`;
     }
 
-const foodProvided = op.food_provided || op.food || '';
+    const foodProvided = op.food_provided || op.food || '';
 
-rightColumnContent = `
-<div class="task-panel">
+    rightColumnContent = `
+    <div class="task-panel">
 
-    <div class="mb-2 section-label">
-        <i class="bi bi-calendar-event me-1"></i> Schedule
-    </div>
-
-    <div class="mb-3 date-time-banner">
-        <div class="date-text">
-            <i class="bi bi-calendar-event me-2"></i>
-            ${dateStr}
+        <div class="section-label">
+            <i class="bi bi-calendar-event me-1"></i> Schedule
         </div>
-        
-${renderTimeAndFood(timeStr, foodProvided)}
 
-    ${renderTaskList(tasks, id, taskDate)}
-</div>`;
+        <!-- BOLD DATE (NO BOX) -->
+        <div class="mb-2 fw-bold fs-6 text-dark">
+            ${new Date(taskDate).toLocaleDateString('en-US',{
+                weekday:'long',
+                month:'long',
+                day:'numeric',
+                year:'numeric'
+            })}
+        </div>
 
+        ${renderTimeAndFood(timeStr, foodProvided)}
+        <hr>
+
+        ${renderTaskList(tasks, id, taskDate)}
+    </div>
+    `;
 }
+
 
     const rightColumn = `<div class="col-md-6">${rightColumnContent || '<p>No tasks available.</p>'}</div>`;
 
@@ -580,7 +646,9 @@ function renderParticipants(op, selectedDate) {
     }
 
     const filtered = op.participants.filter(p =>
-        p.tasks && p.tasks[selectedDate]
+        p.tasks &&
+        p.tasks[selectedDate] &&
+        p.status?.toLowerCase() !== 'pending invite'
     );
 
     if (!filtered.length) {
@@ -605,6 +673,7 @@ function renderParticipants(op, selectedDate) {
         </div>
     `;
 }
+
 
 
 document.addEventListener('change', function (e) {
@@ -644,22 +713,36 @@ fetch("{{ route('scholars.joinTask') }}", {
         })
     })
     .then(res => res.json())
-   .then(data => {
-    if (data.message) {
+  .then(data => {
 
-        const btn = document.getElementById(`joinBtn_${opportunityId}`);
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="bi bi-check-circle"></i> Joined';
-            btn.classList.remove('btn-success');
-            btn.classList.add('btn-secondary');
-        }
-
+    // ❌ 1 TASK PER DATE — SHOW ALERT MODAL
+    if (data.message === 'You can only join 1 task per date') {
         new bootstrap.Modal(
-            document.getElementById('joinSuccessModal')
+            document.getElementById('alreadyJoinedDateModal')
         ).show();
+        return;
     }
+
+    // ❌ TASK FULL / OTHER ERRORS
+    if (!data.message || data.message !== 'Successfully joined task') {
+        alert(data.message || 'Unable to join task.');
+        return;
+    }
+
+    // ✅ SUCCESS
+    const btn = document.getElementById(`joinBtn_${opportunityId}`);
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Joined';
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-secondary');
+    }
+
+    new bootstrap.Modal(
+        document.getElementById('joinSuccessModal')
+    ).show();
 })
+
     .catch(err => {
         console.error(err);
         alert("Failed to join task.");
@@ -737,6 +820,30 @@ function renderTimeAndFood(timeStr, food) {
 }
 
 
+function getParticipantCounts(op, selectedDate) {
+    if (!selectedDate) {
+        return { joined: 0, total: 0 };
+    }
+
+    // COUNT JOINED
+    const joined = (op.participants || []).filter(p =>
+        p.tasks &&
+        p.tasks[selectedDate] &&
+        p.status?.toLowerCase() !== 'pending invite'
+    ).length;
+
+    // COUNT TOTAL SLOTS
+    let total = 0;
+
+    if (op.is_intermittent == 1 && op.intermittent_tasks_by_date?.[selectedDate]) {
+        const tasks = Object.values(op.intermittent_tasks_by_date[selectedDate]);
+        total = tasks.reduce((sum, t) => sum + (parseInt(t.needed) || 0), 0);
+    } else if (op.tasks?.length) {
+        total = op.tasks.reduce((sum, t) => sum + (parseInt(t.needed) || 0), 0);
+    }
+
+    return { joined, total };
+}
 
 </script>
 

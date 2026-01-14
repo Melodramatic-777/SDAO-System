@@ -15,6 +15,7 @@
     @vite('resources/css/Scholars.css')
     @vite('resources/css/Volunteer_Admin.css')
     @vite('resources/css/volunteers.css')
+        @vite('resources/css/Scholar_Admin.css')
 
     <!-- FullCalendar & Chart JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
@@ -159,8 +160,16 @@
                class="{{ request()->routeIs('scholars.volunteer-opportunities') ? 'active' : '' }}">Volunteer Opportunity</a>
             <a href="{{ route('scholars.invites') }}"
                class="{{ request()->routeIs('scholars.invites') ? 'active' : '' }}">Volunteer Invite</a>
-            <a href="{{ route('scholars.profile') }}"
-               class="{{ request()->routeIs('scholars.profile') ? 'active' : '' }}">Profile</a>
+<a href="{{ route('scholars.volunteerHistory') }}"
+   class="{{ request()->routeIs('scholars.volunteerHistory') ? 'active' : '' }}">
+   Volunteer History
+</a>
+
+<a href="{{ route('scholars.profile') }}"
+   class="{{ request()->routeIs('scholars.profile') ? 'active' : '' }}">
+   Profile
+</a>
+
 
             <div class="logout-container">
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="logout-btn">
