@@ -699,35 +699,61 @@ public function showAssignFingerprint($student_no)
 
 public function storeAssignFingerprint(Request $request, $student_no)
 {
-    $data = $request->validate([
-        'firebase_key' => ['required', 'string'],
-        'academic_year' => ['required', 'string'],
-        'term' => ['required', 'string'],
-        'scholarship_type' => ['required', 'string'],
-        'fingerprint_slot_id' => ['required', 'integer', 'min:1'],
+    $request->validate([
+        'fingerprint_slot_id' => 'required|string|min:1'
     ]);
 
 
-    // IMPORTANT: remove "/records"
-    $path = "scholars/{$data['academic_year']}/{$data['term']}/{$data['scholarship_type']}/{$data['firebase_key']}";
+    $slotId = (int) $request->fingerprint_slot_id;
 
 
-    $existing = $this->database->getReference($path)->getValue();
-    if (!$existing) {
-        return redirect()->route('scholars-admin.scholars_accounts')
-            ->with('error', 'Scholar record not found in Firebase. No changes saved.');
+    // 🔍 Search entire scholars tree
+    $scholarsData = $this->database->getReference('scholars')->getValue() ?? [];
+
+
+    $updated = false;
+
+
+    foreach ($scholarsData as $year => $terms) {
+        foreach ($terms as $term => $types) {
+            foreach ($types as $type => $records) {
+                foreach ($records as $firebaseKey => $scholar) {
+
+
+                    if (($scholar['student_no'] ?? null) == $student_no) {
+
+
+                        $path = "scholars/{$year}/{$term}/{$type}/{$firebaseKey}";
+
+
+                        $this->database->getReference($path)->update([
+                            'fingerprint_slot_id' => $slotId,
+                            'fingerprint_complete' => true,
+                            'fingerprint_completed_at' => now()->toDateTimeString(),
+                        ]);
+
+
+                        $updated = true;
+                        break 4; // stop searching
+                    }
+                }
+            }
+        }
     }
 
 
-    $this->database->getReference($path)->update([
-        'fingerprint_slot_id' => (int) $data['fingerprint_slot_id'],
-    ]);
+    if (!$updated) {
+        return back()->with('error', '❌ Student not found. Slot ID not saved.');
+    }
 
 
-    return redirect()->route('scholars-admin.scholars_accounts')
-        ->with('success', 'Fingerprint assigned successfully.');
+    return redirect()
+        ->route('scholars-admin.scholars_accounts')
+        ->with('success', '✅ Fingerprint Slot ID saved using Student Number.');
     }
 }
+
+
 
 
 

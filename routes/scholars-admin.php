@@ -7,6 +7,7 @@ use App\Http\Controllers\ScholarRecordsController;
 use App\Http\Controllers\ScholarsDashboardController;
 use App\Http\Controllers\ContactUsController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\FingerprintLogController;
 
 
 
@@ -38,6 +39,8 @@ Route::get('/scholars-admin/profile', [AdminController::class, 'showScholarsAdmi
 
 
 
+
+
     Route::get('/assign-fingerprint/{student_no}',
     [AccountsScholarsController::class, 'showAssignFingerprint']
 )->name('scholars-admin.assign-fingerprint');
@@ -48,10 +51,9 @@ Route::post('/assign-fingerprint/{student_no}',
 )->name('scholars-admin.assign-fingerprint.store');
 
 
-
-
     
-
+Route::get('/fingerprint-log', [FingerprintLogController::class, 'index'])
+     ->name('scholars-admin.fingerprint-log');
 
     Route::controller(ScholarsDashboardController::class)->group(function () {
         Route::get('/dashboard', 'dashboard')->name('scholars-admin.dashboard');

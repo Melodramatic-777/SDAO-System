@@ -180,6 +180,12 @@
    Contact
 </a>
 
+<a href="{{ route('scholars-admin.fingerprint-log') }}"
+   class="{{ Request::is('scholars-admin/fingerprint-log') ? 'active' : '' }}">
+   Time In / Time Out
+</a>
+
+
             <div class="logout-container">
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="logout-btn">
                     <i class="bi bi-box-arrow-right"></i> Logout

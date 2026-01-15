@@ -46,39 +46,44 @@
 
 
             <!-- Buttons -->
-            <div class="d-flex align-items-center">
-                <button id="startScanBtn" class="btn btn-primary me-2">
+            <div class="gap-2 d-flex align-items-center">
+
+
+                <button id="startScanBtn" type="button" class="btn btn-primary">
                     <span id="btnText">Start Scan</span>
                     <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
                 </button>
 
 
-                <button id="retryBtn" class="btn btn-warning d-none">Retry</button>
+                <button id="retryBtn" type="button" class="btn btn-warning d-none">
+                    Retry
+                </button>
 
 
-                <form method="POST"
+                <form id="assignFingerprintForm" method="POST"
                     action="{{ route('scholars-admin.assign-fingerprint.store', $selectedScholar['student_no']) }}"
-                    class="gap-2 ms-auto d-flex align-items-center">
+                    class="gap-2 d-flex align-items-center">
+
+
                     @csrf
 
 
-                    <input type="hidden" name="firebase_key" value="{{ $selectedScholar['firebase_key'] }}">
-                    <input type="hidden" name="academic_year" value="{{ $selectedScholar['academic_year'] }}">
-                    <input type="hidden" name="term" value="{{ $selectedScholar['term'] }}">
-                    <input type="hidden" name="scholarship_type" value="{{ $selectedScholar['scholarship_type'] }}">
+                    <!-- REQUIRED to locate exact scholar in Firebase -->
 
 
-                    <input id="slotId" type="number" name="fingerprint_slot_id" class="form-control" style="width: 140px;"
-                        placeholder="Slot ID" min="1" required readonly>
 
 
-                    <button type="submit" class="btn btn-secondary">
-                        Submit
+                    <!-- Slot ID from scanner -->
+         <input id="slotId" type="hidden" name="fingerprint_slot_id" required>
+
+
+
+                    <button id="submitBtn" type="submit" class="btn btn-success" disabled>
+                        Save Slot
                     </button>
+
+
                 </form>
-
-
-                </a>
             </div>
         </div>
 
@@ -147,18 +152,19 @@
                     }
 
 
-                    if (data.ok === true) {
-                        scannerText.textContent = '✅ Success!';
-                        scanner.querySelector('i').style.color = 'green';
-                        showStatus('success', `Slot ID: ${data.id}`);
+if (data.ok === true) {
+    scannerText.textContent = '✅ Success!';
+    scanner.querySelector('i').style.color = 'green';
+    
+    // Only show generic success message, no slot ID
+    showStatus('success', `Fingerprint enrolled successfully.`);
+    
+    // Set the hidden slot ID for form submission
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('slotId').value = data.id;
+    return;
+}
 
-
-                        document.getElementById('slotId').value = data.id;
-                        setTimeout(() => {
-                            document.getElementById('assignFingerprintForm').submit();
-                        }, 1000);
-                        return;
-                    }
 
 
                     // enroll_failed - most common
@@ -226,4 +232,5 @@
 
 @endsection
 
-s
+
+

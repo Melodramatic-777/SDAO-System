@@ -37,10 +37,9 @@ class FingerprintApiController extends Controller
 
 
     // dev/ prefix only when running locally
-    $prefix = app()->environment('local') ? 'dev/' : '';
 
 
-    $path = "{$prefix}scholars/{$data['academic_year']}/{$data['term']}/{$data['scholarship_type']}/{$data['firebase_key']}";
+    $path = "scholars/{$data['academic_year']}/{$data['term']}/{$data['scholarship_type']}/{$data['firebase_key']}";
 
 
     // Always overwrite fingerprint info (re-submits allowed)
@@ -56,6 +55,8 @@ class FingerprintApiController extends Controller
 
 
 }
+
+
 
 
 

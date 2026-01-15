@@ -61,10 +61,15 @@
         ->sum(fn($t) => (int) ($t['needed'] ?? 0));
 @endphp
 
-<div class="participant-counter" id="cardCount_{{ $op['opportunity_id'] }}">
-    <i class="bi bi-people"></i>
-    <span>{{ $joined }}/{{ $total }}</span>
+<div class="d-flex justify-content-between align-items-start">
+    <div></div>
+
+    <div class="participant-counter">
+        <i class="bi bi-people"></i>
+        <span>{{ $joined }}/{{ $total }}</span>
+    </div>
 </div>
+
 
 
 
