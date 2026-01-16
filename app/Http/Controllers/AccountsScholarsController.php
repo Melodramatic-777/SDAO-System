@@ -322,12 +322,24 @@ $this->database
     // Extract all scholars (whole DB)
     $flattened = [];
 
+    $volunteerMinutesBySlot = $this->getVolunteerMinutesBySlot();
+
+
 
     foreach ($scholarsData as $year => $terms) {
         foreach ($terms as $term => $types) {
             foreach ($types as $scholarshipType => $records) {
                 foreach ($records as $id => $scholar) {
 
+
+                $slotId = $scholar['fingerprint_slot_id'] ?? null;
+
+$minutes = $slotId && isset($volunteerMinutesBySlot[$slotId])
+    ? $volunteerMinutesBySlot[$slotId]
+    : 0;
+
+$hours = floor($minutes / 60);
+$mins  = $minutes % 60;
 
                     $flattened[] = [
                         'student_no'       => $scholar['student_no'] ?? '',
@@ -342,7 +354,7 @@ $this->database
                         'scholarship_type' => $scholarshipType,
                         'academic_year'    => $year,
                         'term'             => $term,
-                        'volunteer_hours'  => $scholar['volunteer_hours'] ?? 0,
+    'volunteer_hours'  => "{$hours}h {$mins}m",
                         'gwa_records'      => $scholar['gwa_records'] ?? []
                     ];
                 }
@@ -751,6 +763,50 @@ public function storeAssignFingerprint(Request $request, $student_no)
         ->route('scholars-admin.scholars_accounts')
         ->with('success', '✅ Fingerprint Slot ID saved using Student Number.');
     }
+
+
+private function getVolunteerMinutesBySlot()
+{
+    $logs = $this->database
+        ->getReference('fingerprint_log')
+        ->getValue() ?? [];
+
+    $totals = []; // slot_id => minutes
+
+    foreach ($logs as $log) {
+
+        if (
+            empty($log['slot_id']) ||
+            empty($log['time_in']) ||
+            empty($log['time_out']) ||
+            !in_array($log['status'] ?? '', ['Approved', 'Complete'])
+        ) {
+            continue;
+        }
+
+        try {
+            $timeIn  = \Carbon\Carbon::createFromFormat('H:i:s', $log['time_in']);
+            $timeOut = \Carbon\Carbon::createFromFormat('H:i:s', $log['time_out']);
+
+            $minutes = $timeIn->diffInMinutes($timeOut);
+
+            $slotId = $log['slot_id'];
+
+            if (!isset($totals[$slotId])) {
+                $totals[$slotId] = 0;
+            }
+
+            $totals[$slotId] += $minutes;
+
+        } catch (\Exception $e) {
+            continue;
+        }
+    }
+
+    return $totals;
+}
+
+    
 }
 
 

@@ -123,12 +123,12 @@
             <div class="p-3 mb-3 border rounded shadow-sm card opportunity-card">
                 <h5 class="mb-1 card-title fw-bold">{{ $opportunity['title'] ?? 'No Title' }}</h5>
 
-                <p class="mb-1"><strong>Office:</strong> {{ $opportunity['submitted_by_role'] ?? 'N/A' }}</p>
+                <p class="mb-1"><strong>Office:</strong> {{ $opportunity['submitted_by_role'] ?? 'N/A' }} ({{ $opportunity['submitted_by_name'] ?? 'N/A' }})</p>
+                                <div class="d-flex justify-content-between align-items-center">
+
                 <p class="mb-1"><strong>Location:</strong> {{ $opportunity['location'] ?? 'N/A' }}</p>
 
                 {{-- Flex row for Submitted By + View Details --}}
-                <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted"><strong>Submitted by:</strong> {{ $opportunity['submitted_by_name'] ?? 'N/A' }}</small>
 
                     <button class="view-details-btn float-end"
                         data-bs-toggle="modal"

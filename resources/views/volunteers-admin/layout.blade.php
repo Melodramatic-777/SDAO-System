@@ -152,6 +152,7 @@
         <a href="{{ route('volunteers-admin.opportunities') }}" class="{{ request()->routeIs('volunteers-admin.opportunities') ? 'active' : '' }}">Volunteer Requests</a>
         <a href="{{ route('volunteers-admin.history') }}" class="{{ request()->routeIs('volunteers-admin.history') ? 'active' : '' }}">History</a>
         <a href="{{ route('volunteers-admin.validate-attendance') }}" class="{{ request()->routeIs('volunteers-admin.validate-attendance') ? 'active' : '' }}">Validate</a>
+
         <a href="{{ route('volunteers-admin.student-volunteers') }}" class="{{ request()->routeIs('volunteers-admin.student-volunteers') ? 'active' : '' }}">Student Volunteers</a>
         <a href="{{ route('volunteers-admin.accounts') }}" class="{{ request()->routeIs('volunteers-admin.accounts') ? 'active' : '' }}">Accounts</a>
         <a href="{{ route('volunteers-admin.contactUs') }}" class="{{ request()->routeIs('volunteers-admin.contactUs') ? 'active' : '' }}">Contact</a>

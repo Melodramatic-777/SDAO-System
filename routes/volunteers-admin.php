@@ -9,21 +9,28 @@ use App\Http\Controllers\SubmitOpportunityController;
 use App\Http\Controllers\OnTheSpotVolunteerController;
 use App\Http\Controllers\ContactUsController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\FingerprintLogController;
 
 
 
 
 Route::prefix('volunteers-admin')->group(function () {
 
-Route::get('/validate-attendance', function () {
-    return view('volunteers-admin.validate-attendance', [
-        'opportunities' => [] // 👈 prevents error
-    ]);
-})->name('volunteers-admin.validate-attendance');
+Route::get('/validate-attendance',
+    [FingerprintLogController::class, 'volunteerLogsTable']
+)->name('volunteers-admin.validate-attendance');
+
+Route::post('/validate-attendance/log',
+    [FingerprintLogController::class, 'validateLog']
+)->name('volunteers-admin.validate-log');
 
 
+Route::post(
+    '/volunteers-admin/submit-feedback',
+    [FingerprintLogController::class, 'submitFeedback']
+)->name('volunteers-admin.submit-feedback');
 
+    
     
 Route::post('/admin/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])
     ->name('volunteers-admin.logout');

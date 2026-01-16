@@ -409,10 +409,22 @@ table thead {
   }
 
 
-    #tableScholars thead tr:nth-child(2) {
-      background-color: #FFD700 !important; /* Gold / yellow */
-      color: #000 !important;               /* Black text */
-  }
+/* Style the second row of the header (column titles) */
+#tableScholars thead tr:nth-child(2) {
+    background-color: #FFD700 !important; /* Gold / yellow */
+    color: #000 !important;               /* Black text */
+}
+
+/* Rounded top corners for the table header */
+#tableScholars thead tr:nth-child(1) th:first-child {
+    border-top-left-radius: 1rem; /* adjust radius if needed */
+}
+#tableScholars thead tr:nth-child(1) th:last-child {
+    border-top-right-radius: 1rem;
+}
+
+
+
 
 table th, 
 table td {

@@ -70,10 +70,10 @@
 </form>
 
 <!-- Table -->
-<div id="Scholars" class="px-5 py-4 container-fluid">
+<div id="Scholars">
   <!-- Table -->
-<div id="scholarsTable" class="px-5 py-4 container-fluid">
-  <div class="rounded shadow-sm table-responsive">
+<div id="scholarsTable">
+<div class="overflow-hidden shadow-sm rounded-4 table-responsive">
 
     <table id="tableScholars">
       <thead>
@@ -116,10 +116,10 @@
               {{ ($scholars->currentPage() - 1) * $scholars->perPage() + ($index + 1) }}
             </td>
 
-            <td>{{ $scholar['student_no'] }}</td>
-            <td>{{ $scholar['email'] ?? 'N/A' }}</td>
+            <td class="text-center">{{ $scholar['student_no'] }}</td>
+            <td class="text-center">{{ $scholar['email'] ?? 'N/A' }}</td>
 
-            <td>
+            <td class="text-center">
               {{ $scholar['last_name'] }},
               {{ $scholar['first_name'] }}
               {{ $scholar['middle_name'] ?? '' }}
@@ -157,16 +157,29 @@
               @endif
             </td>
 
-            <td>
-              <div class="gap-2 d-flex justify-content-center align-items-center">
-                <input type="number"
-                       class="form-control form-control-sm"
-                       style="width: 90px;"
-                       placeholder="+ hours"
-                       min="1">
-                <span class="fw-bold">{{ $scholar['volunteer_hours'] ?? 0 }}</span>
-              </div>
-            </td>
+<td class="text-center position-relative">
+    <!-- Centered Volunteer Hours -->
+    <span class="fw-bold">
+        {{ $scholar['volunteer_hours'] ?? 0 }}
+    </span>
+
+    <!-- Edit Icon (same color, no background, with right margin) -->
+<button
+    type="button"
+    class="edit-hours-btn position-absolute end-0 top-50 translate-middle-y"
+    title="Edit Hours"
+    data-student-no="{{ $scholar['student_no'] }}"
+    data-student-name="{{ $scholar['last_name'] }}, {{ $scholar['first_name'] }}"
+    data-hours="{{ $scholar['volunteer_hours'] ?? 0 }}"
+    style="background: none !important; border: none !important; padding: 0; margin-right: 8px; box-shadow: none !important; color: inherit;">
+    <i class="bi bi-pencil-square fs-6"></i>
+</button>
+
+</td>
+
+
+
+
 
             <td class="text-center">
               <a href="{{ route('volunteers-admin.student-volunteer-detail', ['student_no' => $scholar['student_no']]) }}"
@@ -191,10 +204,79 @@
 </div>
 
 
+
+
 <!-- Optional: Pagination -->
 <div class="mt-4 d-flex justify-content-center">
     {{ $scholars->links('pagination::bootstrap-5') }}
 </div>
+
+
+
+
+<!-- EDIT TOTAL HOURS MODAL -->
+<div class="modal fade" id="edithoursmodal" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="shadow modal-content rounded-4">
+
+      <div class="border-0 modal-header">
+        <h5 class="modal-title fw-bold">Edit Total Hours</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <p class="mb-1 text-muted">
+          Student: <span id="modalStudentName"></span>
+        </p>
+        <p class="mb-3 text-muted">
+          Current Total Hours:
+          <strong><span id="currentHoursText"></span> hours</strong>
+        </p>
+
+        <!-- Add Hours / Minutes -->
+        <div class="mb-3 row g-2">
+          <div class="col">
+            <label class="form-label">Hours</label>
+            <input type="number" id="addHours" class="form-control" min="0" value="0">
+          </div>
+          <div class="col">
+            <label class="form-label">Minutes</label>
+            <input type="number" id="addMinutes" class="form-control" min="0" max="59" value="0">
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="mb-3">
+          <label class="form-label">Reason for Adjustment</label>
+          <select class="form-select" id="adjustReason">
+            <option value="">Choose a reason</option>
+            <option value="Manual Adjustment">Manual Adjustment</option>
+            <option value="Correction">Correction</option>
+            <option value="Late Submission">Late Submission</option>
+            <option value="Admin Update">Admin Update</option>
+          </select>
+        </div>
+
+        <!-- New Total -->
+        <div class="p-3 text-center rounded bg-light fw-bold text-primary">
+          New Total:
+          <span id="newTotalText">0 hours & 0 mins</span>
+        </div>
+
+        <input type="hidden" id="modalStudentNo">
+
+      </div>
+
+      <div class="border-0 modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" onclick="submitHourUpdate()">Update Hours</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 <!-- JS for AJAX Search & Filter -->
 <script>
@@ -202,6 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let searchInput = document.getElementById("searchInput");
     let scholarshipSelect = document.getElementById("scholarship_type");
     let tableContainer = document.getElementById("scholarsTable");
+    
 
     function fetchData() {
         let search = searchInput.value;
@@ -226,6 +309,83 @@ document.addEventListener("DOMContentLoaded", function () {
     searchInput.addEventListener("keyup", fetchData);
     scholarshipSelect.addEventListener("change", fetchData);
 });
+
+
+let currentHours = 0;
+
+function openEditHoursModal(studentNo, studentName, hours) {
+    currentHours = parseFloat(hours) || 0;
+
+    document.getElementById("modalStudentNo").value = studentNo;
+    document.getElementById("modalStudentName").innerText = studentName;
+    document.getElementById("currentHoursText").innerText = currentHours; // Current total
+
+    document.getElementById("addHours").value = 0;
+    document.getElementById("addMinutes").value = 0;
+    document.getElementById("adjustReason").value = "";
+
+    updateNewTotal(); // Initialize New Total
+
+    new bootstrap.Modal(document.getElementById("edithoursmodal")).show();
+}
+
+function updateNewTotal() {
+    let addH = parseInt(document.getElementById("addHours").value) || 0;
+    let addM = parseInt(document.getElementById("addMinutes").value) || 0;
+
+    // Total in minutes
+    let totalMinutes = currentHours * 60 + addH * 60 + addM;
+    let totalH = Math.floor(totalMinutes / 60);
+    let totalM = totalMinutes % 60;
+
+    document.getElementById("newTotalText").innerText =
+        `${totalH} hours & ${totalM} mins`;
+}
+
+
+
+function submitHourUpdate() {
+    let studentNo = document.getElementById("modalStudentNo").value;
+    let reason = document.getElementById("adjustReason").value;
+
+    if (!reason) {
+        alert("Please choose a reason for adjustment.");
+        return;
+    }
+
+    // 🔧 PLACE AJAX / FORM SUBMISSION HERE
+    console.log("Update hours for:", studentNo);
+
+    bootstrap.Modal.getInstance(
+    document.getElementById("edithoursmodal")
+    ).hide();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const addHours = document.getElementById("addHours");
+    const addMinutes = document.getElementById("addMinutes");
+
+    if (addHours && addMinutes) {
+        addHours.addEventListener("input", updateNewTotal);
+        addMinutes.addEventListener("input", updateNewTotal);
+    }
+});
+
+
+document.addEventListener("click", function(e) {
+    if (e.target.closest(".edit-hours-btn")) {
+        const btn = e.target.closest(".edit-hours-btn");
+
+        const studentNo = btn.dataset.studentNo;
+        const studentName = btn.dataset.studentName;
+        const hours = btn.dataset.hours;
+
+        openEditHoursModal(studentNo, studentName, hours);
+    }
+});
+
 </script>
+
+
 
 @endsection

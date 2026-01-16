@@ -255,7 +255,6 @@
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
-#scholarsTable { transition: opacity 0.3s ease-in-out; max-width: 900px; margin: 0 auto; }
 
   .table-title-row th {
     background-color: #004aad !important; color: white !important; text-align: center; font-size: 1.25rem;
@@ -1152,4 +1151,12 @@
     grid-column: 2;
     font-size: 0.85rem;
     color: #6c757d;
+}
+
+.counter-urgent {
+    margin-top: -4px; /* tweak: try -3px to -6px if needed */
+}
+
+.participant-counter {
+    margin-top: 2px;
 }

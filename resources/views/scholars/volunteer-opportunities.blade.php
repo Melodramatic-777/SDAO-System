@@ -52,32 +52,59 @@
 <div class="card opportunity-card" data-id="{{ $op['opportunity_id'] }}" onclick="showDetail('{{ $op['opportunity_id'] }}')">
     <div class="card-body position-relative">
 
-      @php
-    $joined = collect($op['participants'] ?? [])
-        ->filter(fn($p) => strtolower($p['status'] ?? '') !== 'pending invite')
-        ->count();
+    @php
+// ===== TOTAL SLOTS =====
+$total = 0;
 
+if (!empty($op['is_intermittent']) && (int)$op['is_intermittent'] === 1) {
+    foreach ($op['intermittent_tasks_by_date'] ?? [] as $date => $tasks) {
+        foreach ($tasks as $task) {
+            $total += (int) ($task['needed'] ?? 0);
+        }
+    }
+} else {
     $total = collect($op['tasks'] ?? [])
         ->sum(fn($t) => (int) ($t['needed'] ?? 0));
+}
+
+// ===== JOINED COUNT (UNIQUE TASK JOINS) =====
+$joined = 0;
+
+foreach ($op['participants'] ?? [] as $p) {
+    if (strtolower($p['status'] ?? '') === 'pending invite') continue;
+
+    if (!empty($p['tasks']) && is_array($p['tasks'])) {
+        foreach ($p['tasks'] as $date => $tasks) {
+            $joined += count($tasks);
+        }
+    }
+}
 @endphp
 
-<div class="d-flex justify-content-between align-items-start">
-    <div></div>
 
-    <div class="participant-counter">
-        <i class="bi bi-people"></i>
-        <span>{{ $joined }}/{{ $total }}</span>
+<div class="mb-1 d-flex justify-content-between align-items-start">
+
+    <!-- LEFT: Urgent + Title -->
+    <div>
+        @if(isset($op['is_urgent']) && $op['is_urgent'] === 'yes')
+            <span class="mb-1 badge-urgent d-inline-block">Urgent</span>
+        @endif
+
+        <h5 class="mb-0 card-title">
+            <strong>{{ $op['title'] }}</strong>
+        </h5>
     </div>
+
+    <!-- RIGHT: Total Slots -->
+<div class="participant-counter {{ (isset($op['is_urgent']) && $op['is_urgent'] === 'yes') ? 'counter-urgent' : '' }}">
+    <i class="bi bi-people"></i>
+    <span>{{ $joined }}/{{ $total }}</span>
 </div>
 
 
+</div>
 
 
-@if(isset($op['is_urgent']) && $op['is_urgent'] === 'yes')
-  <span class="badge-urgent">Urgent</span>
-@endif
-          <h5 class="card-title"><strong>{{ $op['title'] }}</strong></h5>
-          
 <p class="mb-1"><strong>Office: </strong>{{ ($op['submitted_by_role'] ?? '') === 'SDA Assistant' ? 'SDA Office' : ($op['submitted_by_role'] ?? 'Unknown') }}</p>
           <p class="mb-1"><strong>Location: </strong>{{ $op['location'] }}</p>
 <small>
@@ -133,24 +160,30 @@
 
 <!-- Right column -->
 <!-- Right column -->
-<div class="opportunity-detail flex-grow-1 d-flex align-items-center justify-content-center" id="opportunityDetail">
-  <div class="text-center text-muted">
+<div class="opportunity-detail flex-grow-1" id="opportunityDetail">
 
-    <!-- Cursor Icon (flipped left) -->
-    <div class="mb-3">
-      <i class="bi bi-cursor fs-1 text-dark"
-         style="transform: scaleX(-1); display: inline-block;"></i>
+  <!-- Empty State (CENTERED) -->
+  <div class="empty-state d-flex align-items-center justify-content-center h-100">
+    <div class="text-center text-muted">
+
+      <!-- Cursor Icon (flipped left) -->
+      <div class="mb-3">
+        <i class="bi bi-cursor fs-1 text-dark"
+           style="transform: scaleX(-1); display: inline-block;"></i>
+      </div>
+
+      <!-- Title -->
+      <h4 class="mb-2 fw-bold text-dark">Select an opportunity</h4>
+
+      <!-- Subtitle -->
+      <p class="mb-0">
+        Click on any volunteer opportunity from the list to<br>
+        view details and join
+      </p>
+
     </div>
-
-    <!-- Title -->
-    <h4 class="mb-2 fw-bold text-dark">Select an opportunity</h4>
-
-    <!-- Subtitle -->
-    <p class="mb-0">
-      Click on any volunteer opportunity from the list to<br>
-      view details and join
-    </p>
   </div>
+
 </div>
 
 
@@ -850,6 +883,7 @@ function getParticipantCounts(op, selectedDate) {
     return { joined, total };
 }
 
+
 </script>
 
 
@@ -879,10 +913,6 @@ function getParticipantCounts(op, selectedDate) {
 
 
 
-<!-- Pagination -->
-<div class="mt-4 d-flex justify-content-center">
-    {{ $pagination->links('pagination::bootstrap-5') }}
-</div>
 
 @endsection
 

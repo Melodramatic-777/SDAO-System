@@ -70,10 +70,10 @@
 
 </div>
     
-<div id="scholarsTable" class="px-5 py-4 container-fluid">
-<div id="apiringScholarsTable" class="rounded shadow-sm table-responsive">
+<div id="scholarsTable">
+<div class="overflow-hidden shadow-sm rounded-4 table-responsive">
 
-<table id="apiringScholarsTable">
+<table id="tableScholars">
   <thead>
 
     <!-- TITLE ROW -->
@@ -107,7 +107,7 @@
 @forelse ($aspiringScholars as $index => $scholar)
 <tr>
   <!-- Manage column checkbox -->
-  <td class="manage-col" style="display:none;">
+  <td class="text-center manage-col" style="display:none;">
     <input type="checkbox" name="selected_accounts[]" 
            form="deleteForm" value="{{ $scholar['id'] }}">
   </td>
@@ -117,15 +117,15 @@
     {{ ($aspiringScholars->currentPage() - 1) * $aspiringScholars->perPage() + ($index + 1) }}
   </td>
 
-  <td>{{ $scholar['student_no'] }}</td>
-  <td>{{ $scholar['first_name'] }}</td>
-  <td>{{ $scholar['middle_name'] }}</td>
-  <td>{{ $scholar['last_name'] }}</td>
-  <td>{{ $scholar['suffix'] }}</td>
-  <td>{{ $scholar['email'] }}</td>
-  <td>{{ $scholar['school'] }}</td>
-  <td>{{ $scholar['program'] }}</td>
-  <td>{{ $scholar['created_at'] }}</td>
+  <td class="text-center">{{ $scholar['student_no'] }}</td>
+  <td class="text-center">{{ $scholar['first_name'] }}</td>
+  <td class="text-center">{{ $scholar['middle_name'] }}</td>
+  <td class="text-center">{{ $scholar['last_name'] }}</td>
+  <td class="text-center">{{ $scholar['suffix'] }}</td>
+  <td class="text-center">{{ $scholar['email'] }}</td>
+  <td class="text-center">{{ $scholar['school'] }}</td>
+  <td class="text-center">{{ $scholar['program'] }}</td>
+  <td class="text-center">{{ $scholar['created_at'] }}</td>
 
 </tr>
 @empty
