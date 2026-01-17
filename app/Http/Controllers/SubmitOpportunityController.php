@@ -60,6 +60,8 @@ class SubmitOpportunityController extends Controller
             'schedule.*.end_time' => 'nullable|string',
             'intermittent_details' => 'nullable|string',
             'food_provided' => 'required|in:yes,no',
+            'activity_type' => 'required|string|max:255',
+
         ]);
 
         // -------------------------------
@@ -239,6 +241,8 @@ class SubmitOpportunityController extends Controller
                 'intermittent_details' => $validated['intermittent_details'] ?? null,
                 'is_urgent' => $isUrgent,
                 'food_provided' => $validated['food_provided'],
+                'activity_type' => $validated['activity_type'],
+
             ]);
 
         // -------------------------------
@@ -273,6 +277,7 @@ try {
                             'office' => $userRole,
                             'date_time' => now()->format('F d, Y h:i A'),
                             'location' => $validated['location'],
+                            'activity_type' => $validated['activity_type'], // <-- added
                             'title' => $validated['title'],
                         ])
                     );

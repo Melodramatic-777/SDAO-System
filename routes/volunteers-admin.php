@@ -10,6 +10,7 @@ use App\Http\Controllers\OnTheSpotVolunteerController;
 use App\Http\Controllers\ContactUsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\FingerprintLogController;
+use App\Http\Controllers\VolunteerInvitationController;
 
 
 
@@ -26,7 +27,7 @@ Route::post('/validate-attendance/log',
 
 
 Route::post(
-    '/volunteers-admin/submit-feedback',
+    '/submit-feedback',
     [FingerprintLogController::class, 'submitFeedback']
 )->name('volunteers-admin.submit-feedback');
 
@@ -89,12 +90,19 @@ Route::get('/dashboard', [\App\Http\Controllers\VolunteersAdminDashboardControll
         Route::get('/opportunities/{id}', 'show')->name('volunteers-admin.opportunities.show');
         Route::patch('/opportunities/{id}/status', 'updateStatus')->name('volunteers-admin.opportunity.update-status');
         Route::post('/opportunities/{id}/cancel', 'cancelOpportunity')->name('volunteers-admin.opportunities.cancel');
-        Route::get('/invite-volunteer', 'showScholars')->name('volunteers-admin.invite-volunteer');
-        Route::get('/volunteers/invite', 'showScholars')->name('volunteers.invite');
-        Route::post('/invite-scholar', 'inviteScholar')->name('volunteers-admin.inviteScholar');
+
     });
 
+Route::controller(VolunteerInvitationController::class)->group(function () {
+    Route::get('/invite-volunteer', 'showScholars')
+        ->name('volunteers-admin.invite-volunteer');
 
+    Route::get('/volunteers/invite', 'showScholars')
+        ->name('volunteers.invite');
+
+    Route::post('/invite-scholar', 'inviteScholar')
+        ->name('volunteers-admin.inviteScholar');
+});
 
     Route::post('/store-opportunity', [SubmitOpportunityController::class, 'store'])
         ->name('volunteers-admin.store-opportunity');

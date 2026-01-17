@@ -31,8 +31,11 @@
                             <strong>Request Details:</strong><br><br>
                             <strong>Requestor:</strong> {{ $name }}<br>
                             <strong>Office:</strong> {{ $office }}<br>
-<strong>Date & Time:</strong> {{ $date_time }}<br>
+<p><strong>Type of Activity:</strong> {{ $type_of_activity }}</p>
+
                             <strong>Location:</strong> {{ $location }}
+                            <strong>Date & Time:</strong> {{ $date_time }}<br>
+
                         </p>
 
                         <p style="font-size:15px; line-height:1.6;">

@@ -23,25 +23,27 @@
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     background: linear-gradient(135deg, #e9f0ff 0%, #f6f9ff 100%);
     min-height: 100vh;
-    padding: 28px;
     -webkit-font-smoothing:antialiased;
   }
 
 .page-wrap {
   max-width: 1100px;
-  margin: 0 auto;           /* keeps it centered horizontally */
-  display: flex;             /* use flexbox */
-  justify-content: center;   /* center child horizontally */
-  align-items: flex-start;   /* align top */
-  padding: 28px 0;           /* optional: vertical padding */
-}  .card-wrap {
+  margin: 0 auto;           /* center horizontally */
+  display: flex;             /* flex container */
+  justify-content: center;   /* center horizontally */
+  align-items: center;       /* center vertically */
+  min-height: 100vh;         /* full viewport height for vertical centering */
+}
+
+.card-wrap {
   background: var(--card-bg);
   border-radius: var(--radius);
   padding: 28px;
   box-shadow: 0 14px 40px rgba(2,6,23,0.08);
-  width: 100%;               /* optional: fill parent max-width */
-  max-width: 900px;          /* optional: limit max width */
+  width: 100%;               /* fill parent max-width */
+  max-width: 900px;          /* limit max width */
 }
+
 
   header.form-header { text-align:center; margin-bottom:18px; }
 
@@ -422,6 +424,44 @@
     outline: none;
 }
 
+
+
+.task-step-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.task-left {
+  flex: 2;
+}
+
+.task-right {
+  flex: 1;
+  background: #f9fafb;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  position: sticky;
+  top: 20px;
+}
+
+@media (max-width: 768px) {
+  .task-step-layout {
+    flex-direction: column;
+  }
+  .task-right {
+    position: static;
+  }
+}
+
+.volunteer-heading {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280; /* muted gray */
+    letter-spacing: 0.6px;
+}
+
 </style>
 
 <div class="page-wrap">
@@ -445,14 +485,14 @@
     <div class="step-item">
         <div class="step-content">
             <div id="stepIndicator1" class="step-indicator active">1</div>
-            <div class="step-label">Activity Details</div>
+            <div class="step-label">Basic Information</div>
         </div>
         <div class="step-line"></div>
     </div>
     <div class="step-item">
         <div class="step-content">
             <div id="stepIndicator2" class="step-indicator">2</div>
-            <div class="step-label">Schedule</div>
+            <div class="step-label">Date & Time</div>
         </div>
         <div class="step-line"></div>
     </div>
@@ -463,13 +503,21 @@
         </div>
         <div class="step-line"></div>
     </div>
+
+        <div class="step-item">
+        <div class="step-content">
+            <div id="stepIndicator4" class="step-indicator">4</div>
+            <div class="step-label">Summary</div>
+        </div>
+        <div class="step-line"></div>
+    </div>
 </div>
 
 
 </div>
 
 
-    <div id="stepTitle">Activity Details</div>
+    <div id="stepTitle">Basic Information</div>
 
     <main>
       <!-- LEFT: main form area (keeps your internal form inputs + calendar) -->
@@ -480,7 +528,7 @@
           <!-- STEP 1 -->
           <div class="form-step" id="step-1" >
             <div class="form-section">
-              <label>Title of activity <span class="text-danger">*</span></label>
+              <label>Activity Title <span class="text-danger">*</span></label>
               <input type="text" name="title" placeholder="Enter title proposal" required>
             </div>
 
@@ -515,9 +563,28 @@
               <input type="hidden" name="location" id="location" />
             </div>
 
-     <div class="form-section" style="display:flex; justify-content:flex-end; gap:12px;">
-    <button type="button" class="btn-primary next-step" id="next-step-1">Next</button>
+<div class="form-section" style="display:flex; justify-content:flex-end; gap:12px;">
+    
+    <!-- Cancel (go back) -->
+    <button
+        type="button"
+        class="btn btn-danger"
+        onclick="window.history.back();"
+    >
+        Cancel
+    </button>
+
+    <!-- Next -->
+    <button
+        type="button"
+        class="btn btn-primary next-step"
+        id="next-step-1"
+    >
+        Next
+    </button>
+
 </div>
+
 
 
           </div>
@@ -569,6 +636,7 @@
         <div>
             <label>Start Time <span class="text-danger">*</span></label>
             <input type="time" name="schedule[0][start_time]">
+            
         </div>
         <div>
             <label>End Time <span class="text-danger">*</span></label>
@@ -585,63 +653,58 @@
     </div>
 </div>
 
-    
+    <input type="hidden" id="regular-date-hidden" name="schedule[0][date]">
+
 <div class="form-navigation-between">
     <button type="button" class="btn-outline prev-step">Back</button>
     <button type="button" class="btn-primary next-step">Next</button>
 </div>
 
+
         </div>
-<!-- STEP 3 (Tasks) -->
+
+
+
+
+        <!-- STEP 3 (Tasks) -->
 <div class="form-step" id="step-3" style="display:none;">
 
+  <p class="mb-6 text-gray-600">
+    Select the tasks you need volunteers for and specify how many for each task.
+  </p>
 
-    
-  <p class="mb-6 text-gray-600">Select the tasks you need volunteers for and specify how many for each task.</p>
+  <!-- TWO COLUMN LAYOUT -->
+  <div class="task-step-layout">
 
+    <!-- ================= LEFT COLUMN ================= -->
+    <div class="task-left">
 
-<div class="form-section" style="margin-bottom: 20px;">
-    <label>Select Date for Tasks <span class="text-danger">*</span></label>
-    <select id="task-date-selector" class="form-control" style="padding: 10px; border-radius: 10px;">
-        <option value="" disabled selected>Loading dates...</option>
-    </select>
-    <div id="task-save-row" style="display:none; margin-top:10px;">
-    <button type="button" id="save-date-tasks" class="btn btn-primary">
-        Save Tasks for This Date
-    </button>
+      <!-- DATE SELECTOR -->
+      <div class="mb-4 form-section">
+        <label>
+          Select Date for Tasks <span class="text-danger">*</span>
+        </label>
+        <select id="task-date-selector"
+                class="form-control"
+                style="padding:10px; border-radius:10px;">
+          <option value="" disabled selected>Loading dates...</option>
+        </select>
 
-    
-</div>
-
-<!-- Task Summary Table -->
-<div id="task-summary-table" style="margin-top:20px; display:none;">
-    <h6 style="color:#003DA5; font-weight:700; margin-bottom:10px;">
-        Saved Task Assignments
-    </h6>
-
-    <table class="table table-bordered" style="background:white; border-radius:10px; overflow:hidden;">
-        <thead style="background:#003DA5; color:white;">
-            <tr>
-                <th>Date</th>
-                <th>Task</th>
-                <th>Needed Volunteers</th>
-            </tr>
-        </thead>
-        <tbody id="task-summary-body"></tbody>
-    </table>
-</div>
+        <div id="task-save-row" style="margin-top:10px;">
+          <button type="button" id="save-date-tasks" class="btn btn-primary">
+            Save Tasks for This Date
+          </button>
+        </div>
+      </div>
 
 
-</div>
+      
+      <!-- TASK CARDS CONTAINER -->
+      <div id="taskSelectionContainer"
+           class="mb-6 space-y-4"
+           style="max-height:500px; overflow-y:auto; padding-right:6px;">
 
-
-
-
-
- <!-- Task cards container -->
-<div id="taskSelectionContainer" class="mb-6 space-y-4" style="max-height: 500px; overflow-y: auto; padding-right: 6px;">
-
-  <!-- Marshalling -->
+   <!-- Marshalling -->
   <div class="p-4 border rounded-lg task-card">
     <div class="flex items-start gap-3">
       <input type="checkbox" data-task-name="Marshalling" name="tasks[Marshalling][active]" class="form-checkbox task-toggle">
@@ -862,17 +925,83 @@
   <div id="taskByDateContainer" class="space-y-4"></div>
 </div>
 
-<div id="intermittentSummaryInputs"></div>
+
+      <div id="intermittentSummaryInputs"></div>
+
+    </div>
+
+    <!-- ================= RIGHT COLUMN ================= -->
+    <div class="task-right">
+
+      <h6 style="color:#003DA5; font-weight:700; margin-bottom:10px;">
+        Saved Task Assignments
+      </h6>
+
+      <table id="task-summary-table"
+             class="table table-bordered"
+             style="background:white; border-radius:10px; overflow:hidden; display:none;">
+        <thead style="background:#003DA5; color:white;">
+          <tr>
+            <th>Date</th>
+            <th>Task</th>
+            <th>Needed Volunteers</th>
+          </tr>
+        </thead>
+        <tbody id="task-summary-body"></tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+<div class="form-navigation-between">
+    <button type="button" class="btn-outline prev-step">Back</button>
+    <button type="button" class="btn-primary next-step">Next</button>
+</div>
+
+</div>
 
 
 
-<div class="form-navigation-between" style="justify-content: flex-end;">
+<!-- ================= STEP 4 : SUMMARY ================= -->
+<div class="form-step" id="step-4" style="display:none;">
+
+  <h5 style="color:#003DA5; font-weight:700; margin-bottom:14px;">Review Your Submission</h5>
+
+  <div class="summary-grid">
+
+    <div class="summary-card">
+      <h6>Title</h6>
+      <p id="summary-title"></p>
+    </div>
+
+    <div class="summary-card">
+      <h6>Location</h6>
+      <p id="summary-location"></p>
+    </div>
+
+    <div class="summary-card" style="grid-column:1/-1;">
+      <h6>Description</h6>
+      <p id="summary-description"></p>
+    </div>
+
+    <div class="summary-card" style="grid-column:1/-1;">
+      <h6>Task Schedule</h6>
+<div id="summary-task-assignments"></div>
+    </div>
+
+  </div>
+
+  <!-- ✅ NAVIGATION MOVED HERE -->
+<div class="form-navigation-between" style="display:flex; justify-content:space-between; margin-top:20px;">
   <button type="button" class="btn-outline prev-step">Back</button>
   <button type="submit" class="btn-primary">Submit Opportunity</button>
 </div>
 
 
 </div>
+
+
 
 
         </form>
@@ -884,6 +1013,37 @@
   </div>
 </div>
  
+
+<!-- GLOBAL MODAL -->
+<div class="modal fade" id="globalModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      
+      <!-- Header without close button -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="globalModalTitle" style="font-weight: bold; color: var(--primary, #003DA5);">
+          Notice
+        </h5>
+      </div>
+      
+      <div class="modal-body" id="globalModalBody">
+        ...
+      </div>
+      
+      <!-- Footer with centered OK button -->
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary" id="modalConfirmBtn" data-bs-dismiss="modal">
+          OK
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
 <script>
 
 
@@ -892,6 +1052,132 @@ let tasksByDate = {};
 document.addEventListener("DOMContentLoaded", function() {
   // ---------- form steps
   const steps = Array.from(document.querySelectorAll(".form-step"));
+  function validateStep(stepIndex) {
+
+  // STEP 1 — Activity Details
+  if (stepIndex === 0) {
+    const title = document.querySelector('input[name="title"]')?.value.trim();
+    const desc  = document.querySelector('textarea[name="description"]')?.value.trim();
+    const loc   = document.getElementById('location')?.value.trim();
+
+    if (!title || !desc || !loc) {
+      showAlertModal("Please complete Title, Description, and Location.");
+      return false;
+    }
+  }
+
+
+  document.querySelectorAll("input[name='intermittent']").forEach(radio => {
+  radio.addEventListener("change", () => {
+    const isIntermittent = radio.value === "1";
+
+    // Toggle visibility
+    document.getElementById("regularSchedule").style.display =
+      isIntermittent ? "none" : "block";
+
+    document.getElementById("intermittentSchedule").style.display =
+      isIntermittent ? "block" : "none";
+
+    /* =========================
+       🔴 DISABLE UNUSED INPUTS
+       ========================= */
+
+    // Regular inputs
+    document
+      .querySelectorAll("#regularSchedule input, #regularSchedule select")
+      .forEach(el => {
+        el.disabled = isIntermittent;
+      });
+
+    // Intermittent inputs
+    document
+      .querySelectorAll("#intermittentSchedule input, #intermittentSchedule select")
+      .forEach(el => {
+        el.disabled = !isIntermittent;
+      });
+  });
+});
+
+
+// STEP 2 — Schedule
+// STEP 2 — Schedule
+if (stepIndex === 1) {
+
+  const selectedSchedule = document.querySelector(
+    "input[name='intermittent']:checked"
+  );
+
+  // ❌ No schedule type selected
+  if (!selectedSchedule) {
+    showAlertModal("Please select a schedule type.");
+    return false;
+  }
+
+  /* =========================
+     INTERMITTENT (value = "1")
+     ========================= */
+  if (selectedSchedule.value === "1") {
+
+    const table = document.getElementById("scheduled-table");
+    const rows = table
+      ? table.querySelectorAll("tbody tr")
+      : [];
+
+    // ❌ Must have at least TWO dates
+    if (rows.length < 2) {
+      showAlertModal("Please add at least 2 schedule date.");
+      return false;
+    }
+
+    // ✅ Intermittent valid
+    return true;
+  }
+
+  /* =========================
+     REGULAR (value = "0")
+     ========================= */
+  if (selectedSchedule.value === "0") {
+
+    const date      = document.querySelector('input[name="start_date"]')?.value;
+    const startTime = document.querySelector('input[name="schedule[0][start_time]"]')?.value;
+    const endTime   = document.querySelector('input[name="schedule[0][end_time]"]')?.value;
+
+    if (!date || !startTime || !endTime) {
+      showAlertModal("Please complete the schedule details.");
+      return false;
+    }
+
+    return true;
+  }
+}
+
+
+
+
+
+  // STEP 3 — Tasking
+  if (stepIndex === 2) {
+    if (!tasksByDate || Object.keys(tasksByDate).length === 0) {
+      showAlertModal("Please assign at least one task before continuing.");
+      return false;
+    }
+
+    let hasAtLeastOneTask = false;
+    Object.values(tasksByDate).forEach(tasks => {
+      if (Object.keys(tasks).length > 0) hasAtLeastOneTask = true;
+    });
+
+    if (!hasAtLeastOneTask) {
+      showAlertModal("Please assign at least one task with volunteers.");
+      return false;
+    }
+  }
+
+  return true; // ✅ allow navigation
+}
+
+
+
   let currentStep = 0;
 
 function showStep(i) {
@@ -902,9 +1188,9 @@ function showStep(i) {
         setTimeout(refreshTaskDateDropdown, 150); // <-- IMPORTANT
     }
 
-    document.getElementById('stepTitle').textContent = ['Activity Details','Schedule','Tasking','Summary'][i] || '';
+    document.getElementById('stepTitle').textContent = ['Basic Information','Date & Time','Tasking','Summary'][i] || '';
     updateIndicators(i+1);
-    if (i === 3) generateSummary();
+    if (currentStep === 3) generateSummary();
 }
 
 
@@ -924,16 +1210,32 @@ function updateIndicators(stepNumber) {
 }
 
   
-  document.querySelectorAll(".next-step").forEach(btn=>{
-    btn.addEventListener('click', ()=> {
-      if (currentStep < steps.length-1) showStep(currentStep+1);
-    });
+document.querySelectorAll(".next-step").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (!validateStep(currentStep)) return;
+    if (currentStep < steps.length - 1) {
+      showStep(currentStep + 1);
+    }
   });
-  document.querySelectorAll(".prev-step").forEach(btn=>{
-    btn.addEventListener('click', ()=> {
-      if (currentStep > 0) showStep(currentStep-1);
-    });
+});
+
+document.querySelectorAll(".prev-step").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (currentStep > 0) {
+      showStep(currentStep - 1);
+    }
   });
+});
+
+
+
+document.getElementById("opportunity-form").addEventListener("submit", function(e) {
+  if (!validateStep(0) || !validateStep(1) || !validateStep(2)) {
+    e.preventDefault();
+    return;
+  }
+});
+
 
   showStep(0);
 
@@ -987,7 +1289,7 @@ function updateIndicators(stepNumber) {
     const title = document.querySelector('input[name="title"]').value.trim();
     const desc  = document.querySelector('textarea[name="description"]').value.trim();
     const loc   = document.getElementById('location').value.trim();
-    if (!title || !desc || !loc) { alert('Please fill title, description and location before continuing.'); return; }
+    if (!title || !desc || !loc) { showAlertModal('Please fill title, description and location before continuing.'); return; }
     showStep(1);
   });
 
@@ -1041,12 +1343,12 @@ function updateIndicators(stepNumber) {
   }
 
   document.getElementById('add-calendar-schedule').addEventListener('click', function(){
-    if (selectedDates.size === 0) { alert('Please select at least one date.'); return; }
+    if (selectedDates.size === 0) { showAlertModal('Please select at least one date.'); return; }
     const startTime = document.getElementById('calendar-start-time').value;
     const endTime = document.getElementById('calendar-end-time').value;
     const targetNumber = document.getElementById('calendar-target-number').value || 1;
     const foodProvided = document.querySelector('input[name="food_provided_interm"]:checked')?.value || 'no';
-    if (!startTime || !endTime) { alert('Please fill start and end times.'); return; }
+    if (!startTime || !endTime) { showAlertModal('Please fill start and end times.'); return; }
 
     const table = ensureScheduledTable();
     const tbody = table.querySelector('tbody');
@@ -1121,15 +1423,23 @@ document.addEventListener('click', function(e){
   }
 
   // --- DELETE row (inline or dropdown)
-  if (e.target.classList.contains('delete-btn') || e.target.classList.contains('dropdown-delete')) {
-    const idx = e.target.dataset.index;
-    if (!confirm('Remove this scheduled entry?')) return;
-    const row = e.target.closest('tr');
-    if (row) row.remove();
-    removeHiddenInputsByIndex(idx);
-    reindexScheduledTable();
-  }
+if (
+  e.target.classList.contains('delete-btn') ||
+  e.target.classList.contains('dropdown-delete')
+) {
+  const idx = e.target.dataset.index;
+  const row = e.target.closest('tr');
 
+  showConfirmModal(
+    "Remove this scheduled entry?",
+    () => {
+      if (row) row.remove();
+      removeHiddenInputsByIndex(idx);
+      reindexScheduledTable();
+    },
+    "Delete Schedule"
+  );
+}
   // --- EDIT row (inline or dropdown)
   if (e.target.classList.contains('edit-btn') || e.target.classList.contains('dropdown-edit')) {
     const idx = e.target.dataset.index;
@@ -1150,7 +1460,7 @@ document.addEventListener('click', function(e){
     const newFood   = document.getElementById(`edit-food-${idx}`).value;
 
     if (!newDate || !newStart || !newEnd ) {
-      alert('Please complete all fields before saving.');
+      showAlertModal('Please complete all fields before saving.');
       return;
     }
 
@@ -1275,11 +1585,11 @@ document.querySelectorAll("input[name='intermittent']").forEach(radio=>{
 
 // Fix adding intermittent schedule
 document.getElementById('add-calendar-schedule').addEventListener('click', function(){
-  if (selectedDates.size === 0) { alert('Please select at least one date.'); return; }
+  if (selectedDates.size === 0) { showAlertModal('Please select at least one date.'); return; }
   const startTime = document.getElementById('calendar-start-time').value;
   const endTime = document.getElementById('calendar-end-time').value;
   const foodProvided = document.querySelector('input[name="food_provided"]:checked')?.value || 'no';
-  if (!startTime || !endTime) { alert('Please fill start and end times.'); return; }
+  if (!startTime || !endTime) { showAlertModal('Please fill start and end times.'); return; }
 
   const table = ensureScheduledTable();
   const tbody = table.querySelector('tbody');
@@ -1351,58 +1661,109 @@ document.querySelectorAll('.task-card').forEach(card => {
   });
 });
 
+
+
 document.addEventListener("DOMContentLoaded", function () {
 
-
+    // ---------------------------------
+    // CORE ELEMENTS
+    // ---------------------------------
     const dateSelector = document.getElementById("task-date-selector");
     const saveBtn = document.getElementById("save-date-tasks");
     const form = document.getElementById("opportunity-form");
+    const startDateInput = document.querySelector('input[name="start_date"]');
 
-    // Show Save button once a date is selected
-    dateSelector.addEventListener("change", function () {
-        document.getElementById("task-save-row").style.display = "block";
-        loadTasksForDate(this.value);
-    });
+    // ---------------------------------
+    // REGULAR SCHEDULE HANDLER
+    // ---------------------------------
+    function handleRegularScheduleLoad() {
+        const isIntermittent =
+            document.querySelector("input[name='intermittent']:checked")?.value === "1";
 
+        if (isIntermittent) return;
+        if (!startDateInput?.value) return;
 
-    // Save tasks for selected date
-    saveBtn.addEventListener("click", function () {
-
-      const selectedDate = dateSelector.value;
-if (!selectedDate) return alert("Select a date");
-
-// initialize if not exists
-if (!tasksByDate[selectedDate]) tasksByDate[selectedDate] = {};
-
-// add/update tasks for this date
-document.querySelectorAll(".task-card").forEach(card => {
-    const checkbox = card.querySelector("input[type='checkbox']");
-    const numInput = card.querySelector("input[type='number']");
-    const taskName = checkbox.dataset.taskName;
-
-    if (checkbox.checked) {
-        tasksByDate[selectedDate][taskName] = parseInt(numInput.value) || 1;
-    } else {
-        delete tasksByDate[selectedDate][taskName];
-    }
-});
-
-        alert("Saved tasks for: " + selectedDate);
+        ensureRegularTasksByDate();
+        loadTasksForDate(startDateInput.value);
         refreshTaskSummaryTable();
+    }
 
+    // Run once on load
+    handleRegularScheduleLoad();
 
-        // ⭐⭐⭐ CLEAR ALL TASK SELECTIONS AFTER SAVE ⭐⭐⭐
-        document.querySelectorAll(".task-card").forEach(card => {
-            const checkbox = card.querySelector("input[type='checkbox']");
-            const numInput = card.querySelector("input[type='number']");
-            const wrap = card.querySelector(".task-number");
-            checkbox.checked = false;
-numInput.value = 1;
-            wrap.style.display = "none";
+    // Re-run when start date changes
+    if (startDateInput) {
+        startDateInput.addEventListener("change", () => {
+            ensureRegularTasksByDate();
+            refreshTaskDateDropdown();
+            handleRegularScheduleLoad();
         });
+    }
 
-rebuildTaskingHiddenInputs();
+    // ---------------------------------
+    // INTERMITTENT DATE SELECTION
+    // ---------------------------------
+    if (dateSelector) {
+        dateSelector.addEventListener("change", function () {
+            if (!this.value) return;
+            document.getElementById("task-save-row").style.display = "block";
+            loadTasksForDate(this.value);
+        });
+    }
+
+    // ---------------------------------
+    // SAVE TASKS (REGULAR + INTERMITTENT)
+    // ---------------------------------
+    if (saveBtn) {
+        saveBtn.addEventListener("click", function () {
+
+            const isIntermittent =
+                document.querySelector("input[name='intermittent']:checked")?.value === "1";
+
+            let selectedDate;
+
+            if (isIntermittent) {
+                selectedDate = dateSelector?.value;
+                if (!selectedDate) return showAlertModal("Select a date");
+            } else {
+                selectedDate = startDateInput?.value;
+                if (!selectedDate) return showAlertModal("Select a start date");
+            }
+
+            if (!tasksByDate[selectedDate]) {
+                tasksByDate[selectedDate] = {};
+            }
+
+            document.querySelectorAll(".task-card").forEach(card => {
+                const checkbox = card.querySelector("input[type='checkbox']");
+                const numInput = card.querySelector("input[type='number']");
+                const taskName = checkbox.dataset.taskName;
+
+                if (checkbox.checked) {
+                    tasksByDate[selectedDate][taskName] = parseInt(numInput.value) || 1;
+                } else {
+                    delete tasksByDate[selectedDate][taskName];
+                }
+            });
+
+            refreshTaskSummaryTable();
+            rebuildTaskingHiddenInputs();
+
+        });
+    }
+
+    // ---------------------------------
+    // SCHEDULE TYPE SWITCH (REGULAR / INTERMITTENT)
+    // ---------------------------------
+    document.querySelectorAll("input[name='intermittent']").forEach(radio => {
+        radio.addEventListener("change", () => {
+            refreshTaskDateDropdown();
+            handleRegularScheduleLoad();
+        });
     });
+
+
+
 
     // Create hidden inputs for Laravel
 // --------------------------------------------------------------
@@ -1445,35 +1806,20 @@ const iso = dateText;
 });
 
 function loadTasksForDate(date) {
+    if (!tasksByDate[date]) return;
 
-    // Clear everything first
     document.querySelectorAll(".task-card").forEach(card => {
         const checkbox = card.querySelector("input[type='checkbox']");
         const numInput = card.querySelector("input[type='number']");
-        const wrapper = card.querySelector(".task-number");
+        const taskName = checkbox.dataset.taskName;
 
-        checkbox.checked = false;
-numInput.value = 1;
-        wrapper.style.display = "none";
-    });
-
-    // If no saved tasks for this date, stop here
-    if (!tasksByDate[date]) return;
-
-    // Reload tasks for this specific date
-    Object.keys(tasksByDate[date]).forEach(taskName => {
-        const checkbox = document.querySelector(`input[data-task-name='${taskName}']`)
-;
-        if (!checkbox) return;
-
-        checkbox.checked = true;
-
-        const card = checkbox.closest(".task-card");
-        const numInput = card.querySelector("input[type='number']");
-        const wrapper = card.querySelector(".task-number");
-
-        wrapper.style.display = "block";
-        numInput.value = tasksByDate[date][taskName];
+        if (tasksByDate[date][taskName] !== undefined) {
+            checkbox.checked = true;
+            numInput.value = tasksByDate[date][taskName];
+        } else {
+            checkbox.checked = false;
+            numInput.value = 1;
+        }
     });
 }
 
@@ -1533,7 +1879,7 @@ document.addEventListener('click', function(e) {
         const newFood = document.getElementById(`edit-food-${idx}`).value;
 
         if (!newDate || !newStart || !newEnd ) {
-            alert('Please complete all fields before saving.');
+            showAlertModal('Please complete all fields before saving.');
             return;
         }
 
@@ -1597,44 +1943,21 @@ row.innerHTML = `
 
 
 
-
-
-
-const intermittentCheckbox = document.querySelector("input[name='intermittent'][value='1']");
-const saveTaskWrapper = document.getElementById('save-task-wrapper');
-
-intermittentCheckbox.addEventListener('change', function () {
-    if (this.checked) {
-        // INTERMITTENT → SHOW BUTTON
-        saveTaskWrapper.style.display = 'block';
-    } else {
-        // REGULAR → HIDE BUTTON
-        saveTaskWrapper.style.display = 'none';
-    }
-});
-
-// Make sure initial state is correct when editing or loading page
-if (intermittentCheckbox.checked) {
-    saveTaskWrapper.style.display = 'block';
-}
-
-function updateSaveTaskButton() {
-    const saveTaskRow = document.getElementById("task-save-button") || document.getElementById("task-save-row");
-    if (!saveTaskRow) return;
-
+function ensureRegularTasksByDate() {
     const isIntermittent =
         document.querySelector("input[name='intermittent']:checked")?.value === "1";
 
-    const hasIntermittentDates =
-        document.querySelectorAll("#scheduled-table tbody .col-date").length > 0;
+    if (isIntermittent) return;
 
-    // MAIN LOGIC:
-    if (isIntermittent || hasIntermittentDates) {
-        saveTaskRow.style.display = "block";
-    } else {
-        saveTaskRow.style.display = "none";
+    const startDate = document.querySelector('input[name="start_date"]').value;
+    if (!startDate) return;
+
+    if (!tasksByDate[startDate]) {
+        tasksByDate[startDate] = {};
     }
 }
+
+
 // Helper: format Date object → ISO YYYY-MM-DD
 function formatDateToISO(date) {
     if (!(date instanceof Date)) return "";
@@ -1710,127 +2033,23 @@ function refreshTaskSummaryTable() {
     tbody.innerHTML = "";
 
     let hasData = false;
-    const isIntermittent = document.querySelector("input[name='intermittent']:checked")?.value === "1";
 
-    if (isIntermittent) {
-        // Intermittent → build from tasksByDate
-        Object.keys(tasksByDate).forEach(date => {
-            Object.keys(tasksByDate[date]).forEach(taskName => {
-                hasData = true;
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${new Date(date).toLocaleDateString()}</td>
-                    <td>${taskName}</td>
-                    <td>${tasksByDate[date][taskName]}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+    Object.keys(tasksByDate).forEach(date => {
+        Object.keys(tasksByDate[date]).forEach(taskName => {
+            hasData = true;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${new Date(date).toLocaleDateString()}</td>
+                <td>${taskName}</td>
+                <td>${tasksByDate[date][taskName]}</td>
+            `;
+            tbody.appendChild(tr);
         });
-    } else {
-        // Regular → build from task cards using start_date
-        const startDate = document.querySelector('input[name="start_date"]').value;
-        if (startDate) {
-            document.querySelectorAll(".task-card input[type='checkbox']:checked").forEach(checkbox => {
-                const taskName = checkbox.dataset.taskName;
-                const numInput = checkbox.closest(".task-card").querySelector('input[type="number"]').value || 1;
-                hasData = true;
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${new Date(startDate).toLocaleDateString()}</td>
-                    <td>${taskName}</td>
-                    <td>${numInput}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-    }
+    });
 
     table.style.display = hasData ? "table" : "none";
 }
 
-
-function loadSummary() {
-
-    // BASIC INPUTS
-    document.getElementById("sum-title").textContent =
-        document.querySelector("input[name='title']").value || "—";
-
-    document.getElementById("sum-location").textContent =
-        document.querySelector("input[name='location']").value || "—";
-
-    document.getElementById("sum-start-date").textContent =
-        document.querySelector("input[name='start_date']").value || "—";
-
-    document.getElementById("sum-description").textContent =
-        document.querySelector("textarea[name='description']").value || "—";
-
-    document.getElementById("sum-food").textContent =
-        document.querySelector("select[name='food_provided']").value;
-
-    const isIntermittent = document.querySelector("input[name='intermittent']").checked;
-    document.getElementById("sum-intermittent").textContent =
-        isIntermittent ? "Yes (Multiple Dates)" : "No (Single Day)";
-
-    /* ==============================
-       SCHEDULE TABLE
-    =============================== */
-
-    const scheduleBody = document.getElementById("sum-schedule-body");
-    scheduleBody.innerHTML = "";
-
-    const scheduleRows = document.querySelectorAll(".schedule-row");
-
-    scheduleRows.forEach(row => {
-        const date = row.querySelector(".schedule-date")?.value || "—";
-        const start = row.querySelector(".schedule-start")?.value || "—";
-        const end = row.querySelector(".schedule-end")?.value || "—";
-        const target = row.querySelector(".schedule-target")?.value || "—";
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${date}</td>
-            <td>${start}</td>
-            <td>${end}</td>
-            <td>${target}</td>
-        `;
-        scheduleBody.appendChild(tr);
-    });
-
-    /* ==============================
-       SELECTED TASKS LIST
-    =============================== */
-    const taskList = document.getElementById("sum-tasks");
-    taskList.innerHTML = "";
-
-    document.querySelectorAll(".task-toggle:checked").forEach(chk => {
-        const li = document.createElement("li");
-        li.textContent = chk.getAttribute("data-task-name");
-        taskList.appendChild(li);
-    });
-
-    /* ==============================
-       TASKS BY DATE TABLE
-    =============================== */
-    const sumTasksBody = document.getElementById("sum-tasks-by-date-body");
-    sumTasksBody.innerHTML = "";
-
-    Object.keys(tasksByDate).forEach(date => {
-        Object.keys(tasksByDate[date]).forEach(task => {
-
-            const needed = tasksByDate[date][task];
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${new Date(date).toLocaleDateString()}</td>
-                <td>${task}</td>
-                <td>${needed}</td>
-            `;
-
-            sumTasksBody.appendChild(tr);
-        });
-    });
-
-}
 
 
 // --------------------------------------------------------------
@@ -1945,59 +2164,216 @@ document.getElementById("opportunity-form").addEventListener("submit", function(
     const hasTasks = Object.keys(tasksByDate).length > 0;
     if (!hasTasks) {
         e.preventDefault();
-        alert("Please add at least one task.");
+        showAlertModal("Please add at least one task.");
         return;
     }
 });
 
 saveBtn.addEventListener("click", function () {
-    if (!isIntermittent) {
-        // Regular schedule: save task cards directly (no date)
-        document.querySelectorAll(".task-card").forEach(card => {
-            const checkbox = card.querySelector("input[type='checkbox']");
-            const numInput = card.querySelector("input[type='number']");
-            const taskName = checkbox.getAttribute("data-task-name");
+    const isIntermittent =
+        document.querySelector("input[name='intermittent']:checked")?.value === "1";
 
-            if (checkbox.checked) {
-                form.appendChild(createHiddenInput(`tasks[${taskName}]`, parseInt(numInput.value) || 1));
-            } else {
-                const existing = document.querySelector(`input[name="tasks[${taskName}]"]`);
-                if (existing) existing.remove();
-            }
-        });
-        alert("Tasks saved (regular schedule).");
-        return;
-    }
+    let selectedDate;
 
-    // Intermittent schedule: save tasks by date (existing logic)
-const selectedDate = dateSelector.value;
-if (!selectedDate) return alert("Select a date");
-
-// initialize if not exists
-if (!tasksByDate[selectedDate]) tasksByDate[selectedDate] = {};
-
-
-
-// add/update tasks for this date
-document.querySelectorAll(".task-card").forEach(card => {
-    const checkbox = card.querySelector("input[type='checkbox']");
-    const numInput = card.querySelector("input[type='number']");
-    const taskName = checkbox.dataset.taskName;
-
-    if (checkbox.checked) {
-        tasksByDate[selectedDate][taskName] = parseInt(numInput.value) || 1;
+    if (isIntermittent) {
+        selectedDate = dateSelector.value;
+        if (!selectedDate) return showAlertModal("Select a date");
     } else {
-        delete tasksByDate[selectedDate][taskName];
+        selectedDate = document.querySelector('input[name="start_date"]').value;
+        if (!selectedDate) return showAlertModal("Select a start date");
     }
-});
 
+    if (!tasksByDate[selectedDate]) tasksByDate[selectedDate] = {};
+
+    document.querySelectorAll(".task-card").forEach(card => {
+        const checkbox = card.querySelector("input[type='checkbox']");
+        const numInput = card.querySelector("input[type='number']");
+        const taskName = checkbox.dataset.taskName;
+
+        if (checkbox.checked) {
+            tasksByDate[selectedDate][taskName] = parseInt(numInput.value) || 1;
+        } else {
+            delete tasksByDate[selectedDate][taskName];
+        }
+    });
 
     refreshTaskSummaryTable();
-rebuildTaskingHiddenInputs();
-    alert("Tasks saved for date: " + selectedDate);
+    rebuildTaskingHiddenInputs();
+
 });
 
 
+
+
+
+function generateSummary() {
+
+  /* ======================================================
+     BASIC INFO
+  ====================================================== */
+  document.getElementById('summary-title').textContent =
+    document.querySelector('input[name="title"]')?.value || '—';
+
+  document.getElementById('summary-location').textContent =
+    document.querySelector('input[name="location"]')?.value || '—';
+
+  document.getElementById('summary-description').textContent =
+    document.querySelector('textarea[name="description"]')?.value || '—';
+
+
+  /* ======================================================
+     TASKS & VOLUNTEERS (WITH FOOD PROVIDED)
+  ====================================================== */
+  const taskBox = document.getElementById('summary-task-assignments');
+  taskBox.innerHTML = '';
+
+  const isIntermittent =
+    document.querySelector('input[name="intermittent"]:checked')?.value === "1";
+
+  const dates = Object.keys(tasksByDate || {});
+
+  if (!dates.length) {
+    taskBox.innerHTML = `<p class="muted">No task assignments added.</p>`;
+    return;
+  }
+
+  /* ======================================================
+     REGULAR SCHEDULE
+  ====================================================== */
+  if (!isIntermittent) {
+
+    const date = dates[0];
+    const tasks = tasksByDate[date];
+
+    const foodProvided =
+      document.querySelector('input[name="food_provided"]:checked')?.value || 'no';
+
+    const fullDate = new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+let html = `
+  <p><strong>Date:</strong> ${fullDate}</p>
+  <p><strong>Food Provided:</strong> ${foodProvided.charAt(0).toUpperCase() + foodProvided.slice(1)}</p>
+  <p><strong>Tasks:</strong></p>
+  <ul style="padding-left:18px;">
+`;
+
+Object.keys(tasks).forEach(taskName => {
+  html += `
+    <li>
+      ${taskName} — <strong>${tasks[taskName]}</strong> volunteer(s)
+    </li>
+  `;
+});
+
+
+    html += `</ul>`;
+    taskBox.innerHTML = html;
+    return;
+  }
+
+  /* ======================================================
+     INTERMITTENT SCHEDULE
+  ====================================================== */
+  let html = `
+    <table class="table table-bordered" style="font-size:13px;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Task</th>
+          <th>Volunteers Needed</th>
+          <th>Food Provided</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  dates.forEach(date => {
+
+    const fullDate = new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // get food value for this date from scheduled table
+    const foodCell = Array.from(document.querySelectorAll('#scheduled-table tbody tr'))
+      .find(row => {
+        const cellDate = row.querySelector('.col-date')?.textContent;
+        return cellDate &&
+          new Date(cellDate).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }) === fullDate;
+      })
+      ?.querySelector('.col-food')?.textContent || '—';
+
+    Object.keys(tasksByDate[date]).forEach(taskName => {
+      html += `
+        <tr>
+          <td>${fullDate}</td>
+          <td>${taskName}</td>
+          <td>${tasksByDate[date][taskName]}</td>
+          <td>${foodCell}</td>
+        </tr>
+      `;
+    });
+  });
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  taskBox.innerHTML = html;
+}
+
+
+
+let modalConfirmCallback = null;
+
+function showAlertModal(message, title = "Notice") {
+  const modalEl = document.getElementById("globalModal");
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+  document.getElementById("globalModalTitle").textContent = title;
+  document.getElementById("globalModalBody").textContent = message;
+
+  const okBtn = document.getElementById("modalConfirmBtn");
+
+  okBtn.onclick = () => {
+    modal.hide(); // 🔥 THIS REMOVES THE BACKDROP
+  };
+
+  modal.show();
+}
+
+function showConfirmModal(message, onConfirm, title = "Confirm Action") {
+  const modal = new bootstrap.Modal(document.getElementById("globalModal"));
+
+  document.getElementById("globalModalTitle").textContent = title;
+  document.getElementById("globalModalBody").textContent = message;
+
+  const cancelBtn = document.getElementById("modalCancelBtn");
+  const confirmBtn = document.getElementById("modalConfirmBtn");
+
+  cancelBtn.classList.remove("d-none");
+  confirmBtn.textContent = "Confirm";
+
+  confirmBtn.onclick = () => {
+    modal.hide();
+    if (typeof onConfirm === "function") onConfirm();
+  };
+
+  modal.show();
+}
+
 </script>
+
+
 
 @endsection

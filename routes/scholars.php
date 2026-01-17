@@ -16,6 +16,16 @@ Route::get('/volunteerHistory', function () {
 
 
 
+Route::post(
+    'fingerprint-log/mark-done',
+    [ScholarJoinController::class, 'markFingerprintDone']
+)->name('fingerprint.markDone');
+
+Route::post(
+    'fingerprint-log/submit-feedback',
+    [ScholarJoinController::class, 'submitScholarFeedback']
+)->name('fingerprint.submitFeedback');
+
 
 
     Route::post('/logout', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'destroy'])

@@ -28,6 +28,8 @@ class AdminOpportunityRequestMailable extends Mailable
                 'date_time' => $this->data['date_time'] ?? '',
                 'location' => $this->data['location'] ?? '',
                 'title' => $this->data['title'] ?? '',
+                                'type_of_activity' => $this->data['type_of_activity'] ?? '', // <-- added
+
             ]);
     }
 }

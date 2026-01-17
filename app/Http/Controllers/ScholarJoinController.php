@@ -285,34 +285,170 @@ public function joinedOpportunities()
 {
     $scholar = session('scholar_accounts');
     if (!$scholar) {
-        return redirect()->route('login')->with('error', 'Please log in first.');
+        return redirect()->route('login');
     }
 
     $scholarId = $scholar['student_no'] ?? null;
+    $scholarTerm = $scholar['term'] ?? '1st'; // assume term is stored here
+
     if (!$scholarId) {
         return redirect()->route('login');
     }
 
-    // Fetch joined opportunities
+    /* ======================================================
+     * 🔹 FETCH JOINED OPPORTUNITIES
+     * ====================================================== */
     $opportunities = $this->database->getReference('opportunities')->getValue() ?? [];
     $joined = [];
-    foreach ($opportunities as $key => $opportunity) {
+
+    foreach ($opportunities as $oppKey => $opportunity) {
         $participants = $opportunity['participants'] ?? [];
         if (!is_array($participants)) continue;
+
         foreach ($participants as $participant) {
             if (($participant['scholar_id'] ?? '') === $scholarId) {
-                $opportunity['id'] = $key;
-                $joined[$key] = $opportunity;
+                $opportunity['opportunity_id'] = $oppKey;
+                $joined[$oppKey] = $opportunity;
                 break;
             }
         }
     }
 
+    /* ======================================================
+     * 🔹 FETCH FINGERPRINT LOGS
+     * ====================================================== */
+    $fingerprintLogs = $this->database
+        ->getReference('fingerprint_log')
+        ->getValue() ?? [];
+
+    $fingerprintStatus = [];
+
+    foreach ($fingerprintLogs as $logKey => $log) {
+        if (!empty($log['opportunity_id']) &&
+            !empty($log['time_in_date']) &&
+            ($log['student_no'] ?? '') === $scholarId
+        ) {
+            $fingerprintStatus[$log['opportunity_id']][$log['time_in_date']] = [
+                'status' => $log['status'] ?? '',
+                'log_key' => $logKey,
+            ];
+        }
+    }
+
+    /* ======================================================
+ * 🔹 CALCULATE OFFICE COUNTS FOR DONE OPPORTUNITIES
+ * ====================================================== */
+/* ======================================================
+ * 🔹 CALCULATE OFFICE HOURS (TIME_IN → TIME_OUT)
+ * ====================================================== */
+$officeHours = []; // [officeName => totalHours]
+
+foreach ($fingerprintLogs as $log) {
+
+    if (
+        ($log['student_no'] ?? '') === $scholarId &&
+        ($log['status'] ?? '') === 'Done'
+    ) {
+        $opId = $log['opportunity_id'] ?? null;
+        $timeIn  = $log['time_in'] ?? null;
+        $timeOut = $log['time_out'] ?? null;
+
+        if ($opId && isset($joined[$opId]) && $timeIn && $timeOut) {
+            try {
+                $in  = Carbon::createFromFormat('H:i:s', $timeIn);
+                $out = Carbon::createFromFormat('H:i:s', $timeOut);
+
+                $minutes = $in->diffInMinutes($out);
+                $hours   = round($minutes / 60, 2);
+
+                $officeName = $joined[$opId]['submitted_by_role'] ?? 'Unknown';
+
+                if (!isset($officeHours[$officeName])) {
+                    $officeHours[$officeName] = 0;
+                }
+
+                $officeHours[$officeName] += $hours;
+
+            } catch (\Exception $e) {
+                // skip invalid time format
+            }
+        }
+    }
+}
+
+/* ======================================================
+ * 🔹 CALCULATE OFFICE PARTICIPATION COUNTS (OLD LOGIC)
+ * ====================================================== */
+$officeParticipationCounts = []; // [officeName => count]
+
+foreach ($fingerprintLogs as $log) {
+    if (
+        ($log['student_no'] ?? '') === $scholarId &&
+        ($log['status'] ?? '') === 'Done'
+    ) {
+        $opId = $log['opportunity_id'] ?? null;
+
+        if ($opId && isset($joined[$opId])) {
+            $officeName = $joined[$opId]['submitted_by_role'] ?? 'Unknown';
+
+            if (!isset($officeParticipationCounts[$officeName])) {
+                $officeParticipationCounts[$officeName] = 0;
+            }
+
+            $officeParticipationCounts[$officeName]++;
+        }
+    }
+}
+
+    /* ======================================================
+     * 🔹 CALCULATE TOTAL HOURS, TERM HOURS, AND DONE ACTIVITIES
+     * ====================================================== */
+    $totalMinutes = 0;
+    $termMinutes  = 0;
+    $activitiesDone = 0;
+
+    foreach ($fingerprintLogs as $log) {
+        if (($log['student_no'] ?? '') === $scholarId) {
+            $timeIn  = $log['time_in'] ?? null;
+            $timeOut = $log['time_out'] ?? null;
+            $timeInDate = $log['time_in_date'] ?? null;
+
+            if ($timeIn && $timeOut) {
+                try {
+                    $in  = \Carbon\Carbon::createFromFormat('H:i:s', $timeIn);
+                    $out = \Carbon\Carbon::createFromFormat('H:i:s', $timeOut);
+                    $minutes = $in->diffInMinutes($out);
+                    $totalMinutes += $minutes;
+
+                    // Check term — assume we map date to term
+                    if ($this->isDateInTerm($timeInDate, $scholarTerm)) {
+                        $termMinutes += $minutes;
+                    }
+
+                } catch (\Exception $e) {
+                    // skip invalid time format
+                }
+            }
+
+            if (($log['status'] ?? '') === 'Done') {
+                $activitiesDone++;
+            }
+        }
+    }
+
+    $totalHours = round($totalMinutes / 60, 2);
+    $termHours  = round($termMinutes / 60, 2);
+    $goalHours  = 10;
+    $remainingHours = max($goalHours - $totalHours, 0);
+
+    /* ======================================================
+     * 🔹 PAGINATION
+     * ====================================================== */
     $perPage = 5;
     $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
     $items = collect($joined);
-    $pagedItems = $items->slice(($currentPage - 1) * $perPage, $perPage)->values();
 
+    $pagedItems = $items->slice(($currentPage - 1) * $perPage, $perPage)->values();
     $pagination = new \Illuminate\Pagination\LengthAwarePaginator(
         $pagedItems,
         $items->count(),
@@ -321,15 +457,104 @@ public function joinedOpportunities()
         ['path' => request()->url(), 'query' => request()->query()]
     );
 
-    // 🔹 Fetch On-the-Spot Volunteers
-    $otsvController = new OnTheSpotVolunteerController();
-    $otsvList = $otsvController->fetchOTSVForOffice(); // get all OTSV entries
-
     return view('scholars.dashboard', [
         'joinedOpportunities' => $pagedItems,
         'pagination' => $pagination,
-        'otsvList' => $otsvList, // ✅ pass it here
+        'fingerprintStatus' => $fingerprintStatus,
+        'totalHours' => $totalHours,
+        'termHours'  => $termHours,
+        'activitiesDone' => $activitiesDone,
+        'remainingHours' => $remainingHours,
+'officeHours' => $officeHours,
+'officeParticipationCounts' => $officeParticipationCounts,
+
+
     ]);
 }
+
+/* ======================================================
+ * 🔹 HELPER: Check if a date belongs to a term
+ * ====================================================== */
+private function isDateInTerm($date, $term)
+{
+    if (!$date) return false;
+
+    $carbonDate = Carbon::parse($date);
+
+    switch ($term) {
+        case '1st':
+            return $carbonDate->month >= 6 && $carbonDate->month <= 10;
+        case '2nd':
+            return $carbonDate->month >= 11 || $carbonDate->month <= 3;
+        case '3rd':
+            return $carbonDate->month >= 4 && $carbonDate->month <= 5;
+        default:
+            return false;
+    }
+}
+
+
+public function markFingerprintDone(Request $request)
+{
+    $scholar = session('scholar_accounts');
+    if (!$scholar) {
+        abort(403);
+    }
+
+    $request->validate([
+        'log_key' => 'required|string',
+    ]);
+
+    $logKey = $request->log_key;
+
+    $this->database
+        ->getReference("fingerprint_log/{$logKey}")
+        ->update([
+            'status' => 'Done',
+            'done_at' => now()->toDateTimeString(),
+        ]);
+
+    return back()->with('success', 'Opportunity marked as done.');
+}
+
+public function submitScholarFeedback(Request $request) 
+{
+    $scholar = session('scholar_accounts');
+    if (!$scholar) {
+        abort(403);
+    }
+
+    $request->validate([
+        'log_key'  => 'required|string',
+        'feedback' => 'required|string|max:2000',
+    ]);
+
+    $submittedByName = trim(
+        ($scholar['first_name'] ?? '') . ' ' . ($scholar['last_name'] ?? '')
+    );
+
+    $logKey = $request->log_key;
+
+    // 🔹 Save feedback
+    $this->database
+        ->getReference("fingerprint_log/{$logKey}/feedback")
+        ->push([
+            'message' => $request->feedback,
+            'submitted_by' => $submittedByName,
+            'submitted_by_role' => 'Scholar',
+            'submitted_at' => now()->toDateTimeString(),
+        ]);
+
+    // 🔹 Update log status to DONE
+    $this->database
+        ->getReference("fingerprint_log/{$logKey}")
+        ->update([
+            'status' => 'Done', // <-- changed from 'Complete'
+            'completed_at' => now()->toDateTimeString(),
+        ]);
+
+    return back()->with('feedback_submitted', true);
+}
+
 
 }

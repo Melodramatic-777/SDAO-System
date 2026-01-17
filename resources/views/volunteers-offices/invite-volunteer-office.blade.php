@@ -46,17 +46,17 @@
                         <td>{{ $scholar['last_name'] ?? '' }}, {{ $scholar['first_name'] ?? '' }}</td>
                         <td>{{ $scholar['volunteer_hours'] ?? 0 }}</td>
                         <td>
-                            <button type="button" 
-                                    class="btn btn-primary inviteBtn"
-                                    data-id="{{ $scholar['student_no'] ?? '' }}"
-                                    data-name="{{ $scholar['first_name'] ?? '' }} {{ $scholar['last_name'] ?? '' }}"
-                                    data-hours="{{ $scholar['volunteer_hours'] ?? 0 }}"
-                                            data-scholarship="{{ $scholar['scholarship_type'] ?? 'N/A' }}"
-
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#inviteModal">
-                                Invite
-                            </button>
+                            <button
+    type="button"
+    class="btn btn-primary inviteBtn"
+    data-id="{{ $scholar['student_no'] }}"
+    data-name="{{ $scholar['first_name'] }} {{ $scholar['last_name'] }}"
+    data-hours="{{ $scholar['volunteer_hours'] ?? 0 }}"
+    data-scholarship="{{ $scholar['scholarship_type'] }}"
+    data-bs-toggle="modal"
+    data-bs-target="#inviteModal">
+    Invite
+</button>
                         </td>
                     </tr>
                 @empty
@@ -234,70 +234,79 @@ currentTasks = {
     });
 
     /* ===== RENDER PANEL ===== */
-    function renderRightPanel() {
+function renderRightPanel() {
+    let html = "";
 
-        let html = "";
+    if (currentIsIntermittent && selectedTaskDate) {
 
-        if (currentIsIntermittent && selectedTaskDate) {
+        const dayTasks = currentTasks.tasksByDate[selectedTaskDate] || [];
+        if (!dayTasks.length) return;
 
-            const dayTasks = Object.values(currentTasks.tasksByDate[selectedTaskDate] || []);
-            if (!dayTasks.length) return;
+        // find matching schedule by date
+        const sched = currentTasks.schedule.find(s => s.date === selectedTaskDate);
+        const firstTask = dayTasks[0];
 
-            let timeStr = "N/A";
-            if (dayTasks[0]?.start_time && dayTasks[0]?.end_time) {
-                timeStr = `${formatTime(dayTasks[0].start_time)} – ${formatTime(dayTasks[0].end_time)}`;
-            }
+        const timeStr = sched && sched.start_time && sched.end_time
+            ? `${formatTime(sched.start_time)} – ${formatTime(sched.end_time)}`
+            : "Time TBA";
 
-            html = `
-                <div class="task-panel">
-                    <div class="section-label">
-                        <i class="bi bi-calendar-event me-1"></i> Select Date
-                    </div>
+        const foodProvided = sched?.food_provided ?? firstTask.food_provided ?? "no";
 
-                    <div class="mb-3 date-pill-group">
-                        ${Object.keys(currentTasks.tasksByDate).map(d => `
-                            <button type="button"
-                                    class="date-pill ${d === selectedTaskDate ? 'active' : ''}"
-                                    onclick="selectInviteDate('${d}')">
-                                ${new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
-                            </button>
-                        `).join("")}
-                    </div>
+        html = `
+        <div class="task-panel">
 
-${(() => {
-    const sched = currentTasks.schedule.find(s => s.date === selectedTaskDate);
-    return renderTimeAndFood(timeStr, sched?.food_provided ?? 'no');
-})()}
-                    ${renderTaskList(dayTasks, selectedTaskDate)}
-                </div>
-            `;
-        }
+            <div class="section-label">
+                <i class="bi bi-calendar-event me-1"></i> Select Date
+            </div>
 
-        else if (!currentIsIntermittent && currentTasks.tasks.length) {
-            const s = currentTasks.tasks[0];
+            <div class="mb-3 date-pill-group">
+                ${Object.keys(currentTasks.tasksByDate).map(d => `
+                    <button type="button"
+                            class="date-pill ${d === selectedTaskDate ? 'active' : ''}"
+                            onclick="selectInviteDate('${d}')">
+                        ${new Date(d).toLocaleDateString('en-US', {
+                            weekday:'short', month:'short', day:'numeric'
+                        })}
+                    </button>
+                `).join("")}
+            </div>
 
-            html = `
-                <div class="task-panel">
-                    <div class="section-label">
-                        <i class="bi bi-calendar-event me-1"></i> Schedule
-                    </div>
+            ${renderTimeAndFood(timeStr, foodProvided)}
 
-                    ${renderTimeAndFood(
-                        s.start_time && s.end_time
-                            ? `${formatTime(s.start_time)} – ${formatTime(s.end_time)}`
-                            : 'N/A',
-                        currentTasks.foodProvided
-                    )}
-
-                    ${renderTaskList(currentTasks.tasks, s.date)}
-                </div>
-            `;
-        }
-
-        tasksContainer.innerHTML = html;
-        tasksContainer.classList.remove("d-none");
-        placeholder.classList.add("d-none");
+            ${renderTaskList(dayTasks, selectedTaskDate)}
+        </div>`;
     }
+
+    else if (!currentIsIntermittent && currentTasks.tasks.length) {
+
+        const task = currentTasks.tasks[0];
+
+        // match schedule by start_date for non-intermittent
+        const sched = currentTasks.schedule.find(s => s.start_date === task.date) || {};
+        const timeStr = sched.start_time && sched.end_time
+            ? `${formatTime(sched.start_time)} – ${formatTime(sched.end_time)}`
+            : "Time TBA";
+
+        const foodProvided = sched.food_provided ?? task.food_provided ?? "no";
+
+        html = `
+        <div class="task-panel">
+
+            <div class="section-label">
+                <i class="bi bi-calendar-event me-1"></i> Schedule
+            </div>
+
+            ${renderTimeAndFood(timeStr, foodProvided)}
+
+            ${renderTaskList(currentTasks.tasks, "regular")}
+        </div>`;
+    }
+
+    tasksContainer.innerHTML = html;
+    tasksContainer.classList.remove("d-none");
+    placeholder.classList.add("d-none");
+}
+
 
     /* ===== TASK LIST ===== */
     window.renderTaskList = function (tasks, dateKey) {

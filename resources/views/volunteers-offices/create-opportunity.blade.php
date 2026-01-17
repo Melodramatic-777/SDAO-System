@@ -83,6 +83,16 @@
   display: none;          /* hide line after last step */
 }
 
+/* Center content horizontally and vertically */
+.center-content {
+    display: flex;
+    justify-content: center; /* horizontal centering */
+    align-items: center;     /* vertical centering */
+    height: 100%;            /* make it take full height of parent */
+    text-align: center;      /* center text/icons inside */
+}
+
+
 
   #stepTitle { font-size:18px; font-weight:600; color:var(--primary); text-align:center; margin-bottom:16px; }
 
@@ -462,6 +472,51 @@
     letter-spacing: 0.6px;
 }
 
+.schedule-container {
+    background-color: #EAF4FF; /* light blue */
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #ddecff;
+    margin: 20px 0; /* top & bottom margin */
+}
+
+.no-schedule {
+    text-align: center;
+    color: #9aa4b2;
+    padding: 48px 16px;
+}
+
+.no-schedule i {
+    font-size: 42px;
+    opacity: 0.6;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.no-schedule p {
+    font-size: 14px;
+    margin: 0;
+}
+
+.two-column {
+    display: flex;
+    gap: 16px; /* spacing between left and right side */
+}
+
+.left-side,
+.right-side {
+    flex: 1; /* both sides take equal width, adjust if needed */
+}
+
+.right-side {
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    min-height: 500px;       /* or 100% of parent if parent has height */
+}
+
+
+
 </style>
 
 <div class="page-wrap">
@@ -527,6 +582,25 @@
 
           <!-- STEP 1 -->
           <div class="form-step" id="step-1" >
+             <div class="form-section">
+    <label>Type of Activity <span class="text-danger">*</span></label>
+    <select name="activity_type" required>
+      <option value="" selected disabled>Select type of activity</option>
+      <option value="Administrative Support">Administrative Support</option>
+      <option value="Assistance">Assistance</option>
+      <option value="Campus Tour">Campus Tour</option>
+      <option value="Career Fair/Orientation">Career Fair/Orientation</option>
+      <option value="Creative Support">Creative Support</option>
+      <option value="Event Support">Event Support</option>
+      <option value="Holy Mass">Holy Mass</option>
+      <option value="Enrollment Week">Enrollment Week</option>
+      <option value="Org-Related Activity">Org-Related Activity</option>
+      <option value="SDAO Activity">SDAO Activity</option>
+      <option value="Seminar">Seminar</option>
+      <option value="Technical Support">Technical Support</option>
+      <option value="Others">Others</option>
+    </select>
+  </div>
             <div class="form-section">
               <label>Activity Title <span class="text-danger">*</span></label>
               <input type="text" name="title" placeholder="Enter title proposal" required>
@@ -591,39 +665,85 @@
 
         <div class="form-step" id="step-2" style="display:none;" class="mb-6 space-y-4" style="max-height: 500px; overflow-y: auto; padding-right: 6px;">
 
-            <label>Does your event happen intermittently?<span class="text-danger">*</span></label>
+            <label>Event Type<span class="text-danger">*</span></label>
             <div class="radio-group">
-                <label><input type="radio" name="intermittent" value="0" checked> No</label>
-                <label><input type="radio" name="intermittent" value="1"> Yes, multiple dates</label>
+                <label><input type="radio" name="intermittent" value="0" checked> Single Day Event</label>
+                <label><input type="radio" name="intermittent" value="1"> Intermittent Event</label>
             </div>
 
             <div id="intermittent-layout" style="display:none;" class="two-column">
-                <div class="left-side">
-                    <div id="intermittent-details">
-                        <div id="fullcalendar"></div>
-                        <div id="time-details" style="margin-top:10px;">
-                            <label>Start Time<span class="text-danger">*</span></label>
-                            <input type="time" id="calendar-start-time">
+<div class="left-side">
+    <div id="intermittent-details">
 
-                            <label>End Time<span class="text-danger">*</span></label>
-                            <input type="time" id="calendar-end-time">
+      <!-- Light Blue Container -->
+<div class="schedule-container">
 
-                  
-                            <label>Food Provided<span class="text-danger">*</span></label>
-                            <div class="radio-group" style="margin-top: 5px; margin-bottom: 10px;">
-                                <label><input type="radio" name="food_provided" value="yes"> Yes</label>
-                                <label><input type="radio" name="food_provided" value="no"> No</label>
-                            </div>
+    <!-- Top Label -->
+    <label style="font-weight: 600; display: block; margin-bottom: 6px;">
+        Add Event Schedule
+    </label>
+       <small style="display: block; color: #6c757d; margin-top: 6px;">
+        Select Date Range
+    </small>
 
-                            <button type="button" id="add-calendar-schedule" class="btn-secondary">Add Schedule</button>
+    <div id="fullcalendar" style="margin-top: 4px;"></div>
+
+    <!-- Bottom muted label -->
+ 
+
+    <div id="time-details" style="margin-top: 12px;">
+
+        <div style="display: flex; gap: 16px;">
+            <div>
+                <label>Start Time <span class="text-danger">*</span></label>
+                <input type="time" id="calendar-start-time">
+            </div>
+
+            <div>
+                <label>End Time <span class="text-danger">*</span></label>
+                <input type="time" id="calendar-end-time">
+            </div>
+        </div>
+
+        <label style="margin-top: 16px;">Food Provided <span class="text-danger">*</span></label>
+        <div class="radio-group" style="margin-top: 5px; margin-bottom: 10px;">
+            <label><input type="radio" name="food_provided" value="yes"> Yes</label>
+            <label><input type="radio" name="food_provided" value="no"> No</label>
+        </div>
+
+        <button
+            type="button"
+            id="add-calendar-schedule"
+            class="btn-secondary"
+            style="margin-bottom: 16px;"
+        >
+            + Add Schedule
+        </button>
+
+    </div>
+
                         </div>
                     </div>
                 </div>
 
-                <div class="right-side">
-                    <div id="scheduled-entries"></div>
-                </div>
-            </div>
+<div class="right-side">
+
+<label style="font-weight: 600; font-size: 16px; margin-bottom: 12px; margin-top: 40px; display: block; text-align: left; align-self: flex-start;">
+    Event Schedules
+</label>
+
+
+    
+<div id="scheduled-entries"></div>
+
+<div id="no-schedule-placeholder" class="no-schedule">
+            <i class="bi bi-calendar-event"></i>
+            <p>No schedules added yet</p>
+        </div>
+
+    </div>
+</div>
+
 
 <div id="regular-schedule">
 <div class="form-section" style="margin-top: 16px;">
@@ -1059,9 +1179,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const title = document.querySelector('input[name="title"]')?.value.trim();
     const desc  = document.querySelector('textarea[name="description"]')?.value.trim();
     const loc   = document.getElementById('location')?.value.trim();
+const type  = document.querySelector('select[name="activity_type"]')?.value;
 
-    if (!title || !desc || !loc) {
-      showAlertModal("Please complete Title, Description, and Location.");
+
+    if (!title || !desc || !loc || !type) {
+      showAlertModal("Please complete Type of Activity, Title, Description, and Location.");
       return false;
     }
   }
@@ -1568,7 +1690,23 @@ document.querySelectorAll("input[name='intermittent']").forEach(radio=>{
 
       // Clear intermittent schedules
       document.querySelectorAll(".scheduled-entry-input").forEach(i=>i.remove());
-      document.getElementById('scheduled-entries').innerHTML = ""; 
+document.getElementById('scheduled-entries').innerHTML = `
+  <div style="
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      text-align: center;
+      flex-direction: column;
+  ">
+    <div id="no-schedule-placeholder" class="no-schedule">
+      <i class="bi bi-calendar-event"></i>
+      <p>No schedules added yet</p>
+    </div>
+  </div>
+`;
+
+
       scheduleIndex = 0; 
       selectedDates.clear(); 
       indexMap = {};
@@ -2371,6 +2509,20 @@ function showConfirmModal(message, onConfirm, title = "Confirm Action") {
 
   modal.show();
 }
+
+function toggleSchedulePlaceholder() {
+    const placeholder = document.getElementById('no-schedule-placeholder');
+    const table = document.getElementById('scheduled-table');
+
+    if (!placeholder) return;
+
+    if (!table || table.querySelectorAll('tbody tr').length === 0) {
+        placeholder.style.display = 'block';
+    } else {
+        placeholder.style.display = 'none';
+    }
+}
+
 
 </script>
 

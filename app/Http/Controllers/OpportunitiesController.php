@@ -395,6 +395,7 @@ public function store(Request $request)
         'schedule.*.end_time' => 'nullable|string',
         'schedule.*.target_participants' => 'nullable|string',
         'schedule.*.target_number' => 'nullable|integer',
+        'activity_type' => 'required|string', // <-- added
 
         'intermittent' => 'nullable|boolean',
         'intermittent_details' => 'nullable|string',
@@ -568,6 +569,7 @@ if ($firstDate) {
 
         // ✨ NEW TASK SYSTEM SAVED HERE
         'tasks'                => $taskList,
+        'activity_type'     => $validated['activity_type'], // <-- added
 
         'status'               => $status,
         'submitted_at'         => now()->toDateTimeString(),
@@ -875,29 +877,31 @@ public function scholarInvites(Request $request)
 public function acceptInvite(Request $request)
 {
     $request->validate([
-        'opportunity_id' => 'required',
-        'participant_key' => 'required',
+        'opportunity_id'   => 'required',
+        'participant_key'  => 'required',
     ]);
 
     $oppId = $request->opportunity_id;
-    $pKey = $request->participant_key;
+    $pKey  = $request->participant_key;
 
     $ref = "opportunities/{$oppId}/participants/{$pKey}";
 
-    // If intermittent, check selected dates
+    // If intermittent, store the dates the scholar accepted
     if ($request->has('selected_dates')) {
-
-        // Store only the dates the scholar accepted
         $this->database->getReference("$ref/selected_dates")
             ->set($request->selected_dates);
     }
 
-    // Update status
-    $this->database->getReference("$ref/status")
-        ->set('Joined');
+    // Update status AND joined_at
+    $this->database->getReference("$ref")
+        ->update([
+            'status'    => 'Joined',
+            'joined_at' => now()->toDateTimeString(),
+        ]);
 
     return back()->with('success', 'Invite accepted successfully!');
 }
+
 
 
 public function cancelOpportunity($id)
